@@ -1,8 +1,24 @@
 # Mutation Cover with Yosys
 
-**Under Construction**
-
 ## Quickstart
+
+Install `mcy`:
+
+```
+sudo make install
+```
+
+Run the example project (may run for a while):
+
+```
+cd example
+mcy init
+mcy run -j8
+```
+
+Remember to install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
+
+## Tutorial
 
 Create a new directory with a `config.mcy` file. For example:
 
@@ -73,7 +89,7 @@ jobs and monitor progress.
 Finally, `mcy gui` launches a GUI application that can be used to investigate
 the database.
 
-## Logic
+### Logic
 
 The `[logic]` section contains a python function that defines how `mcy` should
 run the individual tests. The following special functions are available:
@@ -85,7 +101,7 @@ result, or use a cached result if the test had been run previously.
 
 `rng(N)`: Return a deterministic pseudo-random integer in the range 0..N-1.
 
-## Tests
+### Tests
 
 Each test has its own configuration file section, `[test testname]`.
 
