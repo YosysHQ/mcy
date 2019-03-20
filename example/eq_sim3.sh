@@ -1,13 +1,13 @@
 #!/bin/bash
 
-option_run_unmodified=false
-option_cleanup_workdir=true
+option_cleanup_workdir=false
 
+set -e
 mkdir "task_$TASK"
 cd "task_$TASK"
 cat > input.txt
 
-{
+(
 	set -ex
 
 	{
@@ -26,9 +26,9 @@ cat > input.txt
 	while read idx mut; do
 		idx=${idx%:}
 		sby -f eq_sim3.sby ${idx}
-		gawk "{ print $idx, \$1; }" eq_sim3_${idx}/status
+		gawk "{ print $idx, \$1; }" eq_sim3_${idx}/status >> output.txt
 	done < input.txt
-} > logfile.txt 2>&1
+) > logfile.txt 2>&1
 
 cat output.txt
 

@@ -3,11 +3,12 @@
 option_run_unmodified=false
 option_cleanup_workdir=true
 
+set -e
 mkdir "task_$TASK"
 cd "task_$TASK"
 cat > input.txt
 
-{
+(
 	set -ex
 
 	{
@@ -39,7 +40,7 @@ cat > input.txt
 			echo "$idx: FAIL" >> output.txt
 		fi
 	done < input.txt
-} > logfile.txt 2>&1
+) > logfile.txt 2>&1
 
 cat output.txt
 

@@ -139,7 +139,7 @@ def update_mutation(db, mid):
         code = "def __logic__():\n  " + "\n  ".join(cfg.logic) + "\n__logic__()\n"
         exec(code, gdict)
     except ResultNotReadyException as ex:
-        db.execute("INSERT INTO queue (mutation_id, test) VALUES (?, ?);", [mid, ex.tst])
+        db.execute("INSERT INTO queue (mutation_id, test, running) VALUES (?, ?, 0);", [mid, ex.tst])
 
     db.commit()
 
@@ -247,7 +247,8 @@ if sys.argv[1] == "init":
 
         CREATE TABLE queue (
             mutation_id INTEGER,
-            test STRING
+            test STRING,
+            running BOOL
         );
     """)
 
@@ -272,8 +273,8 @@ if sys.argv[1] in ("init", "update", "status"):
     for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
         print("Tagged %d mutations as \"%s\"." % (cnt, tag))
 
-    for tst, cnt in db.execute("SELECT test, COUNT(*) FROM queue GROUP BY test"):
-        print("Queued %d tasks for test \"%s\"." % (cnt, tst))
+    for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
+        print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
 
     exit(0)
 
@@ -314,8 +315,11 @@ if sys.argv[1] == "list":
             found_tags = True
         if not found_tags:
             print(" no-tags", end="")
-        for tst, in db.execute("SELECT test FROM queue WHERE mutation_id = ?", [mid]):
-            print(" (%s)" % tst, end="")
+        for tst, rn in db.execute("SELECT test, running FROM queue WHERE mutation_id = ?", [mid]):
+            if rn:
+                print(" [%s]" % tst, end="")
+            else:
+                print(" (%s)" % tst, end="")
         print()
 
         if opt_details:
@@ -331,7 +335,7 @@ if sys.argv[1] == "list":
 
 def run_task(db, whitelist):
     # Find test for next task
-    entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
+    entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
     if entry is None:
         return False
     tst, _ = entry
@@ -339,11 +343,11 @@ def run_task(db, whitelist):
     tst_args = tst.lstrip()[len(t)+1:]
 
     # Find mutations for next task
-    mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
+    mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE running = 0 AND test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
 
     # Remove mutations from DB (if anything fails after this, "mcy update" is needed to re-create the queue entries)
     for mut in mut_list:
-        db.execute("DELETE FROM queue WHERE mutation_id = ? AND test = ?", [mut, tst])
+        db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
     db.commit()
 
     task_id = str(uuid.uuid4())
