@@ -15,34 +15,37 @@ read_verilog verilog/picorv32.v
 prep -top picorv32
 
 [logic]
-if result("sim_simple", ("PASS", "FAIL")) != "PASS":
+if result("sim_simple") == "FAIL":
     tag("COVERED")
     return
 
-if result("eq_sim3 10", ("PASS", "TIMEOUT")) != "PASS":
+if result("eq_sim3 10") == "FAIL":
     tag("UNCOVERED")
     return
 
-if result("eq_bmc", ("PASS", "FAIL")) != "PASS":
+if result("eq_bmc") == "FAIL":
     tag("UNCOVERED")
     return
 
-if result("eq_sim3 500", ("PASS", "TIMEOUT")) != "PASS":
+if result("eq_sim3 500") == "FAIL":
     tag("UNCOVERED")
     return
 
 tag("NOC")
 
 [test sim_simple]
-maxbatchsize 1
+maxbatchsize 10
+expect PASS FAIL
 run bash scripts/sim_simple.sh
 
 [test eq_bmc]
-maxbatchsize 1
+maxbatchsize 10
+expect PASS FAIL
 run bash scripts/eq_bmc.sh
 
 [test eq_sim3]
-maxbatchsize 1
+maxbatchsize 10
+expect TIMEOUT FAIL
 run bash scripts/eq_sim3.sh
 ```
 
@@ -72,9 +75,8 @@ run the individual tests. The following special functions are available:
 
 `tag(tagname)`: Mark the current mutation with the specified tag
 
-`result(test_with_args, [expected_results])`: Run the specified test and return the
-result (or use a cached result if the test had been run previously). Also, trigger a
-runtime error if the result returned by the test is not in `expected_results`.
+`result(test_with_args)`: Run the specified test and return the
+result, or use a cached result if the test had been run previously.
 
 `rng(N)`: Return a deterministic pseudo-random integer in the range 0..N-1.
 
@@ -84,12 +86,12 @@ Each test has its own configuration file section, `[test testname]`.
 
 If `maxbatchsize` is set to a value > 1 then `mcy` will automatically create
 batches of up to the specified number of mutations, and then pass them all
-to a single invocation of the test.
+to a single invocation of the test. (The default `maxbatchsize` value is `1`.)
 
 Running the test means running the command specified with `run`, with any
 additional arguments to the test appended to the command.
 
-This command is then given an input, formatted as following:
+The command is then given an input, formatted as following:
 
 ```
 <id_1>: <mutation_1>
@@ -108,6 +110,9 @@ And it will procude an output, formatted as following:
 ```
 
 (The order of the lines does not matter.)
+
+A test with `expect` setting will cause a runtime error if the test returns
+anything else than one of the expected values.
 
 ## Database Schema
 

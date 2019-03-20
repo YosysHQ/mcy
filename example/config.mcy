@@ -1,0 +1,40 @@
+[options]
+size 100
+
+[script]
+read_verilog picorv32.v
+prep -top picorv32
+
+[logic]
+if result("sim_simple") == "FAIL":
+    tag("COVERED")
+    return
+
+if result("eq_sim3 10") == "FAIL":
+    tag("UNCOVERED")
+    return
+
+if result("eq_bmc") == "FAIL":
+    tag("UNCOVERED")
+    return
+
+if result("eq_sim3 500") == "FAIL":
+    tag("UNCOVERED")
+    return
+
+tag("NOC")
+
+[test sim_simple]
+maxbatchsize 10
+expect PASS FAIL
+run bash sim_simple.sh
+
+[test eq_bmc]
+maxbatchsize 10
+expect PASS FAIL
+run bash eq_bmc.sh
+
+[test eq_sim3]
+maxbatchsize 10
+expect TIMEOUT FAIL
+run bash eq_sim3.sh
