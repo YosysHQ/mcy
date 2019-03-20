@@ -26,7 +26,7 @@ cat > input.txt
 	while read idx mut; do
 		idx=${idx%:}
 		sby -f eq_sim3.sby ${idx}
-		gawk "{ print $idx, \$1; }" eq_sim3_${idx}/status >> output.txt
+		gawk "{ print $idx \":\", \$1; }" eq_sim3_${idx}/status >> output.txt
 	done < input.txt
 ) > logfile.txt 2>&1
 

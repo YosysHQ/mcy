@@ -16,10 +16,10 @@ def usage():
     print()
     print("Usage:")
     print("  mcy init")
-    print("  mcy update")
+    print("  mcy reset")
     print("  mcy status")
     print("  mcy list [--details] [id..]")
-    print("  mcy run [-jN] [--update] [id..]")
+    print("  mcy run [-jN] [--reset] [id..]")
     print("  mcy dash")
     print("  mcy gui")
     print()
@@ -260,7 +260,7 @@ if sys.argv[1] == "init":
     db.close()
 
 
-if sys.argv[1] in ("init", "update", "status"):
+if sys.argv[1] in ("init", "reset", "status"):
     db = sqlite3.connect("database/db.sqlite3")
 
     if sys.argv[1] != "status":
@@ -345,7 +345,7 @@ def run_task(db, whitelist):
     # Find mutations for next task
     mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE running = 0 AND test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
 
-    # Remove mutations from DB (if anything fails after this, "mcy update" is needed to re-create the queue entries)
+    # Remove mutations from DB (if anything fails after this, "mcy reset" is needed to re-create the queue entries)
     for mut in mut_list:
         db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
     db.commit()
@@ -384,10 +384,10 @@ def run_task(db, whitelist):
 
 if sys.argv[1] == "run":
     opt_jobs = 1
-    opt_update = False
+    opt_reset = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "j:", ["update"])
+        opts, args = getopt.getopt(sys.argv[2:], "j:", ["reset"])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -395,8 +395,8 @@ if sys.argv[1] == "run":
     for o, a in opts:
         if o == "-j":
             opt_jobs = int(a)
-        elif o == "--update":
-            opt_update = True
+        elif o == "--reset":
+            opt_reset = True
 
     db = sqlite3.connect("database/db.sqlite3")
     whitelist = "1"
@@ -409,7 +409,7 @@ if sys.argv[1] == "run":
             whitelist += "mutation_id = %d" % int(a)
         whitelist += ")"
 
-    if opt_update:
+    if opt_reset:
         for mid, in db.execute("SELECT mutation_id FROM mutations WHERE " + whitelist + ";"):
             update_mutation(db, mid)
 
