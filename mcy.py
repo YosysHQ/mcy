@@ -174,7 +174,7 @@ class Task:
         if self.taskidx in taskdb:
             del taskdb[self.taskidx]
         if rc != 0:
-            print("Command '%s' returned non-zero return code %d." % rc)
+            print("Command '%s' returned non-zero return code %d." % (self.command, rc))
             exit(1)
         if self.callback is not None:
             self.callback()
@@ -319,7 +319,7 @@ if sys.argv[1] == "list":
         if opt_details:
             print("  %s" % mut)
             for tst, res in db.execute("SELECT test, result FROM results WHERE mutation_id = ?", [mid]):
-                print(" result from \"%s\": %s" % (tst, res))
+                print("  result from \"%s\": %s" % (tst, res))
             print()
 
     exit(0)
@@ -350,8 +350,8 @@ def run_task(db, whitelist):
     with open("database/task_%s.in" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             mut_str, = db.execute("SELECT mutation FROM mutations WHERE id = ?", [mut]).fetchone()
-            print("  %d (%d): %s" % (idx, mut, mut_str))
-            print("%d: %s" % (idx, mut_str), file=f)
+            print("  %d (%d): %s" % (idx+1, mut, mut_str))
+            print("%d: %s" % (idx+1, mut_str), file=f)
 
     def callback():
         print("task %s finished." % task_id)
@@ -360,7 +360,7 @@ def run_task(db, whitelist):
                 line = line.split()
                 assert len(line) == 2
                 assert line[0].endswith(":")
-                mut = mut_list[int(line[0][:-1])]
+                mut = mut_list[int(line[0][:-1])-1]
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     assert res in cfg.tests[t].expect
