@@ -32,7 +32,7 @@ expect PASS FAIL
 run bash sim_simple.sh
 
 [test eq_bmc]
-expect PASS FAIL
+expect TIMEOUT PASS FAIL
 run bash eq_bmc.sh
 
 [test eq_sim3]
