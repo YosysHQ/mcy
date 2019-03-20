@@ -17,8 +17,9 @@ def usage():
     print("Usage:")
     print("  mcy init")
     print("  mcy update")
+    print("  mcy status")
     print("  mcy list [--details] [id..]")
-    print("  mcy run [-jN] [id..]")
+    print("  mcy run [-jN] [--update] [id..]")
     print("  mcy dash")
     print("  mcy gui")
     print()
@@ -229,7 +230,7 @@ if sys.argv[1] == "init":
     db = sqlite3.connect("database/db.sqlite3")
     db.executescript("""
         CREATE TABLE mutations (
-            id INTEGER PRIMARY KEY,
+            mutation_id INTEGER PRIMARY KEY,
             mutation STRING
         );
 
@@ -258,11 +259,12 @@ if sys.argv[1] == "init":
     db.close()
 
 
-if sys.argv[1] in ("init", "update"):
+if sys.argv[1] in ("init", "update", "status"):
     db = sqlite3.connect("database/db.sqlite3")
 
-    for mid, in db.execute("SELECT id FROM mutations;"):
-        update_mutation(db, mid)
+    if sys.argv[1] != "status":
+        for mid, in db.execute("SELECT mutation_id FROM mutations;"):
+            update_mutation(db, mid)
 
     for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
         print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
@@ -302,7 +304,7 @@ if sys.argv[1] == "list":
     if opt_details:
         print()
 
-    for mid, mut in db.execute("SELECT id, mutation FROM mutations;"):
+    for mid, mut in db.execute("SELECT mutation_id, mutation FROM mutations;"):
         if whitelist is not None and mid not in whitelist:
             continue
         print("%d:" % mid, end="")
@@ -349,7 +351,7 @@ def run_task(db, whitelist):
 
     with open("database/task_%s.in" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
-            mut_str, = db.execute("SELECT mutation FROM mutations WHERE id = ?", [mut]).fetchone()
+            mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
             print("  %d (%d): %s" % (idx+1, mut, mut_str))
             print("%d: %s" % (idx+1, mut_str), file=f)
 
@@ -378,9 +380,10 @@ def run_task(db, whitelist):
 
 if sys.argv[1] == "run":
     opt_jobs = 1
+    opt_update = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "j:", [])
+        opts, args = getopt.getopt(sys.argv[2:], "j:", ["update"])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -388,6 +391,8 @@ if sys.argv[1] == "run":
     for o, a in opts:
         if o == "-j":
             opt_jobs = int(a)
+        elif o == "--update":
+            opt_update = True
 
     db = sqlite3.connect("database/db.sqlite3")
     whitelist = "1"
@@ -399,6 +404,10 @@ if sys.argv[1] == "run":
                 whitelist += " OR "
             whitelist += "mutation_id = %d" % int(a)
         whitelist += ")"
+
+    if opt_update:
+        for mid, in db.execute("SELECT mutation_id FROM mutations WHERE " + whitelist + ";"):
+            update_mutation(db, mid)
 
     while run_task(db, whitelist) or len(taskdb):
         wait_tasks(opt_jobs)

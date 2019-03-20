@@ -57,6 +57,9 @@ This will create a `database/` directory, run the Yosys script and create
 Running `mcy update` will re-run the `[logic]` section for all mutations and output
 some statistics.
 
+Running `mcy status` will only output the statistics from `mcy update` but will
+not make any changes to the database.
+
 Running `mcy list` will list all mutations and their current tags.
 
 Running `mcy list --details` will print more details for each mutation.
