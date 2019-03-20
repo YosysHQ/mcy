@@ -16,11 +16,11 @@ cat > input.txt
 			idx=${idx%:}
 			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 		done < input.txt
-		echo "write_verilog -attr2comment mutate.v"
+		echo "write_verilog -attr2comment mutated.v"
 	} > mutate.ys
 
 	yosys -ql mutate.log mutate.ys
-	iverilog -o sim ../sim_simple.v mutate.v
+	iverilog -o sim ../sim_simple.v mutated.v
 
 	if $option_run_unmodified; then
 		vvp -N sim +mut=0 > sim_unmodified.out
