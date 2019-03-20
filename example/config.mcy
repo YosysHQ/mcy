@@ -32,11 +32,9 @@ expect PASS FAIL
 run bash sim_simple.sh
 
 [test eq_bmc]
-maxbatchsize 1
 expect PASS FAIL
 run bash eq_bmc.sh
 
 [test eq_sim3]
-maxbatchsize 1
 expect TIMEOUT FAIL
 run bash eq_sim3.sh
