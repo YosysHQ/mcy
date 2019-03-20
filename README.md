@@ -52,8 +52,10 @@ run bash scripts/eq_sim3.sh
 Create the referenced files and run `mcy init`.
 
 This will create a `database/` directory, run the Yosys script and create
-`database/design.il`, create 100 mutations and store them in `database/db.sqlite3`.
+`database/design.il`, create `size` mutations and store them in `database/db.sqlite3`.
 
+Running `mcy update` will re-run the `[logic]` section for all mutations and output
+some statistics.
 
 Running `mcy list` will list all mutations and their current tags.
 
@@ -113,28 +115,3 @@ And it will procude an output, formatted as following:
 
 A test with `expect` setting will cause a runtime error if the test returns
 anything else than one of the expected values.
-
-## Database Schema
-
-```
-CREATE TABLE mutations (
-  id INTEGER PRIMARY KEY,
-  mutation STRING.
-);
-
-CREATE TABLE results (
-  mutation_id INTEGER,
-  test STRING,
-  result STRING
-);
-
-CREATE TABLE tags (
-  mutation_id INTEGER,
-  tag STRING
-);
-
-CREATE TABLE queue (
-  mutation_id INTEGER,
-  test STRING
-);
-```

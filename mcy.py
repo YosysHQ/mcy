@@ -19,6 +19,7 @@ def usage():
     print("  mcy update")
     print("  mcy list [--details] [id..]")
     print("  mcy run [-jN] [id..]")
+    print("  mcy dash")
     print("  mcy gui")
     print()
     exit(1)
@@ -407,5 +408,13 @@ if sys.argv[1] == "run":
 
 
 ######################################################
+
+if sys.argv[1] == "dash":
+    print("'mcy dash' is not implemented yet.")
+    exit(1)
+
+if sys.argv[1] == "gui":
+    print("'mcy gui' is not implemented yet.")
+    exit(1)
 
 usage()
