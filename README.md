@@ -76,7 +76,7 @@ run the individual tests. The following special functions are available:
 result (or use a cached result if the test had been run previously). Also, trigger a
 runtime error if the result returned by the test is not in `expected_results`.
 
-`rng(N)` return a deterministic pseudo-random integer in the range 0..N-1.
+`rng(N)`: Return a deterministic pseudo-random integer in the range 0..N-1.
 
 ## Tests
 
