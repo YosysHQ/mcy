@@ -2,7 +2,7 @@
 mode bmc
 depth 50
 expect timeout,fail
-timeout 600
+timeout @TIMEOUT@
 aigsmt none
 
 [engines]

@@ -12,7 +12,7 @@ if result("sim_simple") == "FAIL":
     tag("COVERED")
     return
 
-if result("eq_sim3 10") == "FAIL":
+if result("eq_sim3 20") == "FAIL":
     tag("UNCOVERED")
     return
 
@@ -20,7 +20,7 @@ if result("eq_bmc") == "FAIL":
     tag("UNCOVERED")
     return
 
-if result("eq_sim3 500") == "FAIL":
+if result("eq_sim3 600") == "FAIL":
     tag("UNCOVERED")
     return
 
@@ -32,11 +32,11 @@ expect PASS FAIL
 run bash sim_simple.sh
 
 [test eq_bmc]
-maxbatchsize 10
+maxbatchsize 1
 expect PASS FAIL
 run bash eq_bmc.sh
 
 [test eq_sim3]
-maxbatchsize 10
+maxbatchsize 1
 expect TIMEOUT FAIL
 run bash eq_sim3.sh

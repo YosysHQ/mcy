@@ -21,6 +21,7 @@ cat > input.txt
 
 	yosys -ql mutate.log mutate.ys
 	cp ../miter.sv ../eq_sim3.sby .
+	sed -i "s/@TIMEOUT@/$1/" eq_sim3.sby
 
 	while read idx mut; do
 		idx=${idx%:}
