@@ -416,7 +416,7 @@ def run_task(db, whitelist):
             print("%d: %s" % (idx+1, mut_str), file=f)
 
     def callback():
-        print("task %s finished." % task_id)
+        print("task %s (%s) finished." % (task_id, tst))
         with open("database/task_%s.out" % task_id, "r") as f:
             for line in f:
                 line = line.split()
