@@ -519,16 +519,13 @@ if sys.argv[1] == "source":
             src = "%s:%d" % (filename, linenr)
 
             if src in covercache:
-                covered = covercache[src].covered
-                uncovered = covercache[src].uncovered
+                if covercache[src].uncovered:
+                    print("!%4d|\t" % -covercache[src].uncovered, end="")
+                else:
+                    print("%5d|\t" % covercache[src].covered, end="")
             else:
-                covered = 0
-                uncovered = 0
+                print("     |\t", end="")
 
-            if uncovered:
-                print("!!!!!\t", end="")
-            else:
-                print("%5d\t" % covered, end="")
             print(line, end="")
 
     exit(1)
