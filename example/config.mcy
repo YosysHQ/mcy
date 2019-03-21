@@ -1,5 +1,5 @@
 [options]
-size 100
+size 500
 tags COVERED UNCOVERED PROBE GAP NOC
 
 [script]
@@ -13,14 +13,13 @@ if result("sim_simple") == "FAIL":
     tag("COVERED")
     if rng(100) < 20:
         tag("PROBE")
-        t1 = result("eq_sim3 20") == "FAIL"
-        t2 = result("eq_bmc") == "FAIL"
-        t3 = result("eq_sim3 600") == "FAIL"
-        if not t1 and not t2 and not t3:
+        t1 = result("eq_bmc") == "FAIL"
+        t2 = result("eq_sim3 600") == "FAIL"
+        if not t1 and not t2:
             tag("GAP")
     return
 
-if result("eq_sim3 20") == "FAIL":
+if result("eq_sim3 60") == "FAIL":
     tag("UNCOVERED")
     return
 
