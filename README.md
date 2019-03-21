@@ -49,6 +49,9 @@ if result("eq_sim3 500") == "FAIL":
 
 tag("NOC")
 
+[report]
+print("Coverage: %.2f%%" % (100.0*tags("COVERED")/tags("!NOC")))
+
 [test sim_simple]
 maxbatchsize 10
 expect PASS FAIL
@@ -91,7 +94,7 @@ the database.
 
 ### Logic
 
-The `[logic]` section contains a python function that defines how `mcy` should
+The `[logic]` section contains python code that defines how `mcy` should
 run the individual tests. The following special functions are available:
 
 `tag(tagname)`: Mark the current mutation with the specified tag
@@ -100,6 +103,19 @@ run the individual tests. The following special functions are available:
 result, or use a cached result if the test had been run previously.
 
 `rng(N)`: Return a deterministic pseudo-random integer in the range 0..N-1.
+
+### Report
+
+The `[report]` section contains python code for printing a report based
+on the data collect via the tagging mechanism described above.
+
+`tags()` returns the total number of mutations that have any tag assigned
+to them.
+
+`tags("FOO")` returns the number of mutations that have the tag `FOO` assigned.
+
+`tags("!FOO")` returns the number of mutations that have at least one tag
+assigned, but not the `FOO` tag.
 
 ### Tests
 

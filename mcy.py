@@ -34,8 +34,10 @@ if not os.path.exists("config.mcy"):
 
 cfg = SimpleNamespace()
 cfg.opt_size = 20
+cfg.opt_tags = None
 cfg.script = list()
 cfg.logic = list()
+cfg.report = list()
 cfg.tests = dict()
 
 with open("config.mcy", "r") as f:
@@ -48,7 +50,7 @@ with open("config.mcy", "r") as f:
         match = re.match(r"^\[(.*)\]\s*$", line)
         if match:
             entries = match.group(1).split()
-            if len(entries) == 1 and entries[0] in ("options", "script", "logic"):
+            if len(entries) == 1 and entries[0] in ("options", "script", "logic", "report"):
                 section, sectionarg = entries[0], None
                 continue
             if len(entries) == 2 and entries[0] == "test":
@@ -67,6 +69,9 @@ with open("config.mcy", "r") as f:
             if len(entries) == 2 and entries[0] == "size":
                 cfg.opt_size = int(entries[1])
                 continue
+            if len(entries) > 1 and entries[0] == "tags":
+                cfg.opt_tags = set(entries[1:])
+                continue
 
         if section == "script":
             cfg.script.append(line.rstrip())
@@ -74,6 +79,10 @@ with open("config.mcy", "r") as f:
 
         if section == "logic":
             cfg.logic.append(line.rstrip())
+            continue
+
+        if section == "report":
+            cfg.report.append(line.rstrip())
             continue
 
         if section == "test":
@@ -123,6 +132,8 @@ def update_mutation(db, mid):
         raise ResultNotReadyException(tst)
 
     def env_tag(tag):
+        if cfg.opt_tags is not None:
+            assert tag in cfg.opt_tags
         db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?);", [mid, tag])
 
     def env_rng(n):
@@ -142,6 +153,46 @@ def update_mutation(db, mid):
         db.execute("INSERT INTO queue (mutation_id, test, running) VALUES (?, ?, 0);", [mid, ex.tst])
 
     db.commit()
+
+def reset_status(db, do_reset=False):
+    if do_reset:
+        for mid, in db.execute("SELECT mutation_id FROM mutations;"):
+            update_mutation(db, mid)
+
+    for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
+        print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
+
+    for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
+        print("Tagged %d mutations as \"%s\"." % (cnt, tag))
+
+    for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
+        if rn > 0:
+            print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
+        else:
+            print("Queued %d tasks for test \"%s\"." % (cnt, tst))
+
+def print_report(db):
+    def env_tags(tag=None):
+        if tag is None:
+            cnt, = db.execute("select count(*) from (select 1 from tags group by mutation_id);").fetchone()
+            return cnt
+
+        invert = False
+        if tag.startswith("!"):
+            invert = True
+            tag = tag[1:]
+
+        cnt, = db.execute("SELECT count(*) FROM tags WHERE tag = ?", [tag]).fetchone()
+
+        if invert:
+            return env_tags() - cnt
+        return cnt
+
+    gdict = globals().copy()
+    gdict["tags"] = env_tags
+
+    code = "def __report__():\n  " + "\n  ".join(cfg.report) + "\n__report__()\n"
+    exec(code, gdict)
 
 
 ######################################################
@@ -255,27 +306,17 @@ if sys.argv[1] == "init":
     with open("database/mutations.txt", "r") as f:
         for line in f:
             db.execute("INSERT INTO mutations (mutation) VALUES (?);", [line.rstrip()])
-
     db.commit()
-    db.close()
+
+    reset_status(db, True)
+
+    exit(0)
 
 
-if sys.argv[1] in ("init", "reset", "status"):
+if sys.argv[1] in ("reset", "status"):
     db = sqlite3.connect("database/db.sqlite3")
-
-    if sys.argv[1] != "status":
-        for mid, in db.execute("SELECT mutation_id FROM mutations;"):
-            update_mutation(db, mid)
-
-    for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
-        print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
-
-    for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
-        print("Tagged %d mutations as \"%s\"." % (cnt, tag))
-
-    for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
-        print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
-
+    reset_status(db, sys.argv[1] == "reset")
+    print_report(db)
     exit(0)
 
 
@@ -412,13 +453,14 @@ if sys.argv[1] == "run":
         whitelist += ")"
 
     if opt_reset:
-        for mid, in db.execute("SELECT mutation_id FROM mutations WHERE " + whitelist + ";"):
-            update_mutation(db, mid)
+        reset_status(db, True)
 
     while run_task(db, whitelist) or len(taskdb):
         wait_tasks(opt_jobs)
 
     wait_tasks(1)
+    reset_status(db)
+    print_report(db)
     exit(0)
 
 

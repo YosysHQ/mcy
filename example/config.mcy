@@ -1,5 +1,6 @@
 [options]
 size 100
+tags COVERED UNCOVERED PROBE GAP NOC
 
 [script]
 read_verilog picorv32.v
@@ -32,6 +33,11 @@ if result("eq_sim3 600") == "FAIL":
     return
 
 tag("NOC")
+
+[report]
+print("Coverage: %.2f%%" % (100.0*tags("COVERED")/tags("!NOC")))
+print("Noc percentage: %.2f%%" % (100.0*tags("NOC")/tags()))
+print("Gap percentage: %.2f%%" % (100.0*tags("GAP")/tags("PROBE")))
 
 [test sim_simple]
 maxbatchsize 10
