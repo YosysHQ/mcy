@@ -50,7 +50,8 @@ if result("eq_sim3 500") == "FAIL":
 tag("NOC")
 
 [report]
-print("Coverage: %.2f%%" % (100.0*tags("COVERED")/tags("!NOC")))
+if tags("!NOC"):
+    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/tags("!NOC")))
 
 [test sim_simple]
 maxbatchsize 10
