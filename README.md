@@ -87,8 +87,11 @@ Running `mcy list --details` will print more details for each mutation.
 Running `mcy run -j8` will run the mutation cover analysis, with a maximum
 of 8 concurently running jobs.
 
-Running `mcy source` prints the original HDL source, annotated with coverage
-information. (This is hardcoded to use the tags `COVERED` and `UNCOVERED`.)
+Running `mcy source <filename>` prints the original HDL source, annotated with
+coverage information. (This is hardcoded to use the tags `COVERED` and
+`UNCOVERED`.) If the filename on the file system is different from the file
+name in the designs `src` attributes, then `mcy source <attr_filename> <fs_filename>`
+must be called insted.
 
 Running `mcy dash` launches a web-based dashboard that can be used to launch
 jobs and monitor progress.

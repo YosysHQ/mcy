@@ -20,7 +20,7 @@ def usage():
     print("  mcy status")
     print("  mcy list [--details] [id..]")
     print("  mcy run [-jN] [--reset] [id..]")
-    print("  mcy source")
+    print("  mcy source <filename> [<filename>]")
     print("  mcy dash")
     print("  mcy gui")
     print()
@@ -160,13 +160,13 @@ def reset_status(db, do_reset=False):
         for mid, in db.execute("SELECT mutation_id FROM mutations;"):
             update_mutation(db, mid)
 
-    for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
+    for tst, res, cnt in db.execute("SELECT test, result, count(*) FROM results GROUP BY test, result"):
         print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
 
-    for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
+    for tag, cnt in db.execute("SELECT tag, count(*) FROM tags GROUP BY tag"):
         print("Tagged %d mutations as \"%s\"." % (cnt, tag))
 
-    for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
+    for tst, cnt, rn in db.execute("SELECT test, count(*), SUM(running) FROM queue GROUP BY test"):
         if rn > 0:
             print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
         else:
@@ -175,7 +175,7 @@ def reset_status(db, do_reset=False):
 def print_report(db):
     def env_tags(tag=None):
         if tag is None:
-            cnt, = db.execute("select count(*) from (select 1 from tags group by mutation_id);").fetchone()
+            cnt, = db.execute("SELECT count(DISTINCT mutation_id) FROM tags;").fetchone()
             return cnt
 
         invert = False
@@ -482,7 +482,55 @@ if sys.argv[1] == "run":
 ######################################################
 
 if sys.argv[1] == "source":
-    print("'mcy source' is not implemented yet.")
+    try:
+        opts, args = getopt.getopt(sys.argv[2:], "", [])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+
+    for o, a in opts:
+        assert False
+
+    if len(args) == 1:
+        filename = args[0]
+        read_filename = filename
+    elif len(args) == 2:
+        filename = args[0]
+        read_filename = args[1]
+    else:
+        usage()
+
+    db = sqlite3.connect("database/db.sqlite3")
+
+    covercache = dict()
+
+    for mid, src in db.execute("SELECT DISTINCT mutation_id, opt_value FROM options WHERE opt_type = \"src\" AND opt_value LIKE ?;", [filename + ":%"]):
+        covered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"COVERED\";", [mid]).fetchone()
+        uncovered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"UNCOVERED\";", [mid]).fetchone()
+        if src not in covercache:
+            covercache[src] = SimpleNamespace(covered=0, uncovered=0)
+        covercache[src].covered += covered
+        covercache[src].uncovered += uncovered
+
+    with open(read_filename, "r") as f:
+        linenr = 0
+        for line in f:
+            linenr += 1
+            src = "%s:%d" % (filename, linenr)
+
+            if src in covercache:
+                covered = covercache[src].covered
+                uncovered = covercache[src].uncovered
+            else:
+                covered = 0
+                uncovered = 0
+
+            if uncovered:
+                print("!!!!!\t", end="")
+            else:
+                print("%5d\t" % covered, end="")
+            print(line, end="")
+
     exit(1)
 
 
