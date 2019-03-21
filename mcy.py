@@ -20,6 +20,7 @@ def usage():
     print("  mcy status")
     print("  mcy list [--details] [id..]")
     print("  mcy run [-jN] [--reset] [id..]")
+    print("  mcy source")
     print("  mcy dash")
     print("  mcy gui")
     print()
@@ -285,6 +286,12 @@ if sys.argv[1] == "init":
             mutation STRING
         );
 
+        CREATE TABLE options (
+            mutation_id INTEGER,
+            opt_type STRING,
+            opt_value STRING
+        );
+
         CREATE TABLE results (
             mutation_id INTEGER,
             test STRING,
@@ -305,7 +312,15 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.txt", "r") as f:
         for line in f:
-            db.execute("INSERT INTO mutations (mutation) VALUES (?);", [line.rstrip()])
+            mid = db.execute("INSERT INTO mutations (mutation) VALUES (?);", [line.rstrip()]).lastrowid
+            optarray = line.split()
+            skip_next = False
+            for i in range(len(optarray)-1):
+                if skip_next:
+                    skip_next = False
+                elif optarray[i].startswith("-"):
+                    db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?);", [mid, optarray[i][1:], optarray[i+1]])
+                    skip_next = True
     db.commit()
 
     reset_status(db, True)
@@ -462,6 +477,13 @@ if sys.argv[1] == "run":
     reset_status(db)
     print_report(db)
     exit(0)
+
+
+######################################################
+
+if sys.argv[1] == "source":
+    print("'mcy source' is not implemented yet.")
+    exit(1)
 
 
 ######################################################
