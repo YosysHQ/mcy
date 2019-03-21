@@ -1,6 +1,6 @@
 #!/bin/bash
 
-option_cleanup_workdir=false
+option_cleanup_workdir=true
 
 set -e
 mkdir "task_$TASK"

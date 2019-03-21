@@ -10,6 +10,13 @@ prep -top picorv32
 [logic]
 if result("sim_simple") == "FAIL":
     tag("COVERED")
+    if rng(100) < 20:
+        tag("PROBE")
+        t1 = result("eq_sim3 20") == "FAIL"
+        t2 = result("eq_bmc") == "FAIL"
+        t3 = result("eq_sim3 600") == "FAIL"
+        if not t1 and not t2 and not t3:
+            tag("GAP")
     return
 
 if result("eq_sim3 20") == "FAIL":

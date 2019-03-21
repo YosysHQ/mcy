@@ -356,7 +356,7 @@ def run_task(db, whitelist):
     with open("database/task_%s.in" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
-            print("  %d (%d): %s" % (idx+1, mut, mut_str))
+            print("  %d %d %s" % (idx+1, mut, mut_str))
             print("%d: %s" % (idx+1, mut_str), file=f)
 
     def callback():
@@ -366,11 +366,13 @@ def run_task(db, whitelist):
                 line = line.split()
                 assert len(line) == 2
                 assert line[0].endswith(":")
-                mut = mut_list[int(line[0][:-1])-1]
+                idx = int(line[0][:-1])-1
+                mut = mut_list[idx]
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     assert res in cfg.tests[t].expect
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?);", [mut, tst, res])
+                print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
         db.commit()
         os.remove("database/task_%s.in" % task_id)
         os.remove("database/task_%s.out" % task_id)
