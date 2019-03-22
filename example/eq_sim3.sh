@@ -3,15 +3,15 @@
 option_cleanup_workdir=true
 
 set -e
-mkdir "task_$TASK"
-cd "task_$TASK"
+mkdir "tempdir/task_$TASK"
+cd "tempdir/task_$TASK"
 cat > input.txt
 
 (
 	set -ex
 
 	{
-		echo "read_ilang ../database/design.il"
+		echo "read_ilang ../../database/design.il"
 		while read idx mut; do
 			idx=${idx%:}
 			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
@@ -20,7 +20,7 @@ cat > input.txt
 	} > mutate.ys
 
 	yosys -ql mutate.log mutate.ys
-	cp ../miter.sv ../eq_sim3.sby .
+	cp ../../miter.sv ../../eq_sim3.sby .
 	sed -i "s/@TIMEOUT@/$1/" eq_sim3.sby
 
 	while read idx mut; do

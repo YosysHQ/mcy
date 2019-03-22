@@ -409,7 +409,9 @@ def run_task(db, whitelist):
     task_id = str(uuid.uuid4())
     print("task %s (%s)" % (task_id, tst))
 
-    with open("database/task_%s.in" % task_id, "w") as f:
+    os.makedirs("tempdir", exist_ok=True)
+
+    with open("tempdir/task_%s.in" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
             print("  %d %d %s" % (idx+1, mut, mut_str))
@@ -417,7 +419,7 @@ def run_task(db, whitelist):
 
     def callback():
         print("task %s (%s) finished." % (task_id, tst))
-        with open("database/task_%s.out" % task_id, "r") as f:
+        with open("tempdir/task_%s.out" % task_id, "r") as f:
             for line in f:
                 line = line.split()
                 assert len(line) == 2
@@ -430,13 +432,13 @@ def run_task(db, whitelist):
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?);", [mut, tst, res])
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
         db.commit()
-        os.remove("database/task_%s.in" % task_id)
-        os.remove("database/task_%s.out" % task_id)
+        os.remove("tempdir/task_%s.in" % task_id)
+        os.remove("tempdir/task_%s.out" % task_id)
         for mut in mut_list:
             update_mutation(db, mut)
 
     command = "TASK=%s %s %s" % (task_id, cfg.tests[t].run, tst_args)
-    task = Task(command, callback, "database/task_%s.in" % task_id, "database/task_%s.out" % task_id)
+    task = Task(command, callback, "tempdir/task_%s.in" % task_id, "tempdir/task_%s.out" % task_id)
 
     return True
 

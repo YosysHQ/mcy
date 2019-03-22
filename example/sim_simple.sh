@@ -4,15 +4,15 @@ option_run_unmodified=false
 option_cleanup_workdir=true
 
 set -e
-mkdir "task_$TASK"
-cd "task_$TASK"
+mkdir "tempdir/task_$TASK"
+cd "tempdir/task_$TASK"
 cat > input.txt
 
 (
 	set -ex
 
 	{
-		echo "read_ilang ../database/design.il"
+		echo "read_ilang ../../database/design.il"
 		while read idx mut; do
 			idx=${idx%:}
 			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
@@ -21,7 +21,7 @@ cat > input.txt
 	} > mutate.ys
 
 	yosys -ql mutate.log mutate.ys
-	iverilog -o sim ../sim_simple.v mutated.v
+	iverilog -o sim ../../sim_simple.v mutated.v
 
 	if $option_run_unmodified; then
 		vvp -N sim +mut=0 > sim_unmodified.out

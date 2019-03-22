@@ -18,5 +18,5 @@ prep -top miter
 fmcombine miter ref uut
 
 [files]
-../miter.sv
+../../miter.sv
 mutated.il
