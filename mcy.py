@@ -7,12 +7,19 @@ from types import SimpleNamespace
 taskidx = 0
 taskdb = dict()
 running = set()
+dbtrace = False
+
+def sqlite3_connect():
+    db = sqlite3.connect("database/db.sqlite3")
+    if dbtrace:
+        db.set_trace_callback(print)
+    return db
 
 def exit(rc):
     for task in list(taskdb.values()):
         task.term()
     if len(running):
-        db = sqlite3.connect("database/db.sqlite3")
+        db = sqlite3_connect()
         for mut, tst in running:
             db.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
         db.commit()
@@ -30,16 +37,20 @@ signal.signal(signal.SIGTERM, force_shutdown)
 def usage():
     print()
     print("Usage:")
-    print("  mcy init")
-    print("  mcy reset")
-    print("  mcy status")
-    print("  mcy list [--details] [id..]")
-    print("  mcy run [-jN] [--reset] [id..]")
-    print("  mcy source <filename> [<filename>]")
-    print("  mcy dash")
-    print("  mcy gui")
+    print("  mcy [--trace] init")
+    print("  mcy [--trace] reset")
+    print("  mcy [--trace] status")
+    print("  mcy [--trace] list [--details] [id..]")
+    print("  mcy [--trace] run [-jN] [--reset] [id..]")
+    print("  mcy [--trace] source <filename> [<filename>]")
+    print("  mcy [--trace] dash")
+    print("  mcy [--trace] gui")
     print()
     exit(1)
+
+if len(sys.argv) > 1 and sys.argv[1] == "--trace":
+    sys.argv[1:] = sys.argv[2:]
+    dbtrace = True
 
 if len(sys.argv) < 2:
     usage()
@@ -132,8 +143,8 @@ def update_mutation(db, mid):
     rng_state = xorshift32(xorshift32(mid + 12345))
     rng_state = xorshift32(xorshift32(rng_state))
 
-    db.execute("DELETE FROM queue WHERE mutation_id = ?;", [mid])
-    db.execute("DELETE FROM tags WHERE mutation_id = ?;", [mid])
+    db.execute("DELETE FROM queue WHERE mutation_id = ?", [mid])
+    db.execute("DELETE FROM tags WHERE mutation_id = ?", [mid])
 
     class ResultNotReadyException(BaseException):
         def __init__(self, tst):
@@ -141,7 +152,7 @@ def update_mutation(db, mid):
 
     def env_result(tst):
         t = tst.split()[0]
-        for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?;", [mid, tst]):
+        for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?", [mid, tst]):
             if cfg.tests[t].expect is not None:
                 assert res in cfg.tests[t].expect
             return res
@@ -150,7 +161,7 @@ def update_mutation(db, mid):
     def env_tag(tag):
         if cfg.opt_tags is not None:
             assert tag in cfg.opt_tags
-        db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?);", [mid, tag])
+        db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?)", [mid, tag])
 
     def env_rng(n):
         nonlocal rng_state
@@ -166,13 +177,13 @@ def update_mutation(db, mid):
         code = "def __logic__():\n  " + "\n  ".join(cfg.logic) + "\n__logic__()\n"
         exec(code, gdict)
     except ResultNotReadyException as ex:
-        db.execute("INSERT INTO queue (mutation_id, test, running) VALUES (?, ?, 0);", [mid, ex.tst])
+        db.execute("INSERT INTO queue (mutation_id, test, running) VALUES (?, ?, 0)", [mid, ex.tst])
 
     db.commit()
 
 def reset_status(db, do_reset=False):
     if do_reset:
-        for mid, in db.execute("SELECT mutation_id FROM mutations;"):
+        for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
 
     for tst, res, cnt in db.execute("SELECT test, result, count(*) FROM results GROUP BY test, result"):
@@ -190,7 +201,7 @@ def reset_status(db, do_reset=False):
 def print_report(db):
     def env_tags(tag=None):
         if tag is None:
-            cnt, = db.execute("SELECT count(DISTINCT mutation_id) FROM tags;").fetchone()
+            cnt, = db.execute("SELECT count(DISTINCT mutation_id) FROM tags").fetchone()
             return cnt
 
         invert = False
@@ -294,7 +305,7 @@ if sys.argv[1] == "init":
 
     print("initializing database")
 
-    db = sqlite3.connect("database/db.sqlite3")
+    db = sqlite3_connect()
     db.executescript("""
         CREATE TABLE mutations (
             mutation_id INTEGER PRIMARY KEY,
@@ -327,14 +338,14 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.txt", "r") as f:
         for line in f:
-            mid = db.execute("INSERT INTO mutations (mutation) VALUES (?);", [line.rstrip()]).lastrowid
+            mid = db.execute("INSERT INTO mutations (mutation) VALUES (?)", [line.rstrip()]).lastrowid
             optarray = line.split()
             skip_next = False
             for i in range(len(optarray)-1):
                 if skip_next:
                     skip_next = False
                 elif optarray[i].startswith("-"):
-                    db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?);", [mid, optarray[i][1:], optarray[i+1]])
+                    db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?)", [mid, optarray[i][1:], optarray[i+1]])
                     skip_next = True
     db.commit()
 
@@ -344,7 +355,7 @@ if sys.argv[1] == "init":
 
 
 if sys.argv[1] in ("reset", "status"):
-    db = sqlite3.connect("database/db.sqlite3")
+    db = sqlite3_connect()
     reset_status(db, sys.argv[1] == "reset")
     print_report(db)
     exit(0)
@@ -365,7 +376,7 @@ if sys.argv[1] == "list":
         if o == "--details":
             opt_details = True
 
-    db = sqlite3.connect("database/db.sqlite3")
+    db = sqlite3_connect()
     whitelist = None
 
     if len(args):
@@ -376,7 +387,7 @@ if sys.argv[1] == "list":
     if opt_details:
         print()
 
-    for mid, mut in db.execute("SELECT mutation_id, mutation FROM mutations;"):
+    for mid, mut in db.execute("SELECT mutation_id, mutation FROM mutations"):
         if whitelist is not None and mid not in whitelist:
             continue
         print("%d:" % mid, end="")
@@ -406,9 +417,10 @@ if sys.argv[1] == "list":
 
 def run_task(db, whitelist):
     # Find test for next task
-    db.execute("BEGIN EXCLUSIVE;")
+    db.execute("BEGIN EXCLUSIVE")
     entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
     if entry is None:
+        db.commit()
         return False
     tst, _ = entry
     t = tst.split()[0]
@@ -448,7 +460,7 @@ def run_task(db, whitelist):
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     assert res in cfg.tests[t].expect
-                db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?);", [mut, tst, res])
+                db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, mut)
                 running.remove((mut, tst))
                 checklist.remove(mut)
@@ -478,7 +490,7 @@ if sys.argv[1] == "run":
         elif o == "--reset":
             opt_reset = True
 
-    db = sqlite3.connect("database/db.sqlite3")
+    db = sqlite3_connect()
     whitelist = "1"
 
     if len(args):
@@ -522,13 +534,13 @@ if sys.argv[1] == "source":
     else:
         usage()
 
-    db = sqlite3.connect("database/db.sqlite3")
+    db = sqlite3_connect()
 
     covercache = dict()
 
-    for mid, src in db.execute("SELECT DISTINCT mutation_id, opt_value FROM options WHERE opt_type = \"src\" AND opt_value LIKE ?;", [filename + ":%"]):
-        covered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"COVERED\";", [mid]).fetchone()
-        uncovered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"UNCOVERED\";", [mid]).fetchone()
+    for mid, src in db.execute("SELECT DISTINCT mutation_id, opt_value FROM options WHERE opt_type = \"src\" AND opt_value LIKE ?", [filename + ":%"]):
+        covered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"COVERED\"", [mid]).fetchone()
+        uncovered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"UNCOVERED\"", [mid]).fetchone()
         if src not in covercache:
             covercache[src] = SimpleNamespace(covered=0, uncovered=0)
         covercache[src].covered += covered
