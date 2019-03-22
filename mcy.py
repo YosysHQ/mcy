@@ -1,16 +1,31 @@
 #!/usr/bin/env python3
 
-import getopt, sys, os, re, time
+import getopt, sys, os, re, time, signal
 import subprocess, sqlite3, uuid
 from types import SimpleNamespace
 
 taskidx = 0
 taskdb = dict()
+running = set()
 
 def exit(rc):
     for task in list(taskdb.values()):
         task.term()
+    if len(running):
+        db = sqlite3.connect("database/db.sqlite3")
+        for mut, tst in running:
+            db.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
+        db.commit()
     sys.exit(rc)
+
+def force_shutdown(signum, frame):
+    print("MCY ---- Keyboard interrupt or external termination signal ----", flush=True)
+    exit(1)
+
+if os.name == "posix":
+    signal.signal(signal.SIGHUP, force_shutdown)
+signal.signal(signal.SIGINT, force_shutdown)
+signal.signal(signal.SIGTERM, force_shutdown)
 
 def usage():
     print()
@@ -391,6 +406,7 @@ if sys.argv[1] == "list":
 
 def run_task(db, whitelist):
     # Find test for next task
+    db.execute("BEGIN EXCLUSIVE;")
     entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
     if entry is None:
         return False
@@ -401,9 +417,10 @@ def run_task(db, whitelist):
     # Find mutations for next task
     mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE running = 0 AND test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
 
-    # Remove mutations from DB (if anything fails after this, "mcy reset" is needed to re-create the queue entries)
+    # Remove mutations from DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
     for mut in mut_list:
         db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
+        running.add((mut, tst))
     db.commit()
 
     task_id = str(uuid.uuid4())
@@ -419,6 +436,7 @@ def run_task(db, whitelist):
 
     def callback():
         print("task %s (%s) finished." % (task_id, tst))
+        checklist = set(mut_list)
         with open("tempdir/task_%s.out" % task_id, "r") as f:
             for line in f:
                 line = line.split()
@@ -426,16 +444,18 @@ def run_task(db, whitelist):
                 assert line[0].endswith(":")
                 idx = int(line[0][:-1])-1
                 mut = mut_list[idx]
+                assert mut in checklist
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     assert res in cfg.tests[t].expect
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?);", [mut, tst, res])
+                update_mutation(db, mut)
+                running.remove((mut, tst))
+                checklist.remove(mut)
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
-        db.commit()
+        assert len(checklist) == 0
         os.remove("tempdir/task_%s.in" % task_id)
         os.remove("tempdir/task_%s.out" % task_id)
-        for mut in mut_list:
-            update_mutation(db, mut)
 
     command = "TASK=%s %s %s" % (task_id, cfg.tests[t].run, tst_args)
     task = Task(command, callback, "tempdir/task_%s.in" % task_id, "tempdir/task_%s.out" % task_id)
