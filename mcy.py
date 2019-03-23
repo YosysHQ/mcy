@@ -345,7 +345,7 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
-        print("mutate -list %d%s -o database/mutations.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+        print("mutate -list %d%s -o database/mutations.txt -s database/sources.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
 
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
@@ -363,6 +363,10 @@ if sys.argv[1] == "init":
             mutation_id INTEGER,
             opt_type STRING,
             opt_value STRING
+        );
+
+        CREATE TABLE sources (
+            srctag STRING
         );
 
         CREATE TABLE results (
@@ -394,6 +398,11 @@ if sys.argv[1] == "init":
                 elif optarray[i].startswith("-"):
                     db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?)", [mid, optarray[i][1:], optarray[i+1]])
                     skip_next = True
+
+    with open("database/sources.txt", "r") as f:
+        for line in f:
+            db.execute("INSERT INTO sources (srctag) VALUES (?)", [line.strip()])
+
     db.commit()
 
     reset_status(db, True)
@@ -631,11 +640,12 @@ if sys.argv[1] == "source":
 
     covercache = dict()
 
+    for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
+        covercache[src] = SimpleNamespace(covered=0, uncovered=0)
+
     for mid, src in db.execute("SELECT DISTINCT mutation_id, opt_value FROM options WHERE opt_type = \"src\" AND opt_value LIKE ?", [filename + ":%"]):
         covered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"COVERED\"", [mid]).fetchone()
         uncovered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"UNCOVERED\"", [mid]).fetchone()
-        if src not in covercache:
-            covercache[src] = SimpleNamespace(covered=0, uncovered=0)
         covercache[src].covered += covered
         covercache[src].uncovered += uncovered
 
