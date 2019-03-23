@@ -1,5 +1,9 @@
 [options]
-size 500
+size 800
+weight_pq_s 500
+weight_pq_ms 500
+weight_cover 500
+pick_cover_prcnt 90
 tags COVERED UNCOVERED PROBE GAP NOC
 
 [script]
