@@ -2,12 +2,13 @@
 
 import getopt, sys, os, re, time, signal
 import subprocess, sqlite3, uuid, shutil
-from types import SimpleNamespace
+import types
 
 taskidx = 0
 taskdb = dict()
 running = set()
 dbtrace = False
+silent_sigpipe = False
 
 def sqlite3_connect():
     db = sqlite3.connect("database/db.sqlite3")
@@ -26,13 +27,15 @@ def exit(rc):
     sys.exit(rc)
 
 def force_shutdown(signum, frame):
-    print("MCY ---- Keyboard interrupt or external termination signal ----", flush=True)
+    if signum != signal.SIGPIPE or not silent_sigpipe:
+        print("MCY ---- Keyboard interrupt or external termination signal ----", file=sys.stderr, flush=True)
     exit(1)
 
 if os.name == "posix":
     signal.signal(signal.SIGHUP, force_shutdown)
 signal.signal(signal.SIGINT, force_shutdown)
 signal.signal(signal.SIGTERM, force_shutdown)
+signal.signal(signal.SIGPIPE, force_shutdown)
 
 def usage():
     print()
@@ -66,7 +69,7 @@ weight_pq_mw weight_pq_mb weight_pq_mc weight_pq_ms
 weight_cover pick_cover_prcnt
 """.split())
 
-cfg = SimpleNamespace()
+cfg = types.SimpleNamespace()
 cfg.opt_size = 20
 cfg.opt_tags = None
 cfg.mutopts = dict()
@@ -91,7 +94,7 @@ with open("config.mcy", "r") as f:
             if len(entries) == 2 and entries[0] == "test":
                 section, sectionarg = entries
                 if sectionarg not in cfg.tests:
-                    cfg.tests[sectionarg] = SimpleNamespace()
+                    cfg.tests[sectionarg] = types.SimpleNamespace()
                     cfg.tests[sectionarg].maxbatchsize = 1
                     cfg.tests[sectionarg].expect = None
                     cfg.tests[sectionarg].run = None
@@ -418,6 +421,7 @@ if sys.argv[1] in ("reset", "status"):
 ######################################################
 
 if sys.argv[1] == "list":
+    silent_sigpipe = True
     opt_details = False
 
     try:
@@ -625,6 +629,8 @@ if sys.argv[1] == "task":
 ######################################################
 
 if sys.argv[1] == "source":
+    silent_sigpipe = True
+
     try:
         opts, args = getopt.getopt(sys.argv[2:], "", [])
     except getopt.GetoptError as err:
@@ -648,7 +654,7 @@ if sys.argv[1] == "source":
     covercache = dict()
 
     for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
-        covercache[src] = SimpleNamespace(covered=0, uncovered=0)
+        covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
 
     for src, covered, uncovered in db.execute("""
           SELECT opt_value,
