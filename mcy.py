@@ -237,9 +237,9 @@ def reset_status(db, do_reset=False):
 
     for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
         if rn > 0:
-            print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
+            print("Queued %d \"%s\" tests, %d running." % (cnt, tst, rn))
         else:
-            print("Queued %d tasks for test \"%s\"." % (cnt, tst))
+            print("Queued %d \"%s\" tests." % (cnt, tst))
 
 def print_report(db):
     def env_tags(tag=None):
