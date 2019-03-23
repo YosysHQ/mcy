@@ -60,9 +60,16 @@ if not os.path.exists("config.mcy"):
     print("config.mcy not found")
     exit(1)
 
+mutate_cfgs = set("""
+weight_pq_w weight_pq_b weight_pq_c weight_pq_s
+weight_pq_mw weight_pq_mb weight_pq_mc weight_pq_ms
+weight_cover pick_cover_prcnt
+""".split())
+
 cfg = SimpleNamespace()
 cfg.opt_size = 20
 cfg.opt_tags = None
+cfg.mutopts = dict()
 cfg.script = list()
 cfg.logic = list()
 cfg.report = list()
@@ -96,6 +103,9 @@ with open("config.mcy", "r") as f:
                 continue
             if len(entries) == 2 and entries[0] == "size":
                 cfg.opt_size = int(entries[1])
+                continue
+            if len(entries) == 2 and entries[0] in mutate_cfgs:
+                cfg.mutopts[entries[0]] = int(entries[1])
                 continue
             if len(entries) > 1 and entries[0] == "tags":
                 cfg.opt_tags = set(entries[1:])
@@ -184,6 +194,35 @@ def update_mutation(db, mid):
 
 def reset_status(db, do_reset=False):
     if do_reset:
+        nmutations, = db.execute("SELECT count(*) FROM mutations").fetchone()
+        if nmutations < cfg.opt_size:
+            print("Adding %d mutations to database." % (cfg.opt_size - nmutations))
+
+            with open("database/mutations2.ys", "w") as f:
+                print("read_ilang database/design.il", file=f)
+                print("mutate -list %d%s -o database/mutations2.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+
+            task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
+            task.wait()
+
+            with open("database/mutations2.txt", "r") as f_in:
+                with open("database/mutations.txt", "a") as f_out:
+                    for line in f_in:
+                        if not db.execute("SELECT count(*) FROM mutations WHERE mutation = ?", [line.rstrip()]).fetchone()[0]:
+                            mid = db.execute("INSERT INTO mutations (mutation) VALUES (?)", [line.rstrip()]).lastrowid
+                            print(line.rstrip(), file=f_out)
+                            optarray = line.split()
+                            skip_next = False
+                            for i in range(len(optarray)-1):
+                                if skip_next:
+                                    skip_next = False
+                                elif optarray[i].startswith("-"):
+                                    db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?)", [mid, optarray[i][1:], optarray[i+1]])
+                                    skip_next = True
+                            nmutations += 1
+                            if nmutations == cfg.opt_size:
+                                break
+
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
 
@@ -302,6 +341,13 @@ if sys.argv[1] == "init":
         print("write_ilang database/design.il", file=f)
 
     task = Task("yosys -ql database/design.log database/design.ys")
+    task.wait()
+
+    with open("database/mutations.ys", "w") as f:
+        print("read_ilang database/design.il", file=f)
+        print("mutate -list %d%s -o database/mutations.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+
+    task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
 
     print("initializing database")
