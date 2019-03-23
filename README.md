@@ -89,8 +89,9 @@ of 8 concurently running jobs.
 
 Running `mcy task [-v] [-k] <test> <id_or_tag>..` will (re-)run the specified
 test with the given mutations. This is mostly used during development of test
-scripts. `-k` will keep the task directory `tasks/<task_id>`, and `-v` displays
-the command and its output on the console.
+scripts. `-v` displays the command and its output on the console, and with `-k`
+the task directory `tasks/<task_id>` will not be removed when the task
+completes.
 
 Running `mcy source <filename>` prints the original HDL source, annotated with
 coverage information. (This is hardcoded to use the tags `COVERED` and
@@ -162,11 +163,12 @@ And it will procude an output in `output.txt`, formatted as following:
 ...
 ```
 
+The numbers are not mutation IDs but a task-local numbering, starting fresh
+at 1 for each task. The order of the output lines does not matter.
+
 Standard output of the command will be redirected to `logfile.txt`, unless
 the command is run from `mcy task -v`. Standard error always stays connected
 to the console.
-
-(The order of the output lines does not matter.)
 
 A test with `expect` setting will cause a runtime error if the test returns
 anything else than one of the expected values.
