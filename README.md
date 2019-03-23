@@ -87,6 +87,9 @@ Running `mcy list --details` will print more details for each mutation.
 Running `mcy run -j8` will run the mutation cover analysis, with a maximum
 of 8 concurently running jobs.
 
+Running `mcy task <test> <id_or_tag>..` will (re-)run the specified test with
+the given mutations. This is mostly used during development of test scripts.
+
 Running `mcy source <filename>` prints the original HDL source, annotated with
 coverage information. (This is hardcoded to use the tags `COVERED` and
 `UNCOVERED`.) If the filename on the file system is different from the file

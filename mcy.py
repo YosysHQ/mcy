@@ -40,8 +40,9 @@ def usage():
     print("  mcy [--trace] init")
     print("  mcy [--trace] reset")
     print("  mcy [--trace] status")
-    print("  mcy [--trace] list [--details] [id..]")
-    print("  mcy [--trace] run [-jN] [--reset] [id..]")
+    print("  mcy [--trace] list [--details] [<id_or_tag>..]")
+    print("  mcy [--trace] run [-jN] [--reset] [<id_or_tag>..]")
+    print("  mcy [--trace] task <test> <id_or_tag>..")
     print("  mcy [--trace] source <filename> [<filename>]")
     print("  mcy [--trace] dash")
     print("  mcy [--trace] gui")
@@ -382,7 +383,11 @@ if sys.argv[1] == "list":
     if len(args):
         whitelist = set()
         for a in args:
-            whitelist.add(int(a))
+            if re.match("^[0-9]+$", a):
+                whitelist.add(int(a))
+            else:
+                for mut, in db.execute("SELECT mutation_id FROM tags WHERE tag = ?", [a]):
+                    whitelist.add(mut)
 
     if opt_details:
         print()
@@ -415,21 +420,28 @@ if sys.argv[1] == "list":
 
 ######################################################
 
-def run_task(db, whitelist):
-    # Find test for next task
-    db.execute("BEGIN EXCLUSIVE")
-    entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
-    if entry is None:
-        db.commit()
-        return False
-    tst, _ = entry
-    t = tst.split()[0]
-    tst_args = tst.lstrip()[len(t)+1:]
+def run_task(db, whitelist, tst=None, mut_list=None):
+    if tst is None or mut_list is None:
+        assert tst is None
+        assert mut_list is None
+        db.execute("BEGIN EXCLUSIVE")
 
-    # Find mutations for next task
-    mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE running = 0 AND test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
+        # Find test for next task
+        entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
+        if entry is None:
+            db.commit()
+            return False
+        tst, _ = entry
+        t = tst.split()[0]
+        tst_args = tst.lstrip()[len(t)+1:]
 
-    # Remove mutations from DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
+        # Find mutations for next task
+        mut_list = list([mut for mut, in db.execute("SELECT mutation_id FROM queue WHERE running = 0 AND test = ? AND " + whitelist + " ORDER BY mutation_id ASC LIMIT ?", [tst, cfg.tests[t].maxbatchsize])])
+    else:
+        t = tst.split()[0]
+        tst_args = tst.lstrip()[len(t)+1:]
+
+    # Mark tests running in DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
     for mut in mut_list:
         db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
         running.add((mut, tst))
@@ -498,7 +510,11 @@ if sys.argv[1] == "run":
         for a in args:
             if whitelist != "(":
                 whitelist += " OR "
-            whitelist += "mutation_id = %d" % int(a)
+            if re.match("^[0-9]+$", a):
+                whitelist += "mutation_id = %d" % int(a)
+            else:
+                for mut, in db.execute("SELECT mutation_id FROM tags WHERE tag = ?", [a]):
+                    whitelist += "mutation_id = %d" % mut
         whitelist += ")"
 
     if opt_reset:
@@ -510,6 +526,37 @@ if sys.argv[1] == "run":
     wait_tasks(1)
     reset_status(db)
     print_report(db)
+    exit(0)
+
+if sys.argv[1] == "task":
+    try:
+        opts, args = getopt.getopt(sys.argv[2:], "", [])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+
+    for o, a in opts:
+        assert False
+
+    if len(args) < 2:
+        usage()
+
+    db = sqlite3_connect()
+
+    tst = args[0]
+    mut_list = list()
+    for a in args[1:]:
+        if re.match("^[0-9]+$", a):
+            if int(a) not in mut_list:
+                mut_list.append(int(a))
+        else:
+            for mut, in db.execute("SELECT mutation_id FROM tags WHERE tag = ? ORDER BY mutation_id ASC", [a]):
+                if mut not in mut_list:
+                    mut_list.append(mut)
+
+    assert len(mut_list) > 0
+    run_task(db, "1", tst, mut_list)
+    wait_tasks(1)
     exit(0)
 
 
