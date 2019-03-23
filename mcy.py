@@ -226,6 +226,8 @@ def reset_status(db, do_reset=False):
                             if nmutations == cfg.opt_size:
                                 break
 
+        shutil.rmtree("tasks")
+
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
 

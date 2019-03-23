@@ -74,10 +74,12 @@ Create the referenced files and run `mcy init`.
 This will create a `database/` directory, run the Yosys script and create
 `database/design.il`, create `size` mutations and store them in `database/db.sqlite3`.
 
-Running `mcy reset` will re-run the `[logic]` section for all mutations and output
-some statistics.
+Running `mcy reset` re-runs the `[logic]` section for all mutations, imports
+additional mutations if the value of the `size` option has been increased,
+resets the "running" status of all tests, removes the `tasks/` directory, and
+prints some statistics.
 
-Running `mcy status` will only output the statistics from `mcy reset` but will
+Running `mcy status` prints the statistics from `mcy reset` but will
 not make any changes to the database.
 
 Running `mcy list` will list all mutations and their current tags.
