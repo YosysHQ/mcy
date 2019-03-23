@@ -52,7 +52,7 @@ module testbench;
 	reg [31:0] memory [0:64*1024/4-1];
 
 	initial begin
-		$readmemh("../sim_simple.hex", memory);
+		$readmemh("../../sim_simple.hex", memory);
 	end
 
 	reg [31:0] irq;
