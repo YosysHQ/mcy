@@ -194,7 +194,7 @@ def update_mutation(db, mid):
 
 def reset_status(db, do_reset=False):
     if do_reset:
-        nmutations, = db.execute("SELECT count(*) FROM mutations").fetchone()
+        nmutations, = db.execute("SELECT COUNT(*) FROM mutations").fetchone()
         if nmutations < cfg.opt_size:
             print("Adding %d mutations to database." % (cfg.opt_size - nmutations))
 
@@ -208,7 +208,7 @@ def reset_status(db, do_reset=False):
             with open("database/mutations2.txt", "r") as f_in:
                 with open("database/mutations.txt", "a") as f_out:
                     for line in f_in:
-                        if not db.execute("SELECT count(*) FROM mutations WHERE mutation = ?", [line.rstrip()]).fetchone()[0]:
+                        if not db.execute("SELECT COUNT(*) FROM mutations WHERE mutation = ?", [line.rstrip()]).fetchone()[0]:
                             mid = db.execute("INSERT INTO mutations (mutation) VALUES (?)", [line.rstrip()]).lastrowid
                             print(line.rstrip(), file=f_out)
                             optarray = line.split()
@@ -226,13 +226,13 @@ def reset_status(db, do_reset=False):
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
 
-    for tst, res, cnt in db.execute("SELECT test, result, count(*) FROM results GROUP BY test, result"):
+    for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
         print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
 
-    for tag, cnt in db.execute("SELECT tag, count(*) FROM tags GROUP BY tag"):
+    for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
         print("Tagged %d mutations as \"%s\"." % (cnt, tag))
 
-    for tst, cnt, rn in db.execute("SELECT test, count(*), SUM(running) FROM queue GROUP BY test"):
+    for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
         if rn > 0:
             print("Queued %d tasks for test \"%s\", %d running." % (cnt, tst, rn))
         else:
@@ -241,7 +241,7 @@ def reset_status(db, do_reset=False):
 def print_report(db):
     def env_tags(tag=None):
         if tag is None:
-            cnt, = db.execute("SELECT count(DISTINCT mutation_id) FROM tags").fetchone()
+            cnt, = db.execute("SELECT COUNT(DISTINCT mutation_id) FROM tags").fetchone()
             return cnt
 
         invert = False
@@ -249,7 +249,7 @@ def print_report(db):
             invert = True
             tag = tag[1:]
 
-        cnt, = db.execute("SELECT count(*) FROM tags WHERE tag = ?", [tag]).fetchone()
+        cnt, = db.execute("SELECT COUNT(*) FROM tags WHERE tag = ?", [tag]).fetchone()
 
         if invert:
             return env_tags() - cnt
@@ -480,7 +480,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
         db.execute("BEGIN EXCLUSIVE")
 
         # Find test for next task
-        entry = db.execute("SELECT test, count(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
+        entry = db.execute("SELECT test, COUNT(*) as cnt FROM queue WHERE running = 0 AND " + whitelist + " GROUP BY test ORDER BY cnt DESC LIMIT 1").fetchone()
         if entry is None:
             db.commit()
             return False
@@ -652,8 +652,8 @@ if sys.argv[1] == "source":
 
     for src, covered, uncovered in db.execute("""
           SELECT opt_value,
-                 count(CASE WHEN tag =   'COVERED' THEN 1 END),
-                 count(CASE WHEN tag = 'UNCOVERED' THEN 1 END)
+                 COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),
+                 COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)
             FROM options
             JOIN tags ON (options.mutation_id = tags.mutation_id)
            WHERE opt_type = 'src'
