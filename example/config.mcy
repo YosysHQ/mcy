@@ -48,12 +48,12 @@ if tags("PROBE"):
 [test sim_simple]
 maxbatchsize 10
 expect PASS FAIL
-run bash sim_simple.sh
+run bash $PRJDIR/sim_simple.sh
 
 [test eq_bmc]
 expect TIMEOUT PASS FAIL
-run bash eq_bmc.sh
+run bash $PRJDIR/eq_bmc.sh
 
 [test eq_sim3]
 expect TIMEOUT FAIL
-run bash eq_sim3.sh
+run bash $PRJDIR/eq_sim3.sh

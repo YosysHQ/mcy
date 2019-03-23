@@ -56,17 +56,17 @@ if tags("!NOC"):
 [test sim_simple]
 maxbatchsize 10
 expect PASS FAIL
-run bash scripts/sim_simple.sh
+run bash $PRJDIR/scripts/sim_simple.sh
 
 [test eq_bmc]
 maxbatchsize 10
 expect PASS FAIL
-run bash scripts/eq_bmc.sh
+run bash $PRJDIR/scripts/eq_bmc.sh
 
 [test eq_sim3]
 maxbatchsize 10
 expect TIMEOUT FAIL
-run bash scripts/eq_sim3.sh
+run bash $PRJDIR/scripts/eq_sim3.sh
 ```
 
 Create the referenced files and run `mcy init`.
@@ -87,8 +87,10 @@ Running `mcy list --details` will print more details for each mutation.
 Running `mcy run -j8` will run the mutation cover analysis, with a maximum
 of 8 concurently running jobs.
 
-Running `mcy task <test> <id_or_tag>..` will (re-)run the specified test with
-the given mutations. This is mostly used during development of test scripts.
+Running `mcy task [-v] [-k] <test> <id_or_tag>..` will (re-)run the specified
+test with the given mutations. This is mostly used during development of test
+scripts. `-k` will keep the task directory `tasks/<task_id>`, and `-v` displays
+the command and its output on the console.
 
 Running `mcy source <filename>` prints the original HDL source, annotated with
 coverage information. (This is hardcoded to use the tags `COVERED` and
@@ -138,25 +140,33 @@ to a single invocation of the test. (The default `maxbatchsize` value is `1`.)
 Running the test means running the command specified with `run`, with any
 additional arguments to the test appended to the command.
 
-The command is then given an input, formatted as following:
+The command is run in the `tasks/<taskid>` subdirectory, with the environment
+variable `TASK` set to the task id, `TASKDIR` set to the directory, and `PRJDIR`
+set to the project directory.
+
+The command is then given an input in `input.txt`, formatted as following:
 
 ```
-<id_1>: <mutation_1>
-<id_2>: <mutation_2>
-<id_3>: <mutation_3>
+1 <mutation_1>
+2 <mutation_2>
+3 <mutation_3>
 ...
 ```
 
-And it will procude an output, formatted as following:
+And it will procude an output in `output.txt`, formatted as following:
 
 ```
-<id_1>: <result_1>
-<id_2>: <result_2>
-<id_3>: <result_3>
+1 <result_1>
+2 <result_2>
+3 <result_3>
 ...
 ```
 
-(The order of the lines does not matter.)
+Standard output of the command will be redirected to `logfile.txt`, unless
+the command is run from `mcy task -v`. Standard error always stays connected
+to the console.
+
+(The order of the output lines does not matter.)
 
 A test with `expect` setting will cause a runtime error if the test returns
 anything else than one of the expected values.

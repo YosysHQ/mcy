@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import getopt, sys, os, re, time, signal
-import subprocess, sqlite3, uuid
+import subprocess, sqlite3, uuid, shutil
 from types import SimpleNamespace
 
 taskidx = 0
@@ -42,7 +42,7 @@ def usage():
     print("  mcy [--trace] status")
     print("  mcy [--trace] list [--details] [<id_or_tag>..]")
     print("  mcy [--trace] run [-jN] [--reset] [<id_or_tag>..]")
-    print("  mcy [--trace] task <test> <id_or_tag>..")
+    print("  mcy [--trace] task -v -k <test> <id_or_tag>..")
     print("  mcy [--trace] source <filename> [<filename>]")
     print("  mcy [--trace] dash")
     print("  mcy [--trace] gui")
@@ -200,7 +200,7 @@ def reset_status(db, do_reset=False):
 
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
-                print("mutate -list %d%s -o database/mutations2.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+                print("mutate -list %d -none%s -o database/mutations2.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
 
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
             task.wait()
@@ -274,16 +274,15 @@ def wait_tasks(n):
             task.poll()
 
 class Task:
-    def __init__(self, command, callback=None, infn=None, outfn=None):
+    def __init__(self, command, callback=None, silent=False):
         global taskidx
         taskidx += 1
         self.taskidx = taskidx
         self.command = command
-        self.sub_stdin = subprocess.DEVNULL if infn is None else open(infn, "r")
-        self.sub_stdout = None if infn is None else open(outfn, "w")
-        print("%s" % command)
+        if not silent:
+            print(command)
         self.callback = callback
-        self.p = subprocess.Popen(command, shell=True, stdin=self.sub_stdin, stdout=self.sub_stdout)
+        self.p = subprocess.Popen(command, shell=True, stdin=subprocess.DEVNULL)
         taskdb[taskidx] = self
 
     def poll(self):
@@ -337,7 +336,6 @@ if sys.argv[1] == "init":
     with open("database/design.ys", "w") as f:
         for line in cfg.script:
             print(line, file=f)
-        print("mutate -list %d -o database/mutations.txt" % cfg.opt_size, file=f)
         print("write_ilang database/design.il", file=f)
 
     task = Task("yosys -ql database/design.log database/design.ys")
@@ -345,7 +343,7 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
-        print("mutate -list %d%s -o database/mutations.txt -s database/sources.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+        print("mutate -list %d -none%s -o database/mutations.txt -s database/sources.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
 
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
@@ -475,7 +473,7 @@ if sys.argv[1] == "list":
 
 ######################################################
 
-def run_task(db, whitelist, tst=None, mut_list=None):
+def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=False):
     if tst is None or mut_list is None:
         assert tst is None
         assert mut_list is None
@@ -504,24 +502,22 @@ def run_task(db, whitelist, tst=None, mut_list=None):
 
     task_id = str(uuid.uuid4())
     print("task %s (%s)" % (task_id, tst))
+    os.makedirs("tasks/%s" % task_id)
 
-    os.makedirs("tempdir", exist_ok=True)
-
-    with open("tempdir/task_%s.in" % task_id, "w") as f:
+    with open("tasks/%s/input.txt" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
             print("  %d %d %s" % (idx+1, mut, mut_str))
-            print("%d: %s" % (idx+1, mut_str), file=f)
+            print("%d %s" % (idx+1, mut_str), file=f)
 
     def callback():
         print("task %s (%s) finished." % (task_id, tst))
         checklist = set(mut_list)
-        with open("tempdir/task_%s.out" % task_id, "r") as f:
+        with open("tasks/%s/output.txt" % task_id, "r") as f:
             for line in f:
                 line = line.split()
                 assert len(line) == 2
-                assert line[0].endswith(":")
-                idx = int(line[0][:-1])-1
+                idx = int(line[0])-1
                 mut = mut_list[idx]
                 assert mut in checklist
                 res = line[1]
@@ -533,11 +529,14 @@ def run_task(db, whitelist, tst=None, mut_list=None):
                 checklist.remove(mut)
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
         assert len(checklist) == 0
-        os.remove("tempdir/task_%s.in" % task_id)
-        os.remove("tempdir/task_%s.out" % task_id)
+        if not keepdir:
+            shutil.rmtree("tasks/%s" % task_id)
 
-    command = "TASK=%s %s %s" % (task_id, cfg.tests[t].run, tst_args)
-    task = Task(command, callback, "tempdir/task_%s.in" % task_id, "tempdir/task_%s.out" % task_id)
+    command = "export TASK=%s PRJDIR=\"$PWD\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % task_id
+    if not verbose:
+        command += "; exec >logfile.txt"
+    command += "; %s %s" % (cfg.tests[t].run, tst_args)
+    task = Task(command, callback, silent=(not verbose))
 
     return True
 
@@ -584,14 +583,22 @@ if sys.argv[1] == "run":
     exit(0)
 
 if sys.argv[1] == "task":
+    opt_verbose = False
+    opt_keepdir = False
+
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "", [])
+        opts, args = getopt.getopt(sys.argv[2:], "vk", [])
     except getopt.GetoptError as err:
         print(err)
         usage()
 
     for o, a in opts:
-        assert False
+        if o == "-v":
+            opt_verbose = True
+        elif o == "-k":
+            opt_keepdir = True
+        else:
+            assert False
 
     if len(args) < 2:
         usage()
@@ -610,7 +617,7 @@ if sys.argv[1] == "task":
                     mut_list.append(mut)
 
     assert len(mut_list) > 0
-    run_task(db, "1", tst, mut_list)
+    run_task(db, "1", tst, mut_list, verbose=opt_verbose, keepdir=opt_keepdir)
     wait_tasks(1)
     exit(0)
 
