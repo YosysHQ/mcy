@@ -650,9 +650,16 @@ if sys.argv[1] == "source":
     for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
         covercache[src] = SimpleNamespace(covered=0, uncovered=0)
 
-    for mid, src in db.execute("SELECT DISTINCT mutation_id, opt_value FROM options WHERE opt_type = \"src\" AND opt_value LIKE ?", [filename + ":%"]):
-        covered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"COVERED\"", [mid]).fetchone()
-        uncovered, = db.execute("SELECT count(*) FROM tags WHERE mutation_id = ? AND tag = \"UNCOVERED\"", [mid]).fetchone()
+    for src, covered, uncovered in db.execute("""
+          SELECT opt_value,
+                 count(CASE WHEN tag =   'COVERED' THEN 1 END),
+                 count(CASE WHEN tag = 'UNCOVERED' THEN 1 END)
+            FROM options
+            JOIN tags ON (options.mutation_id = tags.mutation_id)
+           WHERE opt_type = 'src'
+             AND opt_value LIKE ?
+        GROUP BY opt_value
+    """, [filename + ":%"]):
         covercache[src].covered += covered
         covercache[src].uncovered += uncovered
 
