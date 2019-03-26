@@ -1,0 +1,9 @@
+/generated/
+/mcy-gui
+Makefile
+/cmake_install.cmake
+/CMakeFiles
+/CMakeScripts
+/CMakeCache.txt
+install_manifest.txt
+/.vscode

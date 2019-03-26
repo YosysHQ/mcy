@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/symbiotic.png</file>
+    </qresource>
+</RCC>
