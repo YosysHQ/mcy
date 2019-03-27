@@ -30,6 +30,9 @@ size 100
 read_verilog verilog/picorv32.v
 prep -top picorv32
 
+[files]
+picorv32.v
+
 [logic]
 if result("sim_simple") == "FAIL":
     tag("COVERED")
@@ -97,15 +100,18 @@ completes.
 
 Running `mcy source <filename>` prints the original HDL source, annotated with
 coverage information. (This is hardcoded to use the tags `COVERED` and
-`UNCOVERED`.) If the filename on the file system is different from the file
-name in the designs `src` attributes, then `mcy source <attr_filename> <fs_filename>`
-must be called insted.
+`UNCOVERED`.) This is using the copy of the specified source file that was
+placed in the database on `mcy init`. (This requires a `[files]` corresponding
+entry in the config file.) Use `mcy source <attr_filename> <fs_filename>`
+to use a source file from the file system instead.
 
 Running `mcy dash` launches a web-based dashboard that can be used to launch
 jobs and monitor progress.
 
-Finally, `mcy gui` launches a GUI application that can be used to investigate
+Running `mcy gui` launches a GUI application that can be used to investigate
 the database.
+
+Finally, `mcy purge` removes the `database/` and `tasks/` directories.
 
 ### Logic
 

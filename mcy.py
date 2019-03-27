@@ -46,9 +46,10 @@ def usage():
     print("  mcy [--trace] list [--details] [<id_or_tag>..]")
     print("  mcy [--trace] run [-jN] [--reset] [<id_or_tag>..]")
     print("  mcy [--trace] task -v -k <test> <id_or_tag>..")
-    print("  mcy [--trace] source <filename> [<filename>]")
+    print("  mcy [--trace] source [-e <encoding>] <filename> [<filename>]")
     print("  mcy [--trace] dash")
     print("  mcy [--trace] gui")
+    print("  mcy [--trace] purge")
     print()
     exit(1)
 
@@ -77,6 +78,7 @@ cfg.script = list()
 cfg.logic = list()
 cfg.report = list()
 cfg.tests = dict()
+cfg.files = dict()
 
 with open("config.mcy", "r") as f:
     section = None
@@ -88,7 +90,7 @@ with open("config.mcy", "r") as f:
         match = re.match(r"^\[(.*)\]\s*$", line)
         if match:
             entries = match.group(1).split()
-            if len(entries) == 1 and entries[0] in ("options", "script", "logic", "report"):
+            if len(entries) == 1 and entries[0] in ("options", "script", "logic", "report", "files"):
                 section, sectionarg = entries[0], None
                 continue
             if len(entries) == 2 and entries[0] == "test":
@@ -139,6 +141,17 @@ with open("config.mcy", "r") as f:
             if len(entries) >= 2 and entries[0] == "run":
                 match = re.match(r"^\s*run\s*(.*\S)\s*$", line)
                 cfg.tests[sectionarg].run = match.group(1)
+                continue
+
+        if section == "files":
+            entries = line.split()
+            if len(entries) == 0:
+                continue
+            if len(entries) == 1:
+                cfg.files[os.path.basename(entries[0])] = entries[0]
+                continue
+            if len(entries) == 2:
+                cfg.files[entries[0]] = entries[1]
                 continue
 
         print("syntax error in line %d in config.mcy" % linenr)
@@ -226,7 +239,7 @@ def reset_status(db, do_reset=False):
                             if nmutations == cfg.opt_size:
                                 break
 
-        shutil.rmtree("tasks")
+        shutil.rmtree("tasks", ignore_errors=True)
 
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
@@ -388,6 +401,11 @@ if sys.argv[1] == "init":
             test STRING,
             running BOOL
         );
+
+        CREATE TABLE files (
+            filename STRING,
+            data BLOB
+        );
     """)
 
     with open("database/mutations.txt", "r") as f:
@@ -406,6 +424,10 @@ if sys.argv[1] == "init":
         for line in f:
             db.execute("INSERT INTO sources (srctag) VALUES (?)", [line.strip()])
 
+    for db_filename, os_filename in cfg.files.items():
+        with open(os_filename, "rb") as f:
+            db.execute("INSERT INTO files (filename, data) VALUES (?, ?)", [db_filename, sqlite3.Binary(f.read())])
+
     db.commit()
 
     reset_status(db, True)
@@ -419,6 +441,10 @@ if sys.argv[1] in ("reset", "status"):
     print_report(db)
     exit(0)
 
+if sys.argv[1] == "purge":
+    shutil.rmtree("tasks", ignore_errors=True)
+    shutil.rmtree("database", ignore_errors=True)
+    exit(0)
 
 ######################################################
 
@@ -633,26 +659,41 @@ if sys.argv[1] == "task":
 
 if sys.argv[1] == "source":
     silent_sigpipe = True
+    opt_encoding = "utf8"
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "", [])
+        opts, args = getopt.getopt(sys.argv[2:], "e:", [])
     except getopt.GetoptError as err:
         print(err)
         usage()
 
     for o, a in opts:
-        assert False
+        if o == "-e":
+            opt_encoding = a
+        else:
+            assert False
 
-    if len(args) == 1:
-        filename = args[0]
-        read_filename = filename
-    elif len(args) == 2:
-        filename = args[0]
-        read_filename = args[1]
-    else:
+    if len(args) not in [1, 2]:
         usage()
 
     db = sqlite3_connect()
+
+    if len(args) == 1:
+        filename = args[0]
+        filedata = db.execute("SELECT data FROM files WHERE filename = ?", [filename]).fetchone()
+        if filedata is None:
+            print("File data for '%s' not found in database." % filename)
+            exit(1)
+        filedata = str(filedata[0], opt_encoding)
+    elif len(args) == 2:
+        filename = args[0]
+        with open(args[1], "rb") as f:
+            filedata = str(f.read(), opt_encoding)
+    else:
+        assert False
+
+    # Fix DOS-style and old Macintosh-style line endings
+    filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
 
     covercache = dict()
 
@@ -672,21 +713,18 @@ if sys.argv[1] == "source":
         covercache[src].covered += covered
         covercache[src].uncovered += uncovered
 
-    with open(read_filename, "r") as f:
-        linenr = 0
-        for line in f:
-            linenr += 1
-            src = "%s:%d" % (filename, linenr)
+    for linenr, line in enumerate(filedata.rstrip("\n").split("\n")):
+        src = "%s:%d" % (filename, linenr+1)
 
-            if src in covercache:
-                if covercache[src].uncovered:
-                    print("!%4d|\t" % -covercache[src].uncovered, end="")
-                else:
-                    print("%5d|\t" % covercache[src].covered, end="")
+        if src in covercache:
+            if covercache[src].uncovered:
+                print("!%4d|\t" % -covercache[src].uncovered, end="")
             else:
-                print("     |\t", end="")
+                print("%5d|\t" % covercache[src].covered, end="")
+        else:
+            print("     |\t", end="")
 
-            print(line, end="")
+        print(line)
 
     exit(1)
 

@@ -12,6 +12,9 @@ chparam -set REGS_INIT_ZERO 1 -set COMPRESSED_ISA 1 -set ENABLE_IRQ 1 \
         -set ENABLE_IRQ_QREGS 0 -set BARREL_SHIFTER 1 picorv32
 prep -top picorv32
 
+[files]
+picorv32.v
+
 [logic]
 if result("sim_simple") == "FAIL":
     tag("COVERED")
