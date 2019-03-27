@@ -147,6 +147,10 @@ The command is run in the `tasks/<taskid>` subdirectory, with the environment
 variable `TASK` set to the task id, `TASKDIR` set to the directory, and `PRJDIR`
 set to the project directory.
 
+The environment variable `KEEPDIR` will be set to `1` if the task is run with
+`mcy task -k`, and `0` otherwise. This can be used for example to only create
+VCD traces if the task directory is kept.
+
 The command is then given an input in `input.txt`, formatted as following:
 
 ```

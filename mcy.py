@@ -539,7 +539,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
         if not keepdir:
             shutil.rmtree("tasks/%s" % task_id)
 
-    command = "export TASK=%s PRJDIR=\"$PWD\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % task_id
+    command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % (task_id, 1 if keepdir else 0)
     if not verbose:
         command += "; exec >logfile.txt"
     command += "; %s %s" % (cfg.tests[t].run, tst_args)
