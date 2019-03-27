@@ -42,3 +42,54 @@ int DbManager::getMutationsCount()
     }
     return count;
 }
+
+std::vector<std::string> DbManager::getSources()
+{
+    std::vector<std::string> sources;
+    QSqlQuery query("SELECT srctag FROM sources");
+    while (query.next())
+    {
+        sources.push_back(query.value(0).toString().toStdString());
+    }
+    return sources;
+}
+
+std::vector<int> DbManager::getSourceLines(std::string filename)
+{
+    std::vector<int> lines;
+    std::string request = "SELECT srctag FROM sources WHERE srctag LIKE '"+filename +":%'";
+    QSqlQuery query(request.c_str());
+    bool ok;
+    while (query.next())
+    {
+        QString data = query.value(0).toString().replace((filename+":").c_str(), "");
+        lines.push_back(data.toInt(&ok));
+    }
+    return lines;
+}
+
+std::vector<std::string> DbManager::getFiles()
+{
+    std::vector<std::string> files;
+    QSqlQuery query("SELECT filename FROM files");
+    while (query.next())
+    {
+        files.push_back(query.value(0).toString().toStdString());
+    }
+    return files;
+}
+
+std::vector<int> DbManager::getMutationsForSourceLine(std::string source)
+{
+    std::vector<int> mutations;
+    QSqlQuery query;
+    query.prepare("SELECT DISTINCT mutation_id FROM options WHERE opt_type='src' AND opt_value = :source");
+    query.bindValue(":source", source.c_str());
+    if (query.exec()) {
+        while (query.next())
+        {
+            mutations.push_back(query.value(0).toInt());
+        }
+    }
+    return mutations;
+}

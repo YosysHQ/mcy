@@ -28,6 +28,10 @@ class DbManager
     DbManager(const QString& path);
 
     int getMutationsCount();
+    std::vector<std::string> getSources();
+    std::vector<int> getSourceLines(std::string filename);
+    std::vector<std::string> getFiles();
+    std::vector<int> getMutationsForSourceLine(std::string source);
   private:
     QSqlDatabase db;
 };
