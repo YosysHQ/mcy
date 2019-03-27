@@ -1,12 +1,11 @@
 DESTDIR =
 PREFIX = /usr/local
 
-help:
-	@echo ""
-	@echo "sudo make install"
-	@echo "    build and install SymbiYosys (sby)"
-	@echo ""
+build:
+	cd gui && cmake -DCMAKE_INSTALL_PREFIX=$(PREFIX)
+	$(MAKE) -C gui
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install mcy.py $(DESTDIR)$(PREFIX)/bin/mcy
+	$(MAKE) -C gui install
