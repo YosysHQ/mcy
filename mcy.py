@@ -698,7 +698,7 @@ if sys.argv[1] == "dash":
     exit(1)
 
 if sys.argv[1] == "gui":
-    print("'mcy gui' is not implemented yet.")
+    os.execvp("mcy-gui", ["mcy-gui"] + sys.argv[2:])
     exit(1)
 
 usage()
