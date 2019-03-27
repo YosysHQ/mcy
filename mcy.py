@@ -302,11 +302,15 @@ class Task:
         self.callback = callback
         self.p = subprocess.Popen(command, shell=True, stdin=subprocess.DEVNULL)
         taskdb[taskidx] = self
+        self.running = True
 
     def poll(self):
+        if not self.running:
+            return True
         rc = self.p.poll()
         if rc == None:
             return False
+        self.running = False
         if self.taskidx in taskdb:
             del taskdb[self.taskidx]
         if rc != 0:
@@ -322,8 +326,10 @@ class Task:
         self.poll()
 
     def term(self):
-        if self.taskidx in taskdb:
-            del taskdb[self.taskidx]
+        if self.running:
+            if taskdb is not None:
+                del taskdb[self.taskidx]
+            self.running = False
             self.p.terminate()
             self.p.wait(2)
             self.p.kill()
