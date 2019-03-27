@@ -529,6 +529,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     assert res in cfg.tests[t].expect
+                db.execute("DELETE FROM results WHERE mutation_id = ? AND test = ?", [mut, tst])
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, mut)
                 running.remove((mut, tst))
