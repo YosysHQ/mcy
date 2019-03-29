@@ -36,6 +36,7 @@ class DbManager
     QMap<int, QPair<int, int>> getCoverage(QString filename);
     QList<int> getMutationsForSource(QString source);
     QMap<QString, QString> getMutationOption(int mutationId);
+    QStringList getTagsForMutation(int mutationId);
 
   private:
     QSqlDatabase db;
