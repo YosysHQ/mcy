@@ -99,22 +99,22 @@ QList<int> DbManager::getMutationsForSource(QString source)
     return retVal;
 }
 
-QMap<QString, QString> DbManager::getMutationOption(int mutationId)
+QList<QPair<QString, QString>> DbManager::getMutationOption(int mutationId)
 {
-    QMap<QString, QString> retVal;
+    QList<QPair<QString, QString>> retVal;
     QSqlQuery query("SELECT opt_type, opt_value FROM options WHERE mutation_id = " + QString::number(mutationId));
     while (query.next()) {
-        retVal.insert(query.value(0).toString(), query.value(1).toString());
+        retVal.append(QPair<QString, QString>(query.value(0).toString(), query.value(1).toString()));
     }
     return retVal;
 }
 
-QMap<QString, QString> DbManager::getMutationResults(int mutationId)
+QList<QPair<QString, QString>> DbManager::getMutationResults(int mutationId)
 {
-    QMap<QString, QString> retVal;
+    QList<QPair<QString, QString>> retVal;
     QSqlQuery query("SELECT test, result FROM results WHERE mutation_id = " + QString::number(mutationId));
     while (query.next()) {
-        retVal.insert(query.value(0).toString(), query.value(1).toString());
+        retVal.append(QPair<QString, QString>(query.value(0).toString(), query.value(1).toString()));
     }
     return retVal;
 }
