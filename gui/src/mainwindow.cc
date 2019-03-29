@@ -50,7 +50,7 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
     splitter_h->addWidget(centralTabWidget);
 
     BrowserWidget *browser = new BrowserWidget(&database);
-    browser->setMinimumWidth(300);
+    browser->setMinimumWidth(350);
     connect(browser, &BrowserWidget::selectLine, this, &MainWindow::selectLine);
 
     splitter_h->addWidget(browser);

@@ -243,9 +243,14 @@ void BrowserWidget::onSourceSelectionChanged()
         for (QMap<QString, QString>::iterator it = options.begin(); it != options.end(); ++it) {
             addProperty(mItem, QVariant::String, it.key(), it.value());
         }
-        QtProperty *tags = addSubGroup(mItem, "Tags");
+        QtProperty *tagsItem = addSubGroup(mItem, "Tags");
         for (auto tag : database->getTagsForMutation(mutationId)) {
-            addProperty(tags, QVariant::String, "", tag);
+            addProperty(tagsItem, QVariant::String, "", tag);
+        }
+        QtProperty *resItem = addSubGroup(mItem, "Results");
+        QMap<QString, QString> results = database->getMutationResults(mutationId);
+        for (QMap<QString, QString>::iterator it = results.begin(); it != results.end(); ++it) {
+            addProperty(resItem, QVariant::String, it.key(), it.value());
         }
     }
 }

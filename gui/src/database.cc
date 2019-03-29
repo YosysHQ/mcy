@@ -109,6 +109,16 @@ QMap<QString, QString> DbManager::getMutationOption(int mutationId)
     return retVal;
 }
 
+QMap<QString, QString> DbManager::getMutationResults(int mutationId)
+{
+    QMap<QString, QString> retVal;
+    QSqlQuery query("SELECT test, result FROM results WHERE mutation_id = " + QString::number(mutationId));
+    while (query.next()) {
+        retVal.insert(query.value(0).toString(), query.value(1).toString());
+    }
+    return retVal;
+}
+
 QStringList DbManager::getTagsForMutation(int mutationId)
 {
     QStringList tags;
