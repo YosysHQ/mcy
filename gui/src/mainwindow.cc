@@ -65,10 +65,12 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
 
     createMenusAndBars();
 
-    for(auto filename : database.getFileList()) {
+    for (auto filename : database.getFileList()) {
         CodeView *code = new CodeView(filename, this);
         code->loadContent(database.getFileContent(filename).toLocal8Bit().constData());
+        code->setCoverage(database.getCoverage(filename));
         centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
+        connect(browser, &BrowserWidget::selectLine, code, &CodeView::selectLine);
     }
 }
 

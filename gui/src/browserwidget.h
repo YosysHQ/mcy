@@ -59,6 +59,9 @@ class BrowserWidget : public QWidget
     // search slots
     void onSearchInserted();
 
+  Q_SIGNALS:
+    void selectLine(QString line);
+
   private:
     // database
     DbManager *database;

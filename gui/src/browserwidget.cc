@@ -210,7 +210,6 @@ void BrowserWidget::addProperty(QtProperty *topItem, int propertyType, const QSt
 {
     QtVariantProperty *item = readOnlyManager->addProperty(propertyType, name);
     item->setValue(value);
-    // item->setPropertyId(getElementTypeName(type));
     item->setSelectable(false);
     topItem->addSubProperty(item);
 }
@@ -245,10 +244,7 @@ void BrowserWidget::prepareMenuSourceList(const QPoint &pos)
     menu.exec(sourceList->mapToGlobal(pos));
 }
 
-void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item)
-{
-    // printf("%s\n",item->text().toStdString().c_str());
-}
+void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item) { Q_EMIT selectLine(item->text()); }
 
 void BrowserWidget::prepareMenuProperty(const QPoint &pos) {}
 

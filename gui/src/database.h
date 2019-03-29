@@ -20,8 +20,8 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include <QMap>
 #include <QSqlDatabase>
-#include <vector>
 
 class DbManager
 {
@@ -32,9 +32,7 @@ class DbManager
     QStringList getSources();
     QStringList getFileList();
     QString getFileContent(QString filename);
-
-    std::vector<int> getSourceLines(std::string filename);
-    std::vector<int> getMutationsForSourceLine(std::string source);
+    QMap<int, QPair<int, int>> getCoverage(QString filename);
 
   private:
     QSqlDatabase db;

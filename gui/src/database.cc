@@ -51,19 +51,6 @@ QStringList DbManager::getSources()
     return sources;
 }
 
-std::vector<int> DbManager::getSourceLines(std::string filename)
-{
-    std::vector<int> lines;
-    std::string request = "SELECT srctag FROM sources WHERE srctag LIKE '" + filename + ":%'";
-    QSqlQuery query(request.c_str());
-    bool ok;
-    while (query.next()) {
-        QString data = query.value(0).toString().replace((filename + ":").c_str(), "");
-        lines.push_back(data.toInt(&ok));
-    }
-    return lines;
-}
-
 QStringList DbManager::getFileList()
 {
     QStringList files;
@@ -76,23 +63,28 @@ QStringList DbManager::getFileList()
 
 QString DbManager::getFileContent(QString filename)
 {
-    QSqlQuery query("SELECT data FROM files WHERE filename='" +filename +"'");
+    QSqlQuery query("SELECT data FROM files WHERE filename='" + filename + "'");
     if (query.next()) {
         return query.value(0).toString();
     }
     return "";
 }
 
-std::vector<int> DbManager::getMutationsForSourceLine(std::string source)
+QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
 {
-    std::vector<int> mutations;
-    QSqlQuery query;
-    query.prepare("SELECT DISTINCT mutation_id FROM options WHERE opt_type='src' AND opt_value = :source");
-    query.bindValue(":source", source.c_str());
-    if (query.exec()) {
-        while (query.next()) {
-            mutations.push_back(query.value(0).toInt());
-        }
+    QMap<int, QPair<int, int>> retVal;
+    QString str = "SELECT REPLACE(opt_value,'" + filename + ":',''),"
+                                                            "       COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),"
+                                                            "       COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)"
+                                                            "   FROM options"
+                                                            "   JOIN tags ON (options.mutation_id = tags.mutation_id)"
+                                                            "   WHERE opt_type = 'src'"
+                                                            "       AND opt_value LIKE '" +
+                  filename + ":%' "
+                             "   GROUP BY opt_value ";
+    QSqlQuery query(str);
+    while (query.next()) {
+        retVal.insert(query.value(0).toInt(), QPair<int, int>(query.value(1).toInt(), query.value(2).toInt()));
     }
-    return mutations;
+    return retVal;
 }
