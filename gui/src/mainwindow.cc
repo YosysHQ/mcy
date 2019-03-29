@@ -18,10 +18,15 @@
  */
 
 #include "mainwindow.h"
+#include <QGridLayout>
+#include <QSplitter>
+#include <QTabBar>
+#include "browserwidget.h"
 
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
-MainWindow::MainWindow(QString workingDir, QWidget *parent) : QMainWindow(parent),database(workingDir + "/database/db.sqlite3")
+MainWindow::MainWindow(QString workingDir, QWidget *parent)
+        : QMainWindow(parent), database(workingDir + "/database/db.sqlite3")
 {
     initBasenameResource();
     qRegisterMetaType<std::string>();
@@ -30,6 +35,31 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent) : QMainWindow(parent
     resize(1024, 768);
 
     setWindowIcon(QIcon(":/icons/resources/symbiotic.png"));
+
+    // Create and deploy widgets on main screen
+    QWidget *centralWidget = new QWidget(this);
+
+    QSplitter *splitter_h = new QSplitter(Qt::Horizontal, centralWidget);
+
+    QTabWidget *centralTabWidget = new QTabWidget();
+    centralTabWidget->setTabsClosable(true);
+
+    splitter_h->addWidget(centralTabWidget);
+
+    BrowserWidget *browser = new BrowserWidget(&database);
+    browser->setMinimumWidth(300);
+
+    splitter_h->addWidget(browser);
+    splitter_h->setCollapsible(0, false);
+    splitter_h->setCollapsible(1, false);
+    splitter_h->setStretchFactor(0, 1);
+
+    QGridLayout *gridLayout = new QGridLayout(centralWidget);
+    gridLayout->setSpacing(6);
+    gridLayout->setContentsMargins(2, 2, 2, 2);
+    gridLayout->addWidget(splitter_h, 0, 0, 1, 1);
+    setCentralWidget(centralWidget);
+
     createMenusAndBars();
 }
 

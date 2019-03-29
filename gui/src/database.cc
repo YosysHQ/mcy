@@ -21,35 +21,32 @@
 #include <QSqlQuery>
 #include <QVariant>
 
-DbManager::DbManager(const QString& path)
+DbManager::DbManager(const QString &path)
 {
-   db = QSqlDatabase::addDatabase("QSQLITE");
-   db.setDatabaseName(path);
- 
-   if (!db.open())
-   {
-      printf("Error: connection with database fail\n");
-   }
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
+
+    if (!db.open()) {
+        printf("Error: connection with database fail\n");
+    }
 }
 
 int DbManager::getMutationsCount()
 {
     int count = 0;
     QSqlQuery query("SELECT COUNT(*) FROM mutations");
-    if (query.next())
-    {
-        count = query.value(0).toInt();    
+    if (query.next()) {
+        count = query.value(0).toInt();
     }
     return count;
 }
 
-std::vector<std::string> DbManager::getSources()
+QStringList DbManager::getSources()
 {
-    std::vector<std::string> sources;
+    QStringList sources;
     QSqlQuery query("SELECT srctag FROM sources");
-    while (query.next())
-    {
-        sources.push_back(query.value(0).toString().toStdString());
+    while (query.next()) {
+        sources << query.value(0).toString();
     }
     return sources;
 }
@@ -57,24 +54,22 @@ std::vector<std::string> DbManager::getSources()
 std::vector<int> DbManager::getSourceLines(std::string filename)
 {
     std::vector<int> lines;
-    std::string request = "SELECT srctag FROM sources WHERE srctag LIKE '"+filename +":%'";
+    std::string request = "SELECT srctag FROM sources WHERE srctag LIKE '" + filename + ":%'";
     QSqlQuery query(request.c_str());
     bool ok;
-    while (query.next())
-    {
-        QString data = query.value(0).toString().replace((filename+":").c_str(), "");
+    while (query.next()) {
+        QString data = query.value(0).toString().replace((filename + ":").c_str(), "");
         lines.push_back(data.toInt(&ok));
     }
     return lines;
 }
 
-std::vector<std::string> DbManager::getFiles()
+QStringList DbManager::getFileList()
 {
-    std::vector<std::string> files;
+    QStringList files;
     QSqlQuery query("SELECT filename FROM files");
-    while (query.next())
-    {
-        files.push_back(query.value(0).toString().toStdString());
+    while (query.next()) {
+        files << query.value(0).toString();
     }
     return files;
 }
@@ -86,8 +81,7 @@ std::vector<int> DbManager::getMutationsForSourceLine(std::string source)
     query.prepare("SELECT DISTINCT mutation_id FROM options WHERE opt_type='src' AND opt_value = :source");
     query.bindValue(":source", source.c_str());
     if (query.exec()) {
-        while (query.next())
-        {
+        while (query.next()) {
             mutations.push_back(query.value(0).toInt());
         }
     }

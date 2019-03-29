@@ -1,5 +1,11 @@
 <RCC>
     <qresource prefix="/icons">
         <file>resources/symbiotic.png</file>
+        <file>resources/resultset_first.png</file>
+        <file>resources/resultset_previous.png</file>
+        <file>resources/resultset_next.png</file>
+        <file>resources/resultset_last.png</file>
+        <file>resources/cross.png</file> 
+        <file>resources/zoom.png</file>
     </qresource>
 </RCC>

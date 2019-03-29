@@ -20,19 +20,20 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <vector>
 #include <QSqlDatabase>
+#include <vector>
 
 class DbManager
 {
   public:
-    DbManager(const QString& path);
+    DbManager(const QString &path);
 
     int getMutationsCount();
-    std::vector<std::string> getSources();
+    QStringList getSources();
     std::vector<int> getSourceLines(std::string filename);
-    std::vector<std::string> getFiles();
+    QStringList getFileList();
     std::vector<int> getMutationsForSourceLine(std::string source);
+
   private:
     QSqlDatabase db;
 };
