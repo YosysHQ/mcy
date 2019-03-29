@@ -25,11 +25,12 @@
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <QTabWidget>
 #include <QToolBar>
 
 Q_DECLARE_METATYPE(std::string)
 
-class ScintillaEdit;
+class CodeView;
 
 class MainWindow : public QMainWindow
 {
@@ -41,8 +42,15 @@ class MainWindow : public QMainWindow
 
   protected:
     void createMenusAndBars();
+    void openCodeViewTab(QString filename);
+    void closeCodeViewTab(int index);
+
   protected Q_SLOTS:
+    void selectLine(QString filename, int line);
+
   protected:
+    QTabWidget *centralTabWidget;
+    QMap<QString, CodeView *> views;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;

@@ -125,11 +125,7 @@ void CodeView::loadContent(const char *content)
     setMarginSensitiveN(2, true);
 }
 
-void CodeView::selectLine(QString line)
-{
-    bool ok;
-    gotoLine(line.split(':').at(1).toInt(&ok) - 1);
-}
+void CodeView::selectLine(int line) { gotoLine(line - 1); }
 
 void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage)
 {

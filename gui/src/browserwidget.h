@@ -60,7 +60,7 @@ class BrowserWidget : public QWidget
     void onSearchInserted();
 
   Q_SIGNALS:
-    void selectLine(QString line);
+    void selectLine(QString filename, int line);
 
   private:
     // database

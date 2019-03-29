@@ -42,15 +42,16 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
 
     QSplitter *splitter_h = new QSplitter(Qt::Horizontal, centralWidget);
 
-    QTabWidget *centralTabWidget = new QTabWidget();
+    centralTabWidget = new QTabWidget(this);
     centralTabWidget->setTabsClosable(true);
     centralTabWidget->setMovable(true);
-    connect(centralTabWidget, &QTabWidget::tabCloseRequested, [=](int index) { centralTabWidget->removeTab(index); });
+    connect(centralTabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::closeCodeViewTab);
 
     splitter_h->addWidget(centralTabWidget);
 
     BrowserWidget *browser = new BrowserWidget(&database);
     browser->setMinimumWidth(300);
+    connect(browser, &BrowserWidget::selectLine, this, &MainWindow::selectLine);
 
     splitter_h->addWidget(browser);
     splitter_h->setCollapsible(0, false);
@@ -66,11 +67,7 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
     createMenusAndBars();
 
     for (auto filename : database.getFileList()) {
-        CodeView *code = new CodeView(filename, this);
-        code->loadContent(database.getFileContent(filename).toLocal8Bit().constData());
-        code->setCoverage(database.getCoverage(filename));
-        centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
-        connect(browser, &BrowserWidget::selectLine, code, &CodeView::selectLine);
+        openCodeViewTab(filename);
     }
 }
 
@@ -91,4 +88,41 @@ void MainWindow::createMenusAndBars()
 
     statusBar = new QStatusBar();
     setStatusBar(statusBar);
+}
+
+void MainWindow::openCodeViewTab(QString filename)
+{
+    if (!views.contains(filename)) {
+        CodeView *code = new CodeView(filename, this);
+        code->loadContent(database.getFileContent(filename).toLocal8Bit().constData());
+        code->setCoverage(database.getCoverage(filename));
+        views.insert(filename, code);
+        centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
+    } else {
+        centralTabWidget->setCurrentWidget(views[filename]);
+    }
+}
+
+void MainWindow::closeCodeViewTab(int index)
+{
+    QWidget *current = centralTabWidget->widget(index);
+    if (current != nullptr) {
+        if (std::string(current->metaObject()->className()) == "CodeView") {
+            CodeView *code = (CodeView *)current;
+            views.remove(code->getFilename());
+        }
+    }
+    centralTabWidget->removeTab(index);
+}
+
+void MainWindow::selectLine(QString filename, int line)
+{
+    openCodeViewTab(filename);
+    QWidget *current = centralTabWidget->currentWidget();
+    if (current != nullptr) {
+        if (std::string(current->metaObject()->className()) == "CodeView") {
+            CodeView *code = (CodeView *)current;
+            code->selectLine(line);
+        }
+    }
 }

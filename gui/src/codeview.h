@@ -33,8 +33,8 @@ class CodeView : public ScintillaEdit
 
     void loadContent(const char *content);
     void setCoverage(QMap<int, QPair<int, int>> coverage);
-  public Q_SLOTS:
-    void selectLine(QString line);
+    QString &getFilename() { return filename; }
+    void selectLine(int line);
 
   private:
     QString filename;

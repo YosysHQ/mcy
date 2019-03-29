@@ -244,7 +244,14 @@ void BrowserWidget::prepareMenuSourceList(const QPoint &pos)
     menu.exec(sourceList->mapToGlobal(pos));
 }
 
-void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item) { Q_EMIT selectLine(item->text()); }
+void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item)
+{
+    bool ok;
+    QStringList param = item->text().split(':');
+    int line = param.at(1).toInt(&ok);
+    if (ok)
+        Q_EMIT selectLine(param.at(0), line);
+}
 
 void BrowserWidget::prepareMenuProperty(const QPoint &pos) {}
 
