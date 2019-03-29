@@ -234,6 +234,16 @@ void BrowserWidget::onSourceSelectionChanged()
 
     QtProperty *topItem = addTopLevelProperty("Source");
     addProperty(topItem, QVariant::String, "Name", item->text());
+
+    QtProperty *mutItem = addTopLevelProperty("Mutations");
+    QList<int> mutations = database->getMutationsForSource(item->text());
+    for (auto mutationId : mutations) {
+        QtProperty *mItem = addSubGroup(mutItem, "Mutation " + QString::number(mutationId));
+        QMap<QString, QString> options = database->getMutationOption(mutationId);
+        for (QMap<QString, QString>::iterator it = options.begin(); it != options.end(); ++it) {
+            addProperty(mItem, QVariant::String, it.key(), it.value());
+        }
+    }
 }
 
 void BrowserWidget::prepareMenuSourceList(const QPoint &pos)

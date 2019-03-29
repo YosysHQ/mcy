@@ -20,6 +20,7 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include <QList>
 #include <QMap>
 #include <QSqlDatabase>
 
@@ -33,6 +34,8 @@ class DbManager
     QStringList getFileList();
     QString getFileContent(QString filename);
     QMap<int, QPair<int, int>> getCoverage(QString filename);
+    QList<int> getMutationsForSource(QString source);
+    QMap<QString, QString> getMutationOption(int mutationId);
 
   private:
     QSqlDatabase db;

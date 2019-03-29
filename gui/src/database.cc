@@ -88,3 +88,23 @@ QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
     }
     return retVal;
 }
+
+QList<int> DbManager::getMutationsForSource(QString source)
+{
+    QList<int> retVal;
+    QSqlQuery query("SELECT mutation_id FROM options WHERE opt_type = 'src' AND opt_value='" + source + "'");
+    while (query.next()) {
+        retVal.append(query.value(0).toInt());
+    }
+    return retVal;
+}
+
+QMap<QString, QString> DbManager::getMutationOption(int mutationId)
+{
+    QMap<QString, QString> retVal;
+    QSqlQuery query("SELECT opt_type, opt_value FROM options WHERE mutation_id = " + QString::number(mutationId));
+    while (query.next()) {
+        retVal.insert(query.value(0).toString(), query.value(1).toString());
+    }
+    return retVal;
+}
