@@ -49,7 +49,7 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
 
     splitter_h->addWidget(centralTabWidget);
 
-    BrowserWidget *browser = new BrowserWidget(&database);
+    browser = new BrowserWidget(&database);
     browser->setMinimumWidth(350);
     connect(browser, &BrowserWidget::selectLine, this, &MainWindow::selectLine);
 
@@ -98,6 +98,10 @@ void MainWindow::openCodeViewTab(QString filename)
         code->setCoverage(database.getCoverage(filename));
         views.insert(filename, code);
         centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
+        connect(code, &CodeView::updateUi, [=](int updated) {
+            QString source = filename + ":" + QString::number(code->lineFromPosition(code->currentPos()) + 1);
+            browser->selectSource(source);
+        });
     } else {
         centralTabWidget->setCurrentWidget(views[filename]);
     }

@@ -59,6 +59,9 @@ class BrowserWidget : public QWidget
     // search slots
     void onSearchInserted();
 
+  public Q_SLOTS:
+    void selectSource(QString source);
+
   Q_SIGNALS:
     void selectLine(QString filename, int line);
 

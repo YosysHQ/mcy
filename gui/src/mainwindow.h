@@ -31,6 +31,7 @@
 Q_DECLARE_METATYPE(std::string)
 
 class CodeView;
+class BrowserWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -50,6 +51,7 @@ class MainWindow : public QMainWindow
 
   protected:
     QTabWidget *centralTabWidget;
+    BrowserWidget *browser;
     QMap<QString, CodeView *> views;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;

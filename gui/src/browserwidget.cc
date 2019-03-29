@@ -277,3 +277,11 @@ void BrowserWidget::onSearchInserted()
     for (QListWidgetItem *item : matches)
         item->setHidden(false);
 }
+
+void BrowserWidget::selectSource(QString source)
+{
+    QList<QListWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
+    if (items.size() > 0) {
+        sourceList->setCurrentItem(items.at(0));
+    }
+}
