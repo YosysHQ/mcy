@@ -24,6 +24,7 @@ find_package(Boost REQUIRED COMPONENTS ${boost_libs})
 find_package(Qt5 COMPONENTS Core Widgets Sql REQUIRED)
 
 add_subdirectory(3rdparty/scintilla ${CMAKE_CURRENT_BINARY_DIR}/generated/3rdparty/ScintillaEdit)
+add_subdirectory(3rdparty/QtPropertyBrowser ${CMAKE_CURRENT_BINARY_DIR}/generated/3rdparty/QtPropertyBrowser EXCLUDE_FROM_ALL)
 add_subdirectory(src ${CMAKE_CURRENT_BINARY_DIR}/generated/src)
 
 set(EXECUTABLE_OUTPUT_PATH .)
