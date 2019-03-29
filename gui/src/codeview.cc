@@ -122,6 +122,8 @@ void CodeView::loadContent(const char *content)
     // Counter margin
     setMarginWidthN(2, 20);
     setMarginTypeN(2, SC_MARGIN_RTEXT);
+    setMarginSensitiveN(0, true);
+    setMarginSensitiveN(1, true);
     setMarginSensitiveN(2, true);
 }
 
