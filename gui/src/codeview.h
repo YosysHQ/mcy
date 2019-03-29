@@ -17,27 +17,23 @@
  *
  */
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef CODEVIEW_H
+#define CODEVIEW_H
 
-#include <QSqlDatabase>
-#include <vector>
+#include "ScintillaEdit.h"
+#include "database.h"
 
-class DbManager
+class CodeView : public ScintillaEdit
 {
+    Q_OBJECT
+
   public:
-    DbManager(const QString &path);
+    explicit CodeView(QString filename, QWidget *parent = 0);
+    ~CodeView();
 
-    int getMutationsCount();
-    QStringList getSources();
-    QStringList getFileList();
-    QString getFileContent(QString filename);
-
-    std::vector<int> getSourceLines(std::string filename);
-    std::vector<int> getMutationsForSourceLine(std::string source);
-
+    void loadContent(const char *content);
   private:
-    QSqlDatabase db;
+    QString filename;
 };
 
-#endif // DATABASE_H
+#endif // CODEVIEW_H

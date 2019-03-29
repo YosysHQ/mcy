@@ -74,6 +74,15 @@ QStringList DbManager::getFileList()
     return files;
 }
 
+QString DbManager::getFileContent(QString filename)
+{
+    QSqlQuery query("SELECT data FROM files WHERE filename='" +filename +"'");
+    if (query.next()) {
+        return query.value(0).toString();
+    }
+    return "";
+}
+
 std::vector<int> DbManager::getMutationsForSourceLine(std::string source)
 {
     std::vector<int> mutations;

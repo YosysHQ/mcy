@@ -7,5 +7,6 @@
         <file>resources/resultset_last.png</file>
         <file>resources/cross.png</file> 
         <file>resources/zoom.png</file>
+        <file>resources/page_white_text.png</file>
     </qresource>
 </RCC>

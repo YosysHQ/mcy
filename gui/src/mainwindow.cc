@@ -22,6 +22,7 @@
 #include <QSplitter>
 #include <QTabBar>
 #include "browserwidget.h"
+#include "codeview.h"
 
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
@@ -43,6 +44,8 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
 
     QTabWidget *centralTabWidget = new QTabWidget();
     centralTabWidget->setTabsClosable(true);
+    centralTabWidget->setMovable(true);
+    connect(centralTabWidget, &QTabWidget::tabCloseRequested, [=](int index) { centralTabWidget->removeTab(index); });
 
     splitter_h->addWidget(centralTabWidget);
 
@@ -61,6 +64,12 @@ MainWindow::MainWindow(QString workingDir, QWidget *parent)
     setCentralWidget(centralWidget);
 
     createMenusAndBars();
+
+    for(auto filename : database.getFileList()) {
+        CodeView *code = new CodeView(filename, this);
+        code->loadContent(database.getFileContent(filename).toLocal8Bit().constData());
+        centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
+    }
 }
 
 MainWindow::~MainWindow() {}
