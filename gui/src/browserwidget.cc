@@ -250,13 +250,7 @@ void BrowserWidget::onSourceSelectionChanged()
     }
 }
 
-void BrowserWidget::prepareMenuSourceList(const QPoint &pos)
-{
-    QMenu menu(this);
-    QAction *actionBookmark = new QAction("Bookmark", this);
-    menu.addAction(actionBookmark);
-    menu.exec(sourceList->mapToGlobal(pos));
-}
+void BrowserWidget::prepareMenuSourceList(const QPoint &pos) {}
 
 void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item)
 {
