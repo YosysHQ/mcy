@@ -19,6 +19,7 @@
 
 #include "mainwindow.h"
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QSplitter>
 #include <QTabBar>
 #include "browserwidget.h"
@@ -84,8 +85,12 @@ void MainWindow::createMenusAndBars()
     actionExit->setShortcuts(QKeySequence::Quit);
     actionExit->setStatusTip("Exit the application");
     connect(actionExit, &QAction::triggered, this, &MainWindow::close);
-
     menuFile->addAction(actionExit);
+
+    QAction *actionAbout = new QAction("&About", this);
+    actionAbout->setStatusTip("Show the application's about box");
+    connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
+    menuHelp->addAction(actionAbout);
 
     menuBar->addAction(menuFile->menuAction());
     menuBar->addAction(menuHelp->menuAction());
@@ -96,6 +101,12 @@ void MainWindow::createMenusAndBars()
 
     statusBar = new QStatusBar();
     setStatusBar(statusBar);
+}
+
+void MainWindow::about()
+{
+    QMessageBox::about(this, tr("MCY-GUI"), tr("The <b>Mutation Cover with Yosys GUI</b> is part of "
+                                               "<br/><b>SymbioticEDA</b> solution for formal verification."));
 }
 
 void MainWindow::openCodeViewTab(QString filename)

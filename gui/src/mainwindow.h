@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
 
   protected Q_SLOTS:
     void selectLine(QString filename, int line);
+    void about();
 
   protected:
     QTabWidget *centralTabWidget;
