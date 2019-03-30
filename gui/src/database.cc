@@ -44,7 +44,7 @@ int DbManager::getMutationsCount()
 QStringList DbManager::getSources()
 {
     QStringList sources;
-    QSqlQuery query("SELECT srctag FROM sources");
+    QSqlQuery query("SELECT srctag FROM sources ORDER BY SUBSTR(srctag,0,INSTR(srctag,':')),CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
     while (query.next()) {
         sources << query.value(0).toString();
     }
