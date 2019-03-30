@@ -26,7 +26,6 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QTabWidget>
-#include <QToolBar>
 
 Q_DECLARE_METATYPE(std::string)
 
@@ -55,7 +54,6 @@ class MainWindow : public QMainWindow
     BrowserWidget *browser;
     QMap<QString, CodeView *> views;
     QMenuBar *menuBar;
-    QToolBar *mainToolBar;
     QStatusBar *statusBar;
     DbManager database;
 };

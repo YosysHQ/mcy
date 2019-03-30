@@ -96,9 +96,6 @@ void MainWindow::createMenusAndBars()
     menuBar->addAction(menuHelp->menuAction());
     setMenuBar(menuBar);
 
-    mainToolBar = new QToolBar();
-    addToolBar(Qt::TopToolBarArea, mainToolBar);
-
     statusBar = new QStatusBar();
     setStatusBar(statusBar);
 }
