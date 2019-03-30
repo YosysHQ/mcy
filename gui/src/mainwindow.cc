@@ -76,11 +76,19 @@ MainWindow::~MainWindow() {}
 void MainWindow::createMenusAndBars()
 {
     menuBar = new QMenuBar();
-    QMenu *menu_File = new QMenu("&File", menuBar);
-    QMenu *menu_Help = new QMenu("&Help", menuBar);
+    QMenu *menuFile = new QMenu("&File", menuBar);
+    QMenu *menuHelp = new QMenu("&Help", menuBar);
 
-    menuBar->addAction(menu_File->menuAction());
-    menuBar->addAction(menu_Help->menuAction());
+    QAction *actionExit = new QAction("Exit", this);
+    actionExit->setIcon(QIcon(":/icons/resources/exit.png"));
+    actionExit->setShortcuts(QKeySequence::Quit);
+    actionExit->setStatusTip("Exit the application");
+    connect(actionExit, &QAction::triggered, this, &MainWindow::close);
+
+    menuFile->addAction(actionExit);
+
+    menuBar->addAction(menuFile->menuAction());
+    menuBar->addAction(menuHelp->menuAction());
     setMenuBar(menuBar);
 
     mainToolBar = new QToolBar();

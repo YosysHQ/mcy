@@ -8,5 +8,6 @@
         <file>resources/cross.png</file> 
         <file>resources/zoom.png</file>
         <file>resources/page_white_text.png</file>
+        <file>resources/exit.png</file>
     </qresource>
 </RCC>
