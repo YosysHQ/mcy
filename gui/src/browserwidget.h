@@ -47,6 +47,7 @@ class BrowserWidget : public QWidget
     // history handling
     void updateButtons();
     void addToHistory(QListWidgetItem *item);
+    bool eventFilter(QObject *obj, QEvent *ev);
 
   private Q_SLOTS:
     // source list slots

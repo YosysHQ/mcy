@@ -24,6 +24,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QSplitter>
+#include <QTimer>
 #include <QToolBar>
 #include <QTreeWidgetItem>
 
@@ -32,7 +33,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     sourceList = new QListWidget();
     sourceList->addItems(database->getSources());
     sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    sourceList->setCurrentItem(sourceList->item(0));
+    sourceList->installEventFilter(this);
     // Add property view
     variantManager = new QtVariantPropertyManager(this);
     readOnlyManager = new QtVariantPropertyManager(this);
@@ -159,6 +161,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 
     history_index = -1;
     history_ignore = false;
+    QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
 BrowserWidget::~BrowserWidget() {}
@@ -283,5 +286,24 @@ void BrowserWidget::selectSource(QString source)
     QList<QListWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
     if (items.size() > 0) {
         sourceList->setCurrentItem(items.at(0));
+    }
+}
+
+bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == sourceList) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *key = static_cast<QKeyEvent *>(event);
+            if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return)) {
+                onSourceDoubleClicked(sourceList->currentItem());
+            } else {
+                return QObject::eventFilter(obj, event);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return BrowserWidget::eventFilter(obj, event);
     }
 }
