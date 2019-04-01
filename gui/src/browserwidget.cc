@@ -33,7 +33,6 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     sourceList = new QListWidget();
     sourceList->addItems(database->getSources());
     sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
-    sourceList->setCurrentItem(sourceList->item(0));
     sourceList->installEventFilter(this);
     // Add property view
     variantManager = new QtVariantPropertyManager(this);
@@ -161,6 +160,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 
     history_index = -1;
     history_ignore = false;
+    sourceList->setCurrentItem(sourceList->item(0));    
     QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
