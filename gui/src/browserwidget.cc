@@ -160,7 +160,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 
     history_index = -1;
     history_ignore = false;
-    sourceList->setCurrentItem(sourceList->item(0));    
+    sourceList->setCurrentItem(sourceList->item(0));
     QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
@@ -209,11 +209,13 @@ void BrowserWidget::clearProperties()
     idToProperty.clear();
 }
 
-void BrowserWidget::addProperty(QtProperty *topItem, int propertyType, const QString &name, QVariant value)
+void BrowserWidget::addProperty(QtProperty *topItem, int propertyType, const QString &name, QVariant value,
+                                QString type)
 {
     QtVariantProperty *item = readOnlyManager->addProperty(propertyType, name);
     item->setValue(value);
     item->setSelectable(false);
+    item->setPropertyId(type);
     topItem->addSubProperty(item);
 }
 
@@ -243,7 +245,7 @@ void BrowserWidget::onSourceSelectionChanged()
     for (auto mutationId : mutations) {
         QtProperty *mItem = addSubGroup(mutItem, "Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
-            addProperty(mItem, QVariant::String, option.first, option.second);
+            addProperty(mItem, QVariant::String, option.first, option.second, option.first);
         }
         QtProperty *tagsItem = addSubGroup(mItem, "Tags");
         for (auto tag : database->getTagsForMutation(mutationId)) {
@@ -269,7 +271,14 @@ void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item)
 
 void BrowserWidget::prepareMenuProperty(const QPoint &pos) {}
 
-void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column) {}
+void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    QtProperty *selectedProperty = propertyEditor->itemToBrowserItem(item)->property();
+    QString type = selectedProperty->propertyId();
+    if (type != "src")
+        return;
+    selectSource(selectedProperty->valueText());
+}
 
 void BrowserWidget::onSearchInserted()
 {

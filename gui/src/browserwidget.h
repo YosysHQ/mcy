@@ -41,7 +41,8 @@ class BrowserWidget : public QWidget
   private:
     // property handling
     void clearProperties();
-    void addProperty(QtProperty *topItem, int propertyType, const QString &name, QVariant value);
+    void addProperty(QtProperty *topItem, int propertyType, const QString &name, QVariant value,
+                     QString type = QString(""));
     QtProperty *addTopLevelProperty(const QString &id);
     QtProperty *addSubGroup(QtProperty *topItem, const QString &name);
     // history handling
