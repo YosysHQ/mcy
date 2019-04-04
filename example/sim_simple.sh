@@ -7,7 +7,7 @@ set -ex
 
 {
 	echo "read_ilang ../../database/design.il"
-	while read idx mut; do
+	while read -r idx mut; do
 		echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 	done < input.txt
 	echo "write_verilog -attr2comment mutated.v"
