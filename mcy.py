@@ -742,7 +742,7 @@ if sys.argv[1] == "source":
 ######################################################
 
 if sys.argv[1] == "dash":
-    print("'mcy dash' is not implemented yet.")
+    os.execvp("mcy-dash", ["mcy-dash"] + sys.argv[2:])
     exit(1)
 
 if sys.argv[1] == "gui":

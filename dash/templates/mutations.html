@@ -1,0 +1,46 @@
+{% include 'header.html' %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Mutations</h1>
+  </div>
+
+  <!-- Content Row -->
+  <div class="card shadow mb-4">
+    <div class="card-body">      
+    <div class="table-responsive">   
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Mutation</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>ID</th>
+          <th>Mutation</th>
+        </tr>
+      </tfoot>
+      <tbody>                
+        {% for mutation in mutations %}
+        <tr>
+          <td>{{ mutation[0] }}</td>
+          <td>{{ mutation[1] }}</td>
+        </tr>
+        {% endfor %}                 
+      </tbody>
+    </table>
+  </div>
+  </div>          
+</div>
+<!-- /.container-fluid -->
+  {% include 'footer.html' %}
+  <!-- Page level plugins -->
+  <script src="js/jquery.dataTables.min.js"></script>
+  <script src="js/dataTables.bootstrap4.min.js"></script>
+  <!-- Page level custom scripts -->
+  <script src="js/datatables-demo.js"></script>
+  
