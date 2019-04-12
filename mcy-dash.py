@@ -39,21 +39,33 @@ if not os.path.exists("config.mcy"):
 @app.route("/")
 @app.route("/index.html")
 def home():
-    mutations = None
-    queue = None
+    cnt_mutations = None
+    cnt_queue = None
+    cnt_results = None
+    cnt_sources = None
+    running = None
     results = None
-    sources = None
+    tags = None
     error = ''
+    warning = ''
     try:
         db = sqlite3_connect()
-        mutations = db.execute('select count(*) from mutations').fetchone()[0]
-        queue = db.execute('select count(*) from queue').fetchone()[0]
-        results = db.execute('select count(*) from results').fetchone()[0]
-        sources = db.execute('select count(*) from sources').fetchone()[0]
+        cnt_mutations = db.execute('SELECT COUNT(*) FROM mutations').fetchone()[0]
+        cnt_queue = db.execute('SELECT COUNT(*) FROM queue').fetchone()[0]
+        cnt_results = db.execute('SELECT COUNT(*) FROM results').fetchone()[0]
+        cnt_sources = db.execute('SELECT COUNT(*) FROM sources').fetchone()[0]
+        results = db.execute('SELECT test, result,COUNT(*) FROM results GROUP BY test, result').fetchall()
+        tags = db.execute('SELECT tag,count(*) FROM tags GROUP BY tag').fetchall()
+        queue = db.execute('SELECT test,CASE running WHEN 0 THEN \'PENDING\' ELSE \'RUNNING\' END,count(*) FROM queue GROUP BY test,running ORDER BY running DESC,test ASC').fetchall()
+        running = db.execute('SELECT count(*) FROM queue WHERE running=1').fetchone()[0]
+        print(running)
+        print(cnt_queue)
+        if (running==0):
+            warning = "MCY seams to have stopped working, there are still items in queue but nothing is running. Check console"
         db.close()
     except:
         error ='Error accessing database'
-    return render_template('index.html', selected='index', mutations=mutations, queue=queue, results=results, sources=sources, error=error)
+    return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue, cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags, queue=queue, error=error, warning=warning)
 
 @app.route("/mutations.html")
 def mutations():
@@ -61,10 +73,7 @@ def mutations():
     error = ''
     try:
         db = sqlite3_connect()
-        db.row_factory = sqlite3.Row
-        cur = db.cursor()
-        cur.execute('select * from mutations')
-        mutations = cur.fetchall()
+        mutations = db.execute('SELECT * FROM mutations').fetchall()
         db.close()
     except:
         error ='Error accessing database'

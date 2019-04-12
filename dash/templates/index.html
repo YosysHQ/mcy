@@ -27,7 +27,7 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Mutations</div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ mutations }}</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cnt_mutations }}</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -44,7 +44,7 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Queue</div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ queue }}</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cnt_queue }}</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -61,7 +61,7 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Results</div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ results }}</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cnt_results }}</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -78,7 +78,7 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Sources</div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sources }}</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cnt_sources }}</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -87,8 +87,116 @@
         </div>
       </div>
     </div>
+  </div>
+  
+  {% if warning|length %}
+  <div class="row">
+    <div class="col-lg-12 mb">
+      <div class="card shadow mb-4 bg-warning text-white shadow">
+        <div class="card-body">
+          <i class="fas fa-exclamation-triangle text-gray-300"></i> &nbsp;{{ warning }}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}      
+
+  <div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Queue</h6>
+            </div>
+            <div class="card-body">      
+              <div class="table-responsive">   
+              <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>Test</th>
+                    <th>Running</th>
+                    <th>Count</th>
+                  </tr>
+                </thead>
+                <tbody>                
+                  {% for res in queue %}
+                  <tr>
+                    <td>{{ res[0] }}</td>
+                    <td>{{ res[1] }}</td>
+                    <td>{{ res[2] }}</td>
+                  </tr>
+                  {% endfor %}                 
+                </tbody>
+              </table>
+              </div>
+            </div>          
+          </div>      
+    </div>
+
+    <div class="col-lg-4 mb-4">
+      
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Results</h6>
+        </div>
+        <div class="card-body">      
+          <div class="table-responsive">   
+          <table class="table table-bordered" id="dataTableResult" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Test</th>
+                <th>Result</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>                
+              {% for res in results %}
+              <tr>
+                <td>{{ res[0] }}</td>
+                <td>{{ res[1] }}</td>
+                <td>{{ res[2] }}</td>
+              </tr>
+              {% endfor %}                 
+            </tbody>
+          </table>
+          </div>
+        </div>          
+      </div>
+    </div>
+  
+    <div class="col-lg-4 mb-4">
+
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Tags</h6>
+      </div>
+      <div class="card-body">      
+        <div class="table-responsive">   
+        <table class="table table-bordered" id="dataTableResult" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>                
+            {% for res in tags %}
+            <tr>
+              <td>{{ res[0] }}</td>
+              <td>{{ res[1] }}</td>
+            </tr>
+            {% endfor %}                 
+          </tbody>
+        </table>
+        </div>
+      </div>          
+    </div>
+
 
   </div>
+
+  </div>
+  
   <div class="row">
 
     <a href="db.sqlite3" class="btn btn-primary btn-icon-split btn-lg">
