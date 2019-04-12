@@ -3,6 +3,8 @@
 from flask import Flask, send_from_directory, render_template, send_file
 import sqlite3, signal, os, sys
 
+silent_sigpipe = False
+
 def root_path():
     fn = getattr(sys.modules['__main__'], '__file__')
     root_path = os.path.abspath(os.path.dirname(fn))
