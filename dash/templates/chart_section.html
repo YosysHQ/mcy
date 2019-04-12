@@ -4,6 +4,7 @@
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
+{% if queue is defined and queue|length > 0 %}
 // Queue Chart
 var ctxQueueChart = document.getElementById("myQueueChart");
 var myQueueChart = new Chart(ctxQueueChart, {
@@ -33,7 +34,9 @@ var myQueueChart = new Chart(ctxQueueChart, {
     displayColors: false, caretPadding: 10,},    
   },
 });
+{% endif %}
 
+{% if results is defined and results|length > 0 %}
 // Results Chart
 var ctxResultsChart = document.getElementById("myResultsChart");
 var myResultsChart = new Chart(ctxResultsChart, {
@@ -63,7 +66,10 @@ var myResultsChart = new Chart(ctxResultsChart, {
     displayColors: false, caretPadding: 10,},    
   },
 });
-// Results Chart
+{% endif %}
+
+{% if tags is defined and tags|length > 0 %}
+// Tags Chart
 var ctxTagsChart = document.getElementById("myTagsChart");
 var myTagsChart = new Chart(ctxTagsChart, {
   type: 'doughnut',
@@ -92,6 +98,6 @@ var myTagsChart = new Chart(ctxTagsChart, {
     displayColors: false, caretPadding: 10,},    
   },
 });
-
+{% endif %}
 </script>
 {% endif %}

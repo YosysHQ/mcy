@@ -47,8 +47,7 @@ def home():
     tags = None
     queue = None
     running = None
-    error = ''
-    warning = ''
+    error = ''    
     try:
         db = sqlite3_connect()
         cnt_mutations = db.execute('SELECT COUNT(*) FROM mutations').fetchone()[0]
@@ -59,14 +58,12 @@ def home():
         tags = db.execute('SELECT tag,count(*) FROM tags GROUP BY tag').fetchall()
         queue = db.execute('SELECT test,CASE running WHEN 0 THEN \'PENDING\' ELSE \'RUNNING\' END,count(*) FROM queue GROUP BY test,running ORDER BY running DESC,test ASC').fetchall()
         running = db.execute('SELECT count(*) FROM queue WHERE running=1').fetchone()[0]
-        print(running)
-        print(cnt_queue)
-        if (running==0):
-            warning = "MCY jobs not running. There are still items in queue, if mcy was started please check console for errors."
         db.close()
     except:
         error ='Error accessing database'
-    return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue, cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags, queue=queue, error=error, warning=warning)
+    return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue, 
+                           cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags, 
+                           running=running, queue=queue, error=error)
 
 @app.route("/mutations.html")
 def mutations():
