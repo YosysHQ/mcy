@@ -218,9 +218,13 @@
             <h6 class="m-0 font-weight-bold text-primary">Queue Chart</h6>
           </div>
           <div class="card-body">
+            {% if queue is defined and queue|length > 0 %}      
             <div class="chart-pie pt-4 pb-2">
               <canvas id="myQueueChart"></canvas>
             </div>
+            {% else %}
+            No queue data available
+            {% endif %}            
           </div>
         </div>
       </div>  
@@ -231,9 +235,13 @@
             <h6 class="m-0 font-weight-bold text-primary">Results Chart</h6>
           </div>
           <div class="card-body">
+            {% if results is defined and results|length > 0 %}
             <div class="chart-pie pt-4 pb-2">
               <canvas id="myResultsChart"></canvas>
             </div>
+            {% else %}
+            No results data available
+            {% endif %}  
           </div>
         </div>
       </div>        
@@ -244,9 +252,13 @@
               <h6 class="m-0 font-weight-bold text-primary">Tags Chart</h6>
             </div>
             <div class="card-body">
+              {% if tags is defined and tags|length > 0 %}
               <div class="chart-pie pt-4 pb-2">
                 <canvas id="myTagsChart"></canvas>
               </div>
+              {% else %}
+              No tags data available
+              {% endif %}      
             </div>
           </div>
         </div>        
@@ -265,6 +277,8 @@
 </div>
 <!-- /.container-fluid -->
 {% include 'footer.html' %}
+
+{% if not error|length %}
 <script>
 // Set new default font family and font color to mimic Bootstrap's default styling
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
@@ -360,3 +374,4 @@ var myTagsChart = new Chart(ctxTagsChart, {
 });
 
 </script>
+{% endif %}
