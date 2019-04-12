@@ -4,12 +4,15 @@ from flask import Flask, send_from_directory, render_template, send_file
 import sqlite3, signal, os, sys
 
 def root_path():
-    # Infer the root path from the run file in the project root (e.g. manage.py)
     fn = getattr(sys.modules['__main__'], '__file__')
     root_path = os.path.abspath(os.path.dirname(fn))
     return root_path
 
-app = Flask(__name__, root_path=root_path() + '/../share/mcy/dash', static_url_path='')
+path = root_path() + '/../share/mcy/dash' # for install
+if (not os.path.exists(path)):
+    path = root_path() + '/dash' # for development
+
+app = Flask(__name__, root_path=path, static_url_path='')
 
 def sqlite3_connect():
     db = sqlite3.connect("database/db.sqlite3")
