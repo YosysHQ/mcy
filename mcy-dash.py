@@ -54,8 +54,8 @@ def home():
         cnt_queue = db.execute('SELECT COUNT(*) FROM queue').fetchone()[0]
         cnt_results = db.execute('SELECT COUNT(*) FROM results').fetchone()[0]
         cnt_sources = db.execute('SELECT COUNT(*) FROM sources').fetchone()[0]
-        results = db.execute('SELECT test, result,COUNT(*) FROM results GROUP BY test, result').fetchall()
-        tags = db.execute('SELECT tag,count(*) FROM tags GROUP BY tag').fetchall()
+        results = db.execute('SELECT test, result,COUNT(*),ROUND(count(*) * 100.00 /(SELECT count(*) FROM results),2)  FROM results GROUP BY test, result').fetchall()
+        tags = db.execute('SELECT tag,count(*),ROUND(count(*) * 100.00 /(SELECT count(*) FROM tags),2) FROM tags GROUP BY tag').fetchall()
         queue = db.execute('SELECT test,CASE running WHEN 0 THEN \'PENDING\' ELSE \'RUNNING\' END,count(*) FROM queue GROUP BY test,running ORDER BY running DESC,test ASC').fetchall()
         running = db.execute('SELECT count(*) FROM queue WHERE running=1').fetchone()[0]
         db.close()

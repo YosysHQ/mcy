@@ -50,7 +50,7 @@ var myResultsChart = new Chart(ctxResultsChart, {
     datasets: [{
       data: [
           {% for res in results %}
-          {{ res[2] }},
+          {{ res[3] }},
           {% endfor %}                 
         ],
     }],
@@ -82,7 +82,7 @@ var myTagsChart = new Chart(ctxTagsChart, {
     datasets: [{
       data: [
           {% for res in tags %}
-          {{ res[1] }},
+          {{ res[2] }},
           {% endfor %}                 
         ],
     }],
