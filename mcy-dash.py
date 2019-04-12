@@ -43,9 +43,10 @@ def home():
     cnt_queue = None
     cnt_results = None
     cnt_sources = None
-    running = None
     results = None
     tags = None
+    queue = None
+    running = None
     error = ''
     warning = ''
     try:
@@ -61,7 +62,7 @@ def home():
         print(running)
         print(cnt_queue)
         if (running==0):
-            warning = "MCY seams to have stopped working, there are still items in queue but nothing is running. Check console"
+            warning = "MCY jobs not running. There are still items in queue, if mcy was started please check console for errors."
         db.close()
     except:
         error ='Error accessing database'
