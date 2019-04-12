@@ -7,6 +7,16 @@
     <h1 class="h3 mb-0 text-gray-800">Mutations</h1>
   </div>
 
+  {% if error|length %}
+
+  <div class="card shadow mb-4 bg-danger text-white shadow">
+    <div class="card-body">
+      <i class="fas fa-exclamation-triangle text-gray-300"></i> &nbsp;{{ error }}
+    </div>
+  </div>
+  
+  {% else %}  
+
   <!-- Content Row -->
   <div class="card shadow mb-4">
     <div class="card-body">      
@@ -35,6 +45,7 @@
     </table>
   </div>
   </div>          
+  {% endif %}
 </div>
 <!-- /.container-fluid -->
   {% include 'footer.html' %}
