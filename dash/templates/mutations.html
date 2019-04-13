@@ -13,7 +13,16 @@
     <div class="card-body">
       <i class="fas fa-exclamation-circle text-white-300"></i> &nbsp;
       {% if errorCode==1 %}
-      Database does not exists. Initialize first.
+      <form action="/index.html" method="post" class="d-none d-sm-inline-block form-inline">
+      <input name="action" type="hidden" value="initialize"/>
+      Database does not exists.&nbsp;
+      <button type="submit" class="btn btn-danger btn-icon-split btn-sm shadow">
+        <span class="icon text-white-50">
+          <i class="fas fa-database"></i>
+        </span>
+        <span class="text">Initialize database</span>
+      </button>
+      </form>
       {% elif errorCode==2 %}
       Error accessing database
       {% endif %}

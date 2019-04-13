@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from flask import Flask, send_from_directory, render_template, send_file
-import sqlite3, signal, os, sys
+from flask import Flask, send_from_directory, render_template, send_file, request, redirect
+import sqlite3, signal, os, sys, subprocess, time
 
 silent_sigpipe = False
 
@@ -36,8 +36,8 @@ if not os.path.exists("config.mcy"):
     exit(1)
 
 
-@app.route("/")
-@app.route("/index.html")
+@app.route("/", methods=['GET', 'POST'])
+@app.route("/index.html", methods=['GET', 'POST'])
 def home():
     cnt_mutations = None
     cnt_queue = None
@@ -48,6 +48,13 @@ def home():
     queue = None
     running = None
     errorCode = 0
+    if request.method == 'POST':
+        action = request.form['action']
+        if (action and action=='initialize'):
+            subprocess.call(["mcy" ,'init'])
+            return redirect('index.html')
+        if (action and action=='run'):            
+            return redirect('index.html')
     try:
         db = sqlite3_connect()
         cnt_mutations = db.execute('SELECT COUNT(*) FROM mutations').fetchone()[0]
