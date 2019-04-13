@@ -7,11 +7,16 @@
     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
   </div>
 
-  {% if error|length %}
+  {% if not errorCode==0 %}
 
   <div class="card shadow mb-4 bg-danger text-white shadow">
     <div class="card-body">
-      <i class="fas fa-exclamation-circle text-white-300"></i> &nbsp;{{ error }}
+      <i class="fas fa-exclamation-circle text-white-300"></i> &nbsp;
+      {% if errorCode==1 %}
+      Database does not exists. Initialize first.
+      {% elif errorCode==2 %}
+      Error accessing database
+      {% endif %}
     </div>
   </div>
   
@@ -89,7 +94,7 @@
     </div>
   </div>
   
-  {% if running is defined and running == 0 and not cnt_queue==0 %}
+  {% if running is not none and running == 0 and not cnt_queue==0 %}
   <div class="row">
     <div class="col-lg-12 mb">
       <div class="card shadow mb-4 bg-warning text-white shadow">
@@ -100,7 +105,7 @@
     </div>
   </div>
   {% endif %}
-  {% if running is defined and running == 0 and cnt_queue==0 %}
+  {% if running is not none and running == 0 and cnt_queue==0 %}
   <div class="row">
     <div class="col-lg-12 mb">
       <div class="card shadow mb-4 bg-success text-white shadow">
@@ -119,7 +124,7 @@
               <h6 class="m-0 font-weight-bold text-primary">Queue</h6>
             </div>
             <div class="card-body">
-              {% if queue is defined and queue|length > 0 %}      
+              {% if queue is not none and queue|length > 0 %}      
               <div class="table-responsive">   
               <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
@@ -154,7 +159,7 @@
           <h6 class="m-0 font-weight-bold text-primary">Results</h6>
         </div>
         <div class="card-body">      
-          {% if results is defined and results|length > 0 %}
+          {% if results is not none and results|length > 0 %}
           <div class="table-responsive">
           <table class="table table-bordered" id="dataTableResult" width="100%" cellspacing="0">
             <thead>
@@ -190,7 +195,7 @@
         <h6 class="m-0 font-weight-bold text-primary">Tags</h6>
       </div>
       <div class="card-body">      
-        {% if tags is defined and tags|length > 0 %}
+        {% if tags is not none and tags|length > 0 %}
         <div class="table-responsive">   
         <table class="table table-bordered" id="dataTableResult" width="100%" cellspacing="0">
           <thead>
@@ -229,7 +234,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Queue Chart</h6>
           </div>
           <div class="card-body">
-            {% if queue is defined and queue|length > 0 %}      
+            {% if queue is not none and queue|length > 0 %}      
             <div class="chart-pie pt-4 pb-2">
               <canvas id="myQueueChart"></canvas>
             </div>
@@ -246,7 +251,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Results Chart</h6>
           </div>
           <div class="card-body">
-            {% if results is defined and results|length > 0 %}
+            {% if results is not none and results|length > 0 %}
             <div class="chart-pie pt-4 pb-2">
               <canvas id="myResultsChart"></canvas>
             </div>
@@ -263,7 +268,7 @@
               <h6 class="m-0 font-weight-bold text-primary">Tags Chart</h6>
             </div>
             <div class="card-body">
-              {% if tags is defined and tags|length > 0 %}
+              {% if tags is not none and tags|length > 0 %}
               <div class="chart-pie pt-4 pb-2">
                 <canvas id="myTagsChart"></canvas>
               </div>

@@ -1,10 +1,10 @@
-{% if not error|length %}
+{% if errorCode == 0 %}
 <script>
 // Set new default font family and font color to mimic Bootstrap's default styling
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
-{% if queue is defined and queue|length > 0 %}
+{% if queue is not none and queue|length > 0 %}
 // Queue Chart
 var ctxQueueChart = document.getElementById("myQueueChart");
 var myQueueChart = new Chart(ctxQueueChart, {
@@ -36,7 +36,7 @@ var myQueueChart = new Chart(ctxQueueChart, {
 });
 {% endif %}
 
-{% if results is defined and results|length > 0 %}
+{% if results is not none and results|length > 0 %}
 // Results Chart
 var ctxResultsChart = document.getElementById("myResultsChart");
 var myResultsChart = new Chart(ctxResultsChart, {
@@ -68,7 +68,7 @@ var myResultsChart = new Chart(ctxResultsChart, {
 });
 {% endif %}
 
-{% if tags is defined and tags|length > 0 %}
+{% if tags is not none and tags|length > 0 %}
 // Tags Chart
 var ctxTagsChart = document.getElementById("myTagsChart");
 var myTagsChart = new Chart(ctxTagsChart, {

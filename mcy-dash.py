@@ -47,7 +47,7 @@ def home():
     tags = None
     queue = None
     running = None
-    error = ''    
+    errorCode = 0
     try:
         db = sqlite3_connect()
         cnt_mutations = db.execute('SELECT COUNT(*) FROM mutations').fetchone()[0]
@@ -60,22 +60,28 @@ def home():
         running = db.execute('SELECT count(*) FROM queue WHERE running=1').fetchone()[0]
         db.close()
     except:
-        error ='Error accessing database'
+        if (not os.path.exists("database/db.sqlite3")):
+            errorCode = 1
+        else:
+            errorCode = 2
     return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue, 
                            cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags, 
-                           running=running, queue=queue, error=error)
+                           running=running, queue=queue, errorCode=errorCode)
 
 @app.route("/mutations.html")
 def mutations():
     mutations = None
-    error = ''
+    errorCode = 0
     try:
         db = sqlite3_connect()
         mutations = db.execute('SELECT * FROM mutations').fetchall()
         db.close()
     except:
-        error ='Error accessing database'
-    return render_template('mutations.html', selected='mutations', mutations=mutations, error=error)
+        if (not os.path.exists("database/db.sqlite3")):
+            errorCode = 1
+        else:
+            errorCode = 2
+    return render_template('mutations.html', selected='mutations', mutations=mutations, errorCode=errorCode)
 
 @app.route("/settings.html")
 def settings():

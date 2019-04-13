@@ -7,11 +7,16 @@
     <h1 class="h3 mb-0 text-gray-800">Mutations</h1>
   </div>
 
-  {% if error|length %}
+  {% if not errorCode==0 %}
 
   <div class="card shadow mb-4 bg-danger text-white shadow">
     <div class="card-body">
-      <i class="fas fa-exclamation-circle text-white-300"></i> &nbsp;{{ error }}
+      <i class="fas fa-exclamation-circle text-white-300"></i> &nbsp;
+      {% if errorCode==1 %}
+      Database does not exists. Initialize first.
+      {% elif errorCode==2 %}
+      Error accessing database
+      {% endif %}
     </div>
   </div>
   
