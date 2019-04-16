@@ -54,6 +54,16 @@ def home():
             subprocess.call(["mcy" ,'init'])
             return redirect('index.html')
         if (action and action=='run'):            
+            subprocess.Popen(["mcy" ,'run','-j2'], close_fds=True)
+            cnt_queue = 0
+            while cnt_queue == 0:
+                try:
+                    time.sleep(2)
+                    db = sqlite3_connect()
+                    cnt_queue = db.execute('SELECT COUNT(*) FROM queue WHERE running=1').fetchone()[0]
+                    db.close()                                        
+                except:
+                    print("Problem accessing database...")
             return redirect('index.html')
     try:
         db = sqlite3_connect()
