@@ -182,7 +182,7 @@ def update_mutation(db, mid):
         for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?", [mid, tst]):
             if cfg.tests[t].expect is not None:
                 if not res in cfg.tests[t].expect:
-                    raise Exception('Execution resulted with %s expecting value(s): %s' % res % ', '.join(cfg.tests[t].expect))
+                    raise Exception('Executing %s resulted with %s expecting value(s): %s' % tst % res % ', '.join(cfg.tests[t].expect))
             return res
         raise ResultNotReadyException(tst)
 
@@ -565,7 +565,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     if not res in cfg.tests[t].expect:
-                        raise Exception('Execution resulted with %s expecting value(s): %s' % res % ', '.join(cfg.tests[t].expect))
+                        raise Exception('Executing %s resulted with %s expecting value(s): %s' % tst % res % ', '.join(cfg.tests[t].expect))
                 db.execute("DELETE FROM results WHERE mutation_id = ? AND test = ?", [mut, tst])
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, mut)
