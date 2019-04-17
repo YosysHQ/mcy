@@ -40,12 +40,18 @@
         <tr>
           <th>ID</th>
           <th>Mutation</th>
+          {% for tag in tags %}
+          <th>{{ tag[0] }}</th>
+          {% endfor %}  
         </tr>
       </thead>
       <tfoot>
         <tr>
           <th>ID</th>
           <th>Mutation</th>
+          {% for tag in tags %}
+          <th>{{ tag[0] }}</th>
+          {% endfor %}  
         </tr>
       </tfoot>
       <tbody>                
@@ -53,6 +59,9 @@
         <tr>
           <td>{{ mutation[0] }}</td>
           <td>{{ mutation[1] }}</td>
+          {% for tag in tags %}
+          <th> {% if (mutation[2 + loop.index0])  %}X{% endif %}</th>
+          {% endfor %}  
         </tr>
         {% endfor %}                 
       </tbody>
