@@ -181,13 +181,15 @@ def update_mutation(db, mid):
         t = tst.split()[0]
         for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?", [mid, tst]):
             if cfg.tests[t].expect is not None:
-                assert res in cfg.tests[t].expect
+                if not res in cfg.tests[t].expect:
+                    raise Exception('Execution resulted with %s expecting value(s): %s' % res % ', '.join(cfg.tests[t].expect))
             return res
         raise ResultNotReadyException(tst)
 
     def env_tag(tag):
         if cfg.opt_tags is not None:
-            assert tag in cfg.opt_tags
+            if not tag in cfg.opt_tags:
+                raise Exception('Provided tag %s not on of expected: %s' % res % ', '.join(cfg.opt_tags))
         db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?)", [mid, tag])
 
     def env_rng(n):
@@ -554,20 +556,25 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
         with open("tasks/%s/output.txt" % task_id, "r") as f:
             for line in f:
                 line = line.split()
-                assert len(line) == 2
+                if (len(line) != 2):
+                    raise Exception('Invalid line format in file tasks/%s/output.txt' % task_id)
                 idx = int(line[0])-1
                 mut = mut_list[idx]
-                assert mut in checklist
+                if not mut in checklist:
+                    raise Exception('Unknown mutation %s in file tasks/%s/output.txt' % mut % task_id)
                 res = line[1]
                 if cfg.tests[t].expect is not None:
-                    assert res in cfg.tests[t].expect
+                    if not res in cfg.tests[t].expect:
+                        raise Exception('Execution resulted with %s expecting value(s): %s' % res % ', '.join(cfg.tests[t].expect))
                 db.execute("DELETE FROM results WHERE mutation_id = ? AND test = ?", [mut, tst])
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, mut)
                 running.remove((mut, tst))
                 checklist.remove(mut)
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
-        assert len(checklist) == 0
+        
+        if len(checklist) != 0:
+            raise Exception('Empty mutation checklist')
         if not keepdir:
             shutil.rmtree("tasks/%s" % task_id)
             try:
@@ -659,7 +666,8 @@ if sys.argv[1] == "task":
                 if mut not in mut_list:
                     mut_list.append(mut)
 
-    assert len(mut_list) > 0
+    if len(mut_list) == 0:
+        raise Exception('Task not found')
     run_task(db, "1", tst, mut_list, verbose=opt_verbose, keepdir=opt_keepdir)
     wait_tasks(1)
     exit(0)
