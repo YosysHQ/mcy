@@ -2,6 +2,7 @@
 
 from flask import Flask, send_from_directory, render_template, send_file, request, redirect
 import sqlite3, signal, os, sys, subprocess, time
+import types
 
 silent_sigpipe = False
 
@@ -108,9 +109,45 @@ def mutations():
             errorCode = 2
     return render_template('mutations.html', selected='mutations', mutations=mutations, tags=tags, errorCode=errorCode)
 
-@app.route("/settings.html")
-def settings():
-    return render_template('settings.html', selected='settings' )
+@app.route("/source.html")
+def source():
+    errorCode = 0
+    filedata = None
+    num = 0
+    filename = ""
+    covercache = dict()
+    try:
+        db = sqlite3_connect()
+        files = db.execute('SELECT filename, data FROM files').fetchall()
+        filename = files[0][0]
+        filedata = files[0][1].decode('unicode_escape')
+        # Fix DOS-style and old Macintosh-style line endings
+        filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
+        num = len(filedata.split('\n'))        
+        
+        
+        for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
+            covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
+
+        for src, covered, uncovered in db.execute("""
+            SELECT opt_value,
+                    COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),
+                    COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)
+                FROM options
+                JOIN tags ON (options.mutation_id = tags.mutation_id)
+            WHERE opt_type = 'src'
+                AND opt_value LIKE ?
+            GROUP BY opt_value
+        """, [filename + ":%"]):
+            covercache[src].covered += covered
+            covercache[src].uncovered += uncovered
+        db.close()
+    except:
+        if (not os.path.exists("database/db.sqlite3")):
+            errorCode = 1
+        else:
+            errorCode = 2
+    return render_template('source.html', selected='source', source=filedata, filename=filename, num=num, covercache=covercache, errorCode=errorCode)
 
 @app.route('/js/<path:path>')
 def send_js(path):
