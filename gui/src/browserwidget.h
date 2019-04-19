@@ -72,6 +72,7 @@ class BrowserWidget : public QWidget
     DbManager *database;
 
     // source list
+    QTabWidget *tabWidget;
     QListWidget *sourceList;
 
     // search

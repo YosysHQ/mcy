@@ -30,10 +30,13 @@
 
 BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(parent), database(database)
 {
+    tabWidget = new QTabWidget();
+
     sourceList = new QListWidget();
     sourceList->addItems(database->getSources());
     sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
     sourceList->installEventFilter(this);
+    tabWidget->addTab(sourceList, "Sources");
     // Add property view
     variantManager = new QtVariantPropertyManager(this);
     readOnlyManager = new QtVariantPropertyManager(this);
@@ -119,7 +122,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     vbox1->setSpacing(5);
     vbox1->setContentsMargins(0, 0, 0, 0);
     vbox1->addWidget(searchEdit);
-    vbox1->addWidget(sourceList);
+    vbox1->addWidget(tabWidget);
 
     QWidget *toolbarWidget = new QWidget();
     QHBoxLayout *hbox = new QHBoxLayout;
