@@ -46,8 +46,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         }
         sourceList->addTopLevelItem(treeItem);
     }
-    //sourceList->addItems(database->getSources());
-    //sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
+    sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
     //sourceList->installEventFilter(this);
 
     mutationsList = new QTreeWidget();
@@ -64,9 +63,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         }
         mutationsList->addTopLevelItem(treeItem);
     }
-
-    //mutationsList->addItems(database->getMutations());
-    //mutationsList->setContextMenuPolicy(Qt::CustomContextMenu);
+    mutationsList->setContextMenuPolicy(Qt::CustomContextMenu);
     //mutationsList->installEventFilter(this);
 
     tabWidget->addTab(sourceList, "Sources");
@@ -191,9 +188,11 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(propertyEditor->treeWidget(), &QTreeWidget::itemDoubleClicked, this,
             &BrowserWidget::onPropertyDoubleClicked);
 
-    connect(sourceList, &QListWidget::customContextMenuRequested, this, &BrowserWidget::prepareMenuSourceList);
-//    connect(sourceList, &QListWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
-    //connect(sourceList, &QListWidget::itemSelectionChanged, this, &BrowserWidget::onSourceSelectionChanged);
+    connect(sourceList, &QTreeWidget::customContextMenuRequested, this, &BrowserWidget::prepareMenuSourceList);
+    connect(sourceList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
+    connect(sourceList, &QTreeWidget::currentItemChanged, this, &BrowserWidget::onSourceCurrentItemChanged);
+
+    connect(mutationsList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onMutationDoubleClicked);
 
     history_index = -1;
     history_ignore = false;
@@ -264,23 +263,44 @@ QtProperty *BrowserWidget::addSubGroup(QtProperty *topItem, const QString &name)
     return item;
 }
 
-void BrowserWidget::onSourceSelectionChanged()
+void BrowserWidget::onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
-    if (sourceList->selectedItems().size() != 1)
+    if (current == nullptr)
         return;
-    QListWidgetItem *item = nullptr;//sourceList->selectedItems()[0];
+    QTreeWidgetItem *item = current;
+    QString source = item->text(0);
+    int mutationId = -1;
+    if (item->parent()!=nullptr) {
+        source = item->parent()->text(0);
+        mutationId = item->text(0).toInt();
+    }
 
-    addToHistory(item);
+//    addToHistory(item);
 
     clearProperties();
 
     QtProperty *topItem = addTopLevelProperty("Source");
-    addProperty(topItem, QVariant::String, "Name", item->text());
+    addProperty(topItem, QVariant::String, "Name", source);
 
-    QtProperty *mutItem = addTopLevelProperty("Mutations");
-    QList<int> mutations = database->getMutationsForSource(item->text());
-    for (auto mutationId : mutations) {
-        QtProperty *mItem = addSubGroup(mutItem, "Mutation " + QString::number(mutationId));
+    if (mutationId==-1) {
+        QtProperty *mutItem = addTopLevelProperty("Mutations");
+        QList<int> mutations = database->getMutationsForSource(source);
+        for (auto mutationId : mutations) {
+            QtProperty *mItem = addSubGroup(mutItem, "Mutation " + QString::number(mutationId));
+            for (auto option : database->getMutationOption(mutationId)) {
+                addProperty(mItem, QVariant::String, option.first, option.second, option.first);
+            }
+            QtProperty *tagsItem = addSubGroup(mItem, "Tags");
+            for (auto tag : database->getTagsForMutation(mutationId)) {
+                addProperty(tagsItem, QVariant::String, "", tag);
+            }
+            QtProperty *resItem = addSubGroup(mItem, "Results");
+            for (auto result : database->getMutationResults(mutationId)) {
+                addProperty(resItem, QVariant::String, result.first, result.second);
+            }
+        }
+    } else {        
+        QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
         }
@@ -297,10 +317,28 @@ void BrowserWidget::onSourceSelectionChanged()
 
 void BrowserWidget::prepareMenuSourceList(const QPoint &pos) {}
 
-void BrowserWidget::onSourceDoubleClicked(QListWidgetItem *item)
+void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 {
     bool ok;
-    QStringList param = item->text().split(':');
+    QString source = item->text(0);
+    QString mut = "";
+    if (item->parent()!=nullptr) {
+        source = item->parent()->text(0);
+        mut = item->text(0);
+    }
+    QStringList param = source.split(':');
+    int line = param.at(1).toInt(&ok);
+    if (ok)
+        Q_EMIT selectLine(param.at(0), line);
+}
+
+void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    if (item->parent()==nullptr)
+        return;
+
+    bool ok;
+    QStringList param = item->text(0).split(':');
     int line = param.at(1).toInt(&ok);
     if (ok)
         Q_EMIT selectLine(param.at(0), line);

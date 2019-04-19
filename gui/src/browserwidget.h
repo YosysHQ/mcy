@@ -53,8 +53,10 @@ class BrowserWidget : public QWidget
   private Q_SLOTS:
     // source list slots
     void prepareMenuSourceList(const QPoint &pos);
-    void onSourceDoubleClicked(QListWidgetItem *item);
-    void onSourceSelectionChanged();
+    void onSourceDoubleClicked(QTreeWidgetItem *item, int column);
+    void onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    // mutation list slots
+    void onMutationDoubleClicked(QTreeWidgetItem *item, int column);
     // property view slots
     void prepareMenuProperty(const QPoint &pos);
     void onPropertyDoubleClicked(QTreeWidgetItem *item, int column);
