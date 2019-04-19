@@ -95,11 +95,9 @@ def mutations():
         db = sqlite3_connect()
         tags = db.execute('SELECT DISTINCT tag FROM tags').fetchall()
         sql = 'SELECT m.mutation_id, m.mutation'
-        print(sql)
         for tag in tags:
             sql = sql + ',(select count(*) from tags t where t.mutation_id=m.mutation_id and t.tag==\''+ tag[0] + '\') '
         sql += ' FROM mutations m'
-        print(sql)
         mutations = db.execute(sql).fetchall()
         db.close()
     except:
