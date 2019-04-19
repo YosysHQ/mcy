@@ -109,23 +109,27 @@ def mutations():
             errorCode = 2
     return render_template('mutations.html', selected='mutations', mutations=mutations, tags=tags, errorCode=errorCode)
 
-@app.route("/source.html")
+@app.route("/source.html", methods=['GET', 'POST'])
 def source():
     errorCode = 0
     filedata = None
     num = 0
     filename = ""
+    files = None
     covercache = dict()
+    if request.method == 'POST':
+        filename = request.form['filename']
     try:
         db = sqlite3_connect()
-        files = db.execute('SELECT filename, data FROM files').fetchall()
-        filename = files[0][0]
-        filedata = files[0][1].decode('unicode_escape')
+        files = db.execute('SELECT filename FROM files').fetchall()
+        if filename=="":
+            filename = files[0][0]
+        sql = 'SELECT data FROM files WHERE filename = "%s"' % filename
+        filedata = db.execute(sql).fetchone()[0].decode('unicode_escape')
         # Fix DOS-style and old Macintosh-style line endings
         filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
         num = len(filedata.split('\n'))        
-        
-        
+       
         for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
             covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
 
@@ -147,7 +151,7 @@ def source():
             errorCode = 1
         else:
             errorCode = 2
-    return render_template('source.html', selected='source', source=filedata, filename=filename, num=num, covercache=covercache, errorCode=errorCode)
+    return render_template('source.html', selected='source', files=files, source=filedata, filename=filename, num=num, covercache=covercache, errorCode=errorCode)
 
 @app.route('/js/<path:path>')
 def send_js(path):

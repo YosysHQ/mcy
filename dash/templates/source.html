@@ -33,6 +33,25 @@
   
   {% else %}  
   <!-- Content Row -->
+
+  <div class="card shadow mb-4 bg-primary text-white shadow">
+      <div class="card-body">        
+        <form action="/source.html" method="post" class="d-none d-sm-inline-block form-inline">
+        Select source file:&nbsp;
+        <select name="filename">
+            {% for file in files %}
+            <option value="{{ file[0] }}">{{ file[0] }}</option>
+            {% endfor %}            
+          </select>
+        <button type="submit" class="btn btn-primary btn-icon-split btn-sm shadow">
+          <span class="icon text-white-50">
+            <i class="fas fa-file"></i>
+          </span>
+          <span class="text">Preview</span>
+        </button>
+        </form>
+      </div>
+  </div>  
   <div class="row">
     <table>
       <td><pre><code style="float:left;margin:0;padding-right:10px;text-align:right;width:80px;">{% for n in range(1,num) %}{{ n }}<br/>{% endfor %}</code></pre></td>
