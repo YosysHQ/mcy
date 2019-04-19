@@ -32,13 +32,40 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 {
     tabWidget = new QTabWidget();
 
-    sourceList = new QListWidget();
-    sourceList->addItems(database->getSources());
-    sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
-    sourceList->installEventFilter(this);
+    sourceList = new QTreeWidget();
+    sourceList->setHeaderHidden(true);    
+    for(QString name : database->getSources()) 
+    {
+        QTreeWidgetItem *treeItem = new QTreeWidgetItem(sourceList);
+        treeItem->setText(0, name);
+        for (int mutation : database->getMutationsForSource(name))
+        {
+            QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
+            subItem->setText(0, QString::number(mutation));        
+            treeItem->addChild(subItem);
+        }
+        sourceList->addTopLevelItem(treeItem);
+    }
+    //sourceList->addItems(database->getSources());
+    //sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
+    //sourceList->installEventFilter(this);
 
-    mutationsList = new QListWidget();
-    mutationsList->addItems(database->getMutations());
+    mutationsList = new QTreeWidget();
+    mutationsList->setHeaderHidden(true);
+    for(int mutation : database->getMutations()) 
+    {
+        QTreeWidgetItem *treeItem = new QTreeWidgetItem(mutationsList);
+        treeItem->setText(0, QString::number(mutation));
+        for (QString name: database->getSourcesForMutation(mutation))
+        {
+            QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
+            subItem->setText(0, name);        
+            treeItem->addChild(subItem);
+        }
+        mutationsList->addTopLevelItem(treeItem);
+    }
+
+    //mutationsList->addItems(database->getMutations());
     //mutationsList->setContextMenuPolicy(Qt::CustomContextMenu);
     //mutationsList->installEventFilter(this);
 
@@ -69,8 +96,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionFirst, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index = 0;
-        sourceList->setCurrentItem(history.at(history_index));
-        sourceList->currentItem()->setHidden(false);
+        //sourceList->setCurrentItem(history.at(history_index));
+        //sourceList->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -80,8 +107,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionPrev, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index--;
-        sourceList->setCurrentItem(history.at(history_index));
-        sourceList->currentItem()->setHidden(false);
+        //sourceList->setCurrentItem(history.at(history_index));
+        //sourceList->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -91,8 +118,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionNext, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index++;
-        sourceList->setCurrentItem(history.at(history_index));
-        sourceList->currentItem()->setHidden(false);
+        //sourceList->setCurrentItem(history.at(history_index));
+        //sourceList->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -102,8 +129,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionLast, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index = int(history.size() - 1);
-        sourceList->setCurrentItem(history.at(history_index));
-        sourceList->currentItem()->setHidden(false);
+        //sourceList->setCurrentItem(history.at(history_index));
+        //sourceList->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -113,7 +140,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionClear, &QAction::triggered, this, [this] {
         history_index = -1;
         history.clear();
-        addToHistory(sourceList->currentItem());
+        //addToHistory(sourceList->currentItem());
     });
 
     QToolBar *toolbar = new QToolBar();
@@ -165,13 +192,13 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
             &BrowserWidget::onPropertyDoubleClicked);
 
     connect(sourceList, &QListWidget::customContextMenuRequested, this, &BrowserWidget::prepareMenuSourceList);
-    connect(sourceList, &QListWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
-    connect(sourceList, &QListWidget::itemSelectionChanged, this, &BrowserWidget::onSourceSelectionChanged);
+//    connect(sourceList, &QListWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
+    //connect(sourceList, &QListWidget::itemSelectionChanged, this, &BrowserWidget::onSourceSelectionChanged);
 
     history_index = -1;
     history_ignore = false;
-    sourceList->setCurrentItem(sourceList->item(0));
-    QTimer::singleShot(0, sourceList, SLOT(setFocus()));
+    //sourceList->setCurrentItem(sourceList->item(0));
+    //QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
 BrowserWidget::~BrowserWidget() {}
@@ -241,7 +268,7 @@ void BrowserWidget::onSourceSelectionChanged()
 {
     if (sourceList->selectedItems().size() != 1)
         return;
-    QListWidgetItem *item = sourceList->selectedItems()[0];
+    QListWidgetItem *item = nullptr;//sourceList->selectedItems()[0];
 
     addToHistory(item);
 
@@ -292,25 +319,25 @@ void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
 
 void BrowserWidget::onSearchInserted()
 {
-    for (int i = 0; i < sourceList->count(); i++)
+    /*for (int i = 0; i < sourceList->count(); i++)
         sourceList->item(i)->setHidden(true);
 
     QList<QListWidgetItem *> matches(sourceList->findItems(searchEdit->text(), Qt::MatchFlag::MatchContains));
     for (QListWidgetItem *item : matches)
-        item->setHidden(false);
+        item->setHidden(false);*/
 }
 
 void BrowserWidget::selectSource(QString source)
 {
-    QList<QListWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
+    /*QList<QListWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
     if (items.size() > 0) {
         sourceList->setCurrentItem(items.at(0));
-    }
+    }*/
 }
 
 bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == sourceList) {
+    /*if (obj == sourceList) {
         if (event->type() == QEvent::KeyPress) {
             QKeyEvent *key = static_cast<QKeyEvent *>(event);
             if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return)) {
@@ -324,5 +351,5 @@ bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
         }
     } else {
         return BrowserWidget::eventFilter(obj, event);
-    }
+    }*/
 }

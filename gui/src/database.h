@@ -31,11 +31,12 @@ class DbManager
 
     int getMutationsCount();
     QStringList getSources();
-    QStringList getMutations();
+    QList<int> getMutations();
     QStringList getFileList();
     QString getFileContent(QString filename);
     QMap<int, QPair<int, int>> getCoverage(QString filename);
     QList<int> getMutationsForSource(QString source);
+    QStringList getSourcesForMutation(int mutationId);
     QList<QPair<QString, QString>> getMutationOption(int mutationId);
     QList<QPair<QString, QString>> getMutationResults(int mutationId);
     QStringList getTagsForMutation(int mutationId);

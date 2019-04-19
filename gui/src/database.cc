@@ -52,14 +52,14 @@ QStringList DbManager::getSources()
     return sources;
 }
 
-QStringList DbManager::getMutations()
+QList<int> DbManager::getMutations()
 {
-    QStringList sources;
+    QList<int> retVal;
     QSqlQuery query("SELECT mutation_id FROM mutations ORDER BY mutation_id");
     while (query.next()) {
-        sources << query.value(0).toString();
+        retVal.append(query.value(0).toInt());
     }
-    return sources;
+    return retVal;
 }
 
 QStringList DbManager::getFileList()
@@ -110,6 +110,15 @@ QList<int> DbManager::getMutationsForSource(QString source)
     return retVal;
 }
 
+QStringList DbManager::getSourcesForMutation(int mutationId)
+{
+    QStringList retVal;
+    QSqlQuery query("SELECT opt_value FROM options WHERE opt_type = 'src' AND mutation_id = " + QString::number(mutationId));
+    while (query.next()) {
+        retVal << query.value(0).toString();
+    }
+    return retVal;
+}
 QList<QPair<QString, QString>> DbManager::getMutationOption(int mutationId)
 {
     QList<QPair<QString, QString>> retVal;

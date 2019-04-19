@@ -73,8 +73,8 @@ class BrowserWidget : public QWidget
 
     // source list
     QTabWidget *tabWidget;
-    QListWidget *sourceList;
-    QListWidget *mutationsList;
+    QTreeWidget *sourceList;
+    QTreeWidget *mutationsList;
 
     // search
     QLineEdit *searchEdit;
