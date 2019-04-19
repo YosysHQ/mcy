@@ -31,6 +31,7 @@ class DbManager
 
     int getMutationsCount();
     QStringList getSources();
+    QStringList getMutations();
     QStringList getFileList();
     QString getFileContent(QString filename);
     QMap<int, QPair<int, int>> getCoverage(QString filename);

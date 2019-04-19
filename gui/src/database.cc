@@ -52,6 +52,16 @@ QStringList DbManager::getSources()
     return sources;
 }
 
+QStringList DbManager::getMutations()
+{
+    QStringList sources;
+    QSqlQuery query("SELECT mutation_id FROM mutations ORDER BY mutation_id");
+    while (query.next()) {
+        sources << query.value(0).toString();
+    }
+    return sources;
+}
+
 QStringList DbManager::getFileList()
 {
     QStringList files;

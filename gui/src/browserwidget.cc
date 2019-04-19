@@ -36,7 +36,14 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     sourceList->addItems(database->getSources());
     sourceList->setContextMenuPolicy(Qt::CustomContextMenu);
     sourceList->installEventFilter(this);
+
+    mutationsList = new QListWidget();
+    mutationsList->addItems(database->getMutations());
+    //mutationsList->setContextMenuPolicy(Qt::CustomContextMenu);
+    //mutationsList->installEventFilter(this);
+
     tabWidget->addTab(sourceList, "Sources");
+    tabWidget->addTab(mutationsList, "Mutations");
     // Add property view
     variantManager = new QtVariantPropertyManager(this);
     readOnlyManager = new QtVariantPropertyManager(this);
