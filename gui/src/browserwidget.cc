@@ -93,8 +93,14 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionFirst, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index = 0;
-        //sourceList->setCurrentItem(history.at(history_index));
-        //sourceList->currentItem()->setHidden(false);
+        auto curr = history.at(history_index);
+        if (tabWidget->currentWidget()!=curr.first) {
+            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+            tabWidget->setCurrentWidget(curr.first);
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
+        } else 
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
+        curr.first->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -104,8 +110,14 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionPrev, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index--;
-        //sourceList->setCurrentItem(history.at(history_index));
-        //sourceList->currentItem()->setHidden(false);
+        auto curr = history.at(history_index);
+        if (tabWidget->currentWidget()!=curr.first) {
+            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+            tabWidget->setCurrentWidget(curr.first);
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
+        } else 
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
+        curr.first->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -115,8 +127,14 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionNext, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index++;
-        //sourceList->setCurrentItem(history.at(history_index));
-        //sourceList->currentItem()->setHidden(false);
+        auto curr = history.at(history_index);
+        if (tabWidget->currentWidget()!=curr.first) {
+            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+            tabWidget->setCurrentWidget(curr.first);
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
+        } else 
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
+        curr.first->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -126,8 +144,14 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionLast, &QAction::triggered, this, [this] {
         history_ignore = true;
         history_index = int(history.size() - 1);
-        //sourceList->setCurrentItem(history.at(history_index));
-        //sourceList->currentItem()->setHidden(false);
+        auto curr = history.at(history_index);
+        if (tabWidget->currentWidget()!=curr.first) {
+            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+            tabWidget->setCurrentWidget(curr.first);
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
+        } else 
+            curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
+        curr.first->currentItem()->setHidden(false);
         updateButtons();
     });
 
@@ -137,7 +161,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionClear, &QAction::triggered, this, [this] {
         history_index = -1;
         history.clear();
-        //addToHistory(sourceList->currentItem());
+        addToHistory((QTreeWidget*)tabWidget->currentWidget(), ((QTreeWidget*)tabWidget->currentWidget())->currentItem());
     });
 
     QToolBar *toolbar = new QToolBar();
@@ -187,15 +211,15 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
             &BrowserWidget::onPropertyDoubleClicked);
 
     connect(sourceList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
-    connect(sourceList, &QTreeWidget::currentItemChanged, this, &BrowserWidget::onSourceCurrentItemChanged);
+    connect(sourceList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &BrowserWidget::onSourceSelectionChanged);
 
     connect(mutationsList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onMutationDoubleClicked);
-    connect(mutationsList, &QTreeWidget::currentItemChanged, this, &BrowserWidget::onMutationCurrentItemChanged);
+    connect(mutationsList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &BrowserWidget::onMutationSelectionChanged);
 
     history_index = -1;
     history_ignore = false;
 
-    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::ClearAndSelect);
+    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::ClearAndSelect);    
     QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
@@ -210,13 +234,13 @@ void BrowserWidget::updateButtons()
     actionLast->setEnabled(history_index < (count - 1));
 }
 
-void BrowserWidget::addToHistory(QListWidgetItem *item)
+void BrowserWidget::addToHistory(QTreeWidget* tree, QTreeWidgetItem *item)
 {
     if (!history_ignore) {
         int count = int(history.size());
         for (int i = count - 1; i > history_index; i--)
             history.pop_back();
-        history.push_back(item);
+        history.push_back(std::make_pair(tree,item));
         history_index++;
     }
     history_ignore = false;
@@ -262,11 +286,11 @@ QtProperty *BrowserWidget::addSubGroup(QtProperty *topItem, const QString &name)
     return item;
 }
 
-void BrowserWidget::onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    if (current == nullptr)
+    QTreeWidgetItem *item = sourceList->currentItem();
+    if (selected.size()==0 || item == nullptr)
         return;
-    QTreeWidgetItem *item = current;
     QString source = item->text(0);
     int mutationId = -1;
     if (item->parent()!=nullptr) {
@@ -274,7 +298,7 @@ void BrowserWidget::onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWi
         mutationId = item->text(0).toInt();
     }
 
-//    addToHistory(item);
+    addToHistory(sourceList, item);
 
     clearProperties();
 
@@ -314,11 +338,11 @@ void BrowserWidget::onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWi
     }
 }
 
-void BrowserWidget::onMutationCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    if (current == nullptr)
+    QTreeWidgetItem *item = mutationsList->currentItem();
+    if (selected.size()==0 || item == nullptr)
         return;
-    QTreeWidgetItem *item = current;
 
     QString source = "";
     int mutationId = -1;
@@ -329,7 +353,7 @@ void BrowserWidget::onMutationCurrentItemChanged(QTreeWidgetItem *current, QTree
         mutationId = item->parent()->text(0).toInt();
     }
 
-//    addToHistory(item);
+    addToHistory(mutationsList, item);
 
     clearProperties();
 

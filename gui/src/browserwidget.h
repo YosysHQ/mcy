@@ -47,16 +47,16 @@ class BrowserWidget : public QWidget
     QtProperty *addSubGroup(QtProperty *topItem, const QString &name);
     // history handling
     void updateButtons();
-    void addToHistory(QListWidgetItem *item);
+    void addToHistory(QTreeWidget* tree, QTreeWidgetItem *item);
     bool eventFilter(QObject *obj, QEvent *ev);
 
   private Q_SLOTS:
     // source list slots
     void onSourceDoubleClicked(QTreeWidgetItem *item, int column);
-    void onSourceCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onSourceSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     // mutation list slots
     void onMutationDoubleClicked(QTreeWidgetItem *item, int column);
-    void onMutationCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     // property view slots
     void onPropertyDoubleClicked(QTreeWidgetItem *item, int column);
     // search slots
@@ -92,7 +92,7 @@ class BrowserWidget : public QWidget
     QMap<QString, QtProperty *> idToProperty;
 
     // history
-    std::vector<QListWidgetItem *> history;
+    std::vector<std::pair<QTreeWidget*,QTreeWidgetItem *>> history;
     int history_index;
     bool history_ignore;
 
