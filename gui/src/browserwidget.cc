@@ -428,12 +428,12 @@ void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
 
 void BrowserWidget::onSearchInserted()
 {
-    /*for (int i = 0; i < sourceList->count(); i++)
-        sourceList->item(i)->setHidden(true);
-
-    QList<QListWidgetItem *> matches(sourceList->findItems(searchEdit->text(), Qt::MatchFlag::MatchContains));
-    for (QListWidgetItem *item : matches)
-        item->setHidden(false);*/
+    for (int i = 0; i < sourceList->topLevelItemCount(); i++)
+        sourceList->topLevelItem(i)->setHidden(true);
+    tabWidget->setCurrentWidget(sourceList);
+    QList<QTreeWidgetItem *> matches(sourceList->findItems(searchEdit->text(), Qt::MatchFlag::MatchContains));
+    for (QTreeWidgetItem *item : matches)
+        item->setHidden(false);
 }
 
 void BrowserWidget::selectSource(QString source)
