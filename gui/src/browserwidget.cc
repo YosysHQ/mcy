@@ -440,6 +440,10 @@ void BrowserWidget::selectSource(QString source)
 {
     QList<QTreeWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
     if (items.size() > 0) {
+        if (tabWidget->currentWidget()!=sourceList) {
+            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+            tabWidget->setCurrentWidget(sourceList);
+        }
         sourceList->setCurrentItem(items.at(0), 0, QItemSelectionModel::ClearAndSelect);
     }
 }
