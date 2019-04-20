@@ -58,7 +58,6 @@ class BrowserWidget : public QWidget
     void onMutationDoubleClicked(QTreeWidgetItem *item, int column);
     void onMutationCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     // property view slots
-    void prepareMenuProperty(const QPoint &pos);
     void onPropertyDoubleClicked(QTreeWidgetItem *item, int column);
     // search slots
     void onSearchInserted();

@@ -183,8 +183,6 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     setLayout(mainLayout);
 
     // Connection
-    connect(propertyEditor->treeWidget(), &QTreeWidget::customContextMenuRequested, this,
-            &BrowserWidget::prepareMenuProperty);
     connect(propertyEditor->treeWidget(), &QTreeWidget::itemDoubleClicked, this,
             &BrowserWidget::onPropertyDoubleClicked);
 
@@ -197,7 +195,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     history_index = -1;
     history_ignore = false;
 
-    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::Select);
+    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::ClearAndSelect);
     QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
@@ -395,8 +393,6 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
         Q_EMIT selectLine(param.at(0), line);
 }
 
-void BrowserWidget::prepareMenuProperty(const QPoint &pos) {}
-
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
 {
     QtProperty *selectedProperty = propertyEditor->itemToBrowserItem(item)->property();
@@ -420,7 +416,7 @@ void BrowserWidget::selectSource(QString source)
 {
     QList<QTreeWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
     if (items.size() > 0) {
-        sourceList->setCurrentItem(items.at(0), 0, QItemSelectionModel::Select);
+        sourceList->setCurrentItem(items.at(0), 0, QItemSelectionModel::ClearAndSelect);
     }
 }
 
