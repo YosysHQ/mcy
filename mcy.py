@@ -47,6 +47,7 @@ def usage():
     print("  mcy [--trace] run [-jN] [--reset] [<id_or_tag>..]")
     print("  mcy [--trace] task -v -k <test> <id_or_tag>..")
     print("  mcy [--trace] source [-e <encoding>] <filename> [<filename>]")
+    print("  mcy [--trace] lcov <filename>")
     print("  mcy [--trace] dash")
     print("  mcy [--trace] gui")
     print("  mcy [--trace] purge")
@@ -744,6 +745,76 @@ if sys.argv[1] == "source":
 
         print(line)
 
+    exit(1)
+
+
+######################################################
+
+if sys.argv[1] == "lcov":
+    silent_sigpipe = True
+    opt_encoding = "utf8"
+
+    try:
+        opts, args = getopt.getopt(sys.argv[2:], "e:", [])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+
+    if len(args) not in [1]:
+        usage()
+
+    db = sqlite3_connect()
+
+    if len(args) == 1:
+        filename = args[0]
+        filedata = db.execute("SELECT data FROM files WHERE filename = ?", [filename]).fetchone()
+        if filedata is None:
+            print("File data for '%s' not found in database." % filename)
+            exit(1)
+        filedata = str(filedata[0], opt_encoding)
+    else:
+        assert False
+
+    # Fix DOS-style and old Macintosh-style line endings
+    filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
+
+    covercache = dict()
+
+    for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
+        covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
+
+    for src, covered, uncovered in db.execute("""
+          SELECT opt_value,
+                 COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),
+                 COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)
+            FROM options
+            JOIN tags ON (options.mutation_id = tags.mutation_id)
+           WHERE opt_type = 'src'
+             AND opt_value LIKE ?
+        GROUP BY opt_value
+    """, [filename + ":%"]):
+        covercache[src].covered += covered
+        covercache[src].uncovered += uncovered
+
+    lines_total = 0
+    lines_covered = 0
+    print("TN:")
+    print("SF:%s" % filename)
+    for linenr, line in enumerate(filedata.rstrip("\n").split("\n")):
+        src = "%s:%d" % (filename, linenr+1)
+
+        if src in covercache:
+            lines_total += 1
+            if covercache[src].uncovered:
+                print("DA:%d,%d" % (linenr+1, 0))
+            else:
+                print("DA:%d,%d" % (linenr+1, covercache[src].covered))
+                if (covercache[src].covered !=0):
+                    lines_covered += 1
+
+    print("LF:%d" % lines_total)
+    print("LH:%d" % lines_covered)
+    print("end_of_record")
     exit(1)
 
 
