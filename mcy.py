@@ -247,6 +247,9 @@ def reset_status(db, do_reset=False):
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, mid)
 
+    cnt, = db.execute("SELECT COUNT(*) FROM results").fetchone()
+    print("Database contains %d cached results." % cnt)
+
     for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
         print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
 
