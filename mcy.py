@@ -190,7 +190,7 @@ def update_mutation(db, mid):
     def env_tag(tag):
         if cfg.opt_tags is not None:
             if not tag in cfg.opt_tags:
-                raise Exception('Provided tag %s not on of expected: %s' % (res, ', '.join(cfg.opt_tags)))
+                raise Exception('Provided tag %s not on of expected: %s' % (tag, ', '.join(cfg.opt_tags)))
         db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?)", [mid, tag])
 
     def env_rng(n):
