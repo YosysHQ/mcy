@@ -183,14 +183,14 @@ def update_mutation(db, mid):
         for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?", [mid, tst]):
             if cfg.tests[t].expect is not None:
                 if not res in cfg.tests[t].expect:
-                    raise Exception('Executing %s resulted with %s expecting value(s): %s' % tst % res % ', '.join(cfg.tests[t].expect))
+                    raise Exception('Executing %s resulted with %s expecting value(s): %s' % (tst, res, ', '.join(cfg.tests[t].expect)))
             return res
         raise ResultNotReadyException(tst)
 
     def env_tag(tag):
         if cfg.opt_tags is not None:
             if not tag in cfg.opt_tags:
-                raise Exception('Provided tag %s not on of expected: %s' % res % ', '.join(cfg.opt_tags))
+                raise Exception('Provided tag %s not on of expected: %s' % (res, ', '.join(cfg.opt_tags)))
         db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?)", [mid, tag])
 
     def env_rng(n):
@@ -562,11 +562,11 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 idx = int(line[0])-1
                 mut = mut_list[idx]
                 if not mut in checklist:
-                    raise Exception('Unknown mutation %s in file tasks/%s/output.txt' % mut % task_id)
+                    raise Exception('Unknown mutation %s in file tasks/%s/output.txt' % (mut, task_id))
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     if not res in cfg.tests[t].expect:
-                        raise Exception('Executing %s resulted with %s expecting value(s): %s' % tst % res % ', '.join(cfg.tests[t].expect))
+                        raise Exception('Executing %s resulted with %s expecting value(s): %s' % (tst, res, ', '.join(cfg.tests[t].expect)))
                 db.execute("DELETE FROM results WHERE mutation_id = ? AND test = ?", [mut, tst])
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, mut)
