@@ -18,6 +18,7 @@
  */
 
 #include "mainwindow.h"
+#include <QDir>
 #include <QGridLayout>
 #include <QMessageBox>
 #include <QSplitter>
@@ -27,8 +28,8 @@
 
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
-MainWindow::MainWindow(QString workingDir, QWidget *parent)
-        : QMainWindow(parent), database(workingDir + "/database/db.sqlite3")
+MainWindow::MainWindow(QString workingDir, QString sourceDir, QWidget *parent)
+        : QMainWindow(parent), database(workingDir + "/database/db.sqlite3"), sourceDir(sourceDir)
 {
     initBasenameResource();
     qRegisterMetaType<std::string>();
@@ -110,7 +111,25 @@ void MainWindow::openCodeViewTab(QString filename)
 {
     if (!views.contains(filename)) {
         CodeView *code = new CodeView(filename, this);
-        code->loadContent(database.getFileContent(filename).toLocal8Bit().constData());
+        if (sourceDir.isEmpty()) {
+            QString content = database.getFileContent(filename);
+            if (content.isEmpty()) {
+                QMessageBox::critical(this, tr("MCY-GUI"), tr("Database does not contain this file !!!"));                
+                return;
+            }
+            code->loadContent(content.toLocal8Bit().constData());
+        } else {
+            QDir path(sourceDir);
+            QString filePath = path.filePath(filename);
+            QFile file(filePath);
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QByteArray contents = file.readAll();
+                code->loadContent(contents.constData());
+            } else {
+                QMessageBox::critical(this, tr("MCY-GUI"), tr("File does not exists !!!"));                
+                return;
+            }
+        }
         code->setCoverage(database.getCoverage(filename));
         views.insert(filename, code);
         centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);

@@ -37,7 +37,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    explicit MainWindow(QString workingDir, QWidget *parent = 0);
+    explicit MainWindow(QString workingDir, QString sourceDir, QWidget *parent = 0);
     virtual ~MainWindow();
 
   protected:
@@ -56,6 +56,7 @@ class MainWindow : public QMainWindow
     QMenuBar *menuBar;
     QStatusBar *statusBar;
     DbManager database;
+    QString sourceDir;
 };
 
 #endif // MAINWINDOW_H
