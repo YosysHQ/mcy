@@ -80,6 +80,7 @@ cfg.logic = list()
 cfg.report = list()
 cfg.tests = dict()
 cfg.files = dict()
+cfg.select = list()
 
 with open("config.mcy", "r") as f:
     section = None
@@ -115,6 +116,9 @@ with open("config.mcy", "r") as f:
                 continue
             if len(entries) > 1 and entries[0] == "tags":
                 cfg.opt_tags = set(entries[1:])
+                continue
+            if len(entries) > 1 and entries[0] == "select":
+                cfg.select += entries[1:]
                 continue
 
         if section == "script":
@@ -219,7 +223,8 @@ def reset_status(db, do_reset=False):
 
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
-                print("mutate -list %d -none%s -o database/mutations2.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+                print("mutate -list %d -none%s -o database/mutations2.txt%s" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
+                        " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
 
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
             task.wait()
@@ -373,7 +378,8 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
-        print("mutate -list %d -none%s -o database/mutations.txt -s database/sources.txt" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items()))), file=f)
+        print("mutate -list %d -none%s -o database/mutations.txt -s database/sources.txt%s" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
+                " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
 
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
