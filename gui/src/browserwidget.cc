@@ -37,12 +37,20 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     for(QString name : database->getSources()) 
     {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(sourceList);
-        treeItem->setText(0, name);
-        for (int mutation : database->getMutationsForSource(name))
+        treeItem->setText(0, name);        
+        for(QString line : database->getSourcesLines(name)) 
         {
-            QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
-            subItem->setText(0, QString::number(mutation));        
-            treeItem->addChild(subItem);
+            QTreeWidgetItem *lineItem = new QTreeWidgetItem(treeItem);
+            lineItem->setText(0, "Line " + line);
+            lineItem->setData(0, Qt::UserRole, name + ":" + line);
+            for (int mutation : database->getMutationsForSource(name + ":" + line))
+            {
+                QTreeWidgetItem *subItem = new QTreeWidgetItem(lineItem);
+                subItem->setText(0, "Mutation " + QString::number(mutation));
+                subItem->setData(0, Qt::UserRole, QString::number(mutation));
+                lineItem->addChild(subItem);
+            }            
+            treeItem->addChild(lineItem);
         }
         sourceList->addTopLevelItem(treeItem);
     }
@@ -54,7 +62,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     for(int mutation : database->getMutations()) 
     {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(mutationsList);
-        treeItem->setText(0, QString::number(mutation));
+        treeItem->setText(0, "Mutation " + QString::number(mutation));
+        treeItem->setData(0, Qt::UserRole, QString::number(mutation));
         for (QString name: database->getSourcesForMutation(mutation))
         {
             QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
@@ -289,13 +298,14 @@ QtProperty *BrowserWidget::addSubGroup(QtProperty *topItem, const QString &name)
 void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = sourceList->currentItem();
-    if (selected.size()==0 || item == nullptr)
+    if (selected.size()==0 || item == nullptr|| item->parent() == nullptr)
         return;
-    QString source = item->text(0);
+
+    QString source = item->data(0, Qt::UserRole).toString();
     int mutationId = -1;
-    if (item->parent()!=nullptr) {
-        source = item->parent()->text(0);
-        mutationId = item->text(0).toInt();
+    if (item->parent()->parent()!=nullptr) {
+        source = item->parent()->data(0, Qt::UserRole).toString();
+        mutationId = item->data(0, Qt::UserRole).toInt();
     }
 
     addToHistory(sourceList, item);
@@ -347,10 +357,10 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     QString source = "";
     int mutationId = -1;
     if (item->parent()==nullptr) {
-        mutationId = item->text(0).toInt();
+        mutationId = item->data(0, Qt::UserRole).toInt();
     } else {
         source = item->text(0);
-        mutationId = item->parent()->text(0).toInt();
+        mutationId = item->parent()->data(0, Qt::UserRole).toInt();
     }
 
     addToHistory(mutationsList, item);
@@ -392,12 +402,14 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
 
 void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 {
+    if (item->parent()==nullptr) return;
+
     bool ok;
-    QString source = item->text(0);
+    QString source = item->data(0, Qt::UserRole).toString();
     QString mut = "";
-    if (item->parent()!=nullptr) {
-        source = item->parent()->text(0);
-        mut = item->text(0);
+    if (item->parent()->parent()!=nullptr) {
+        source = item->parent()->data(0, Qt::UserRole).toString();
+        mut = item->data(0, Qt::UserRole).toString();
     }
     QStringList param = source.split(':');
     int line = param.at(1).toInt(&ok);
@@ -438,13 +450,17 @@ void BrowserWidget::onSearchInserted()
 
 void BrowserWidget::selectSource(QString source)
 {
-    QList<QTreeWidgetItem *> items = sourceList->findItems(source, Qt::MatchExactly);
-    if (items.size() > 0) {
-        if (tabWidget->currentWidget()!=sourceList) {
-            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
-            tabWidget->setCurrentWidget(sourceList);
+    QTreeWidgetItemIterator it(sourceList);
+    while (*it) {
+        if ((*it)->data(0, Qt::UserRole)==source) {
+            if (tabWidget->currentWidget()!=sourceList) {
+                ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+                tabWidget->setCurrentWidget(sourceList);
+            }
+            sourceList->setCurrentItem(*it, 0, QItemSelectionModel::ClearAndSelect);
+            break;
         }
-        sourceList->setCurrentItem(items.at(0), 0, QItemSelectionModel::ClearAndSelect);
+        ++it;
     }
 }
 

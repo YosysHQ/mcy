@@ -31,6 +31,7 @@ class DbManager
 
     int getMutationsCount();
     QStringList getSources();
+    QStringList getSourcesLines(QString filename);
     QList<int> getMutations();
     QStringList getFileList();
     QString getFileContent(QString filename);
