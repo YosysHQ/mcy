@@ -49,7 +49,7 @@ def usage():
     print("  mcy [--trace] source [-e <encoding>] <filename> [<filename>]")
     print("  mcy [--trace] lcov <filename>")
     print("  mcy [--trace] dash")
-    print("  mcy [--trace] gui")
+    print("  mcy [--trace] gui [--src <source_dir>]")
     print("  mcy [--trace] purge")
     print()
     exit(1)

@@ -29,13 +29,16 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("MCY Gui");
     QCoreApplication::setApplicationVersion("1.0");
     QCommandLineParser parser;
-    parser.addPositionalArgument("source", "Source folder/directory to use");
+    parser.addPositionalArgument("project", "Project folder/directory to use");
+    QCommandLineOption sourceDirectoryOption(QStringList() << "src" << "source-directory",
+                                            "Copy all source files into <directory>.", "directory");
+    parser.addOption(sourceDirectoryOption);
     parser.addHelpOption();
     parser.addVersionOption();
     parser.process(app);
     const QStringList positionalArguments = parser.positionalArguments();
     if (positionalArguments.size() > 1) {
-        printf("Several source folders/directories have been specified.\n");
+        printf("Several project folders/directories have been specified.\n");
         return -1;
     }
     QString location = ".";
@@ -61,7 +64,20 @@ int main(int argc, char *argv[])
         printf("File location does not exists.\n");
         return -1;
     }
-    MainWindow win(location);
+    QString srcDir = parser.value(sourceDirectoryOption);
+    if (!srcDir.isEmpty()) {
+        if (boost::filesystem::exists(srcDir.toStdString())) {
+            if (!boost::filesystem::is_directory(srcDir.toStdString())) {
+                printf("Source file location is not directory.\n");
+                return -1;
+            }
+        } else {
+            printf("Source directory does not exists.\n");
+            return -1;
+        }
+    }
+
+    MainWindow win(location, srcDir);
     win.show();
 
     return app.exec();
