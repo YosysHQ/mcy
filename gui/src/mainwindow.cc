@@ -140,9 +140,8 @@ void MainWindow::openCodeViewTab(QString filename)
         connect(code, &ScintillaEdit::marginClicked, [=](int position, int modifiers, int margin) {
             code->selectLine(code->lineFromPosition(position) + 1);
         });
-    } else {
-        centralTabWidget->setCurrentWidget(views[filename]);
     }
+    centralTabWidget->setCurrentWidget(views[filename]);
 }
 
 void MainWindow::closeCodeViewTab(int index)

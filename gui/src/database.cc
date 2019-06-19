@@ -44,8 +44,17 @@ int DbManager::getMutationsCount()
 QStringList DbManager::getSources()
 {
     QStringList sources;
-    QSqlQuery query("SELECT srctag FROM sources ORDER BY "
-                    "SUBSTR(srctag,0,INSTR(srctag,':')),CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
+    QSqlQuery query("SELECT DISTINCT SUBSTR(srctag,0,INSTR(srctag,':')) FROM sources ORDER BY SUBSTR(srctag,0,INSTR(srctag,':'))");
+    while (query.next()) {
+        sources << query.value(0).toString();
+    }
+    return sources;
+}
+
+QStringList DbManager::getSourcesLines(QString filename)
+{
+    QStringList sources;
+    QSqlQuery query("SELECT CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER) FROM sources WHERE SUBSTR(srctag,0,INSTR(srctag,':')) = \""+ filename +"\" ORDER BY CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
     while (query.next()) {
         sources << query.value(0).toString();
     }
