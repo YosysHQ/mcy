@@ -130,7 +130,7 @@ void MainWindow::openCodeViewTab(QString filename)
                 return;
             }
         }
-        code->setCoverage(database.getCoverage(filename));
+        code->setCoverage(database.getCoverage(filename), database.getLinesYetToCover(filename));
         views.insert(filename, code);
         centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
         connect(code, &CodeView::updateUi, [=](int updated) {

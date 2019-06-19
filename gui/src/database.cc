@@ -109,6 +109,23 @@ QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
     return retVal;
 }
 
+QList<int> DbManager::getLinesYetToCover(QString filename)
+{
+    QList<int>retVal;
+    QString str = "SELECT REPLACE(opt_value,'" + filename + ":','') "
+                                                            "   FROM options"
+                                                            "   WHERE opt_type = 'src'"
+                                                            "       AND mutation_id NOT IN (SELECT mutation_id FROM tags)"
+                                                            "       AND opt_value LIKE '" +
+                  filename + ":%' "
+                             "   GROUP BY opt_value ";
+    QSqlQuery query(str);
+    while (query.next()) {
+        retVal.append(query.value(0).toInt());
+    }
+    return retVal;
+}
+
 QList<int> DbManager::getMutationsForSource(QString source)
 {
     QList<int> retVal;

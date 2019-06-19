@@ -129,8 +129,14 @@ void CodeView::loadContent(const char *content)
 
 void CodeView::selectLine(int line) { gotoLine(line - 1); }
 
-void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage)
+void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage, QList<int> yetToCover)
 {
+    for( int i=0; i<yetToCover.count(); ++i )
+    {
+        int line = yetToCover[i] - 1;
+        marginSetText(line, "?");
+        marginSetStyle(line, STYLE_LINENUMBER);
+    }
     QMap<int, QPair<int, int>>::const_iterator it = coverage.constBegin();
     while (it != coverage.constEnd()) {
         int line = it.key() - 1;
