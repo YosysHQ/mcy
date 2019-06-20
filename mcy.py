@@ -48,7 +48,7 @@ def usage():
     print("  mcy [--trace] task -v -k <test> <id_or_tag>..")
     print("  mcy [--trace] source [-e <encoding>] <filename> [<filename>]")
     print("  mcy [--trace] lcov <filename>")
-    print("  mcy [--trace] dash")
+    print("  mcy [--trace] dash [<source_dir>]")
     print("  mcy [--trace] gui [--src <source_dir>]")
     print("  mcy [--trace] purge")
     print()
