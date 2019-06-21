@@ -119,17 +119,30 @@ def source():
         filename = request.form['filename']
     try:
         db = sqlite3_connect()
-        files = db.execute('SELECT filename FROM files').fetchall()
+        files = db.execute('SELECT DISTINCT SUBSTR(srctag,0,INSTR(srctag,\':\')) FROM sources ORDER BY SUBSTR(srctag,0,INSTR(srctag,\':\'))').fetchall()
         if filename=="":
             filename = files[0][0]
-        sql = 'SELECT data FROM files WHERE filename = "%s"' % filename
-        filedata = db.execute(sql).fetchone()[0].decode('unicode_escape')
+        sql = 'SELECT data FROM files WHERE filename = "%s"' % filename        
+        fd = db.execute(sql).fetchall()
+        if (len(fd)==0):
+            if (len(sys.argv) > 1):
+                try:
+                    with open(os.path.join(sys.argv[1],filename) , 'r') as myfile:
+                        filedata = myfile.read()
+                except:
+                    filedata = ""                        
+                    errorCode = 3
+            else:
+                filedata = ""
+        else:
+            filedata = fd[0].decode('unicode_escape')
+
         # Fix DOS-style and old Macintosh-style line endings
         filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
         num = len(filedata.split('\n'))        
        
         for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
-            covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
+            covercache[src] = types.SimpleNamespace(covered=0, uncovered=0, used=0)
 
         for src, covered, uncovered in db.execute("""
             SELECT opt_value,
@@ -143,6 +156,7 @@ def source():
         """, [filename + ":%"]):
             covercache[src].covered += covered
             covercache[src].uncovered += uncovered
+            covercache[src].used = 1
         db.close()
     except:
         if (not os.path.exists("database/db.sqlite3")):
