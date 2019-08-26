@@ -551,12 +551,16 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
     db.commit()
 
     task_id = str(uuid.uuid4())
-    print("task %s (%s)" % (task_id, tst))
     os.makedirs("tasks/%s" % task_id)
+
+    infomsgs = list()
+    infomsgs.append("task %s (%s)" % (task_id, tst))
+    print("task %s (%s)" % (task_id, tst))
 
     with open("tasks/%s/input.txt" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
+            infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
             print("  %d %d %s" % (idx+1, mut, mut_str))
             print("%d %s" % (idx+1, mut_str), file=f)
 
@@ -594,7 +598,9 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
 
     command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % (task_id, 1 if keepdir else 0)
     if not verbose:
-        command += "; exec >logfile.txt"
+        with open("tasks/%s/logfile.txt" % task_id, "w") as f:
+            for msg in infomsgs: print(msg, file=f)
+        command += "; exec >>logfile.txt"
     command += "; %s %s" % (cfg.tests[t].run, tst_args)
     task = Task(command, callback, silent=(not verbose))
 
