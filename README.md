@@ -178,6 +178,10 @@ And it will procude an output in `output.txt`, formatted as following:
 The numbers are not mutation IDs but a task-local numbering, starting fresh
 at 1 for each task. The order of the output lines does not matter.
 
+The environment variable `MUTATIONS` contains the list of mutation IDs for the
+task. This is mostly useful for debug purposes. Ideally a test should not
+need to know the mutation IDs of the mutations it tests.
+
 Standard output of the command will be redirected to `logfile.txt`, unless
 the command is run from `mcy task -v`. Standard error always stays connected
 to the console.

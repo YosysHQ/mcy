@@ -596,7 +596,8 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
             except OSError:
                 pass
 
-    command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % (task_id, 1 if keepdir else 0)
+    command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d MUTATIONS=\"%s\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % \
+            (task_id, 1 if keepdir else 0, " ".join(["%d" % mut for mut in mut_list]))
     if not verbose:
         with open("tasks/%s/logfile.txt" % task_id, "w") as f:
             for msg in infomsgs: print(msg, file=f)
