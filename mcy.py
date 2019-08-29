@@ -2,7 +2,7 @@
 
 import getopt, sys, os, re, time, signal
 import subprocess, sqlite3, uuid, shutil
-import types
+import types, time
 
 taskidx = 0
 taskdb = dict()
@@ -74,7 +74,7 @@ weight_cover pick_cover_prcnt
 cfg = types.SimpleNamespace()
 cfg.opt_size = 20
 cfg.opt_tags = None
-cfg.opt_seed = 12345678
+cfg.opt_seed = None
 cfg.mutopts = dict()
 cfg.script = list()
 cfg.logic = list()
@@ -175,8 +175,18 @@ def xorshift32(x):
     x = (x ^ x <<  5) & 0xFFFFFFFF
     return x;
 
+if cfg.opt_seed is None:
+    cfg.opt_seed = int(100 * time.time())
+    cfg.opt_seed = xorshift32(cfg.opt_seed)
+    cfg.opt_seed = xorshift32(cfg.opt_seed)
+    cfg.opt_seed = xorshift32(cfg.opt_seed)
+    cfg.opt_seed = cfg.opt_seed % 1000000000
+
+
+######################################################
+
 def update_mutation(db, mid):
-    rng_state = xorshift32(xorshift32(mid + 12345))
+    rng_state = xorshift32(xorshift32(mid + cfg.opt_seed))
     rng_state = xorshift32(xorshift32(rng_state))
 
     db.execute("DELETE FROM queue WHERE mutation_id = ?", [mid])
