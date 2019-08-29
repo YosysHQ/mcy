@@ -74,6 +74,7 @@ weight_cover pick_cover_prcnt
 cfg = types.SimpleNamespace()
 cfg.opt_size = 20
 cfg.opt_tags = None
+cfg.opt_seed = 12345678
 cfg.mutopts = dict()
 cfg.script = list()
 cfg.logic = list()
@@ -116,6 +117,9 @@ with open("config.mcy", "r") as f:
                 continue
             if len(entries) > 1 and entries[0] == "tags":
                 cfg.opt_tags = set(entries[1:])
+                continue
+            if len(entries) == 2 and entries[0] == "seed":
+                cfg.opt_seed = int(entries[1])
                 continue
             if len(entries) > 1 and entries[0] == "select":
                 cfg.select += entries[1:]
@@ -223,7 +227,7 @@ def reset_status(db, do_reset=False):
 
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
-                print("mutate -list %d -none%s -o database/mutations2.txt%s" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
+                print("mutate -list %d -seed %d -none%s -o database/mutations2.txt%s" % (cfg.opt_size, cfg.opt_seed, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
                         " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
 
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
@@ -378,7 +382,7 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
-        print("mutate -list %d -none%s -o database/mutations.txt -s database/sources.txt%s" % (cfg.opt_size, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
+        print("mutate -list %d -seed %d -none%s -o database/mutations.txt -s database/sources.txt%s" % (cfg.opt_size, cfg.opt_seed, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
                 " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
 
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
