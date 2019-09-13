@@ -27,7 +27,9 @@ DesignSetupPage::DesignSetupPage(QWidget *parent)
     setTitle("Design Setup...");
 
     top = new QLineEdit();
-    
+    top->setReadOnly(false);
+    QObject::connect(top,  &QLineEdit::textChanged, this, &DesignSetupPage::textChanged);
+
     fileList = new QListWidget;
     fileList->setDragDropMode(QAbstractItemView::InternalMove);
     fileList->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -93,6 +95,11 @@ int DesignSetupPage::nextId() const
     return CreateWizard::Page_TestSetup;
 }
 
+void DesignSetupPage::textChanged(const QString &text)
+{
+    updateScript();
+}
+
 void DesignSetupPage::updateScript()
 {
     script->clear();
@@ -100,6 +107,7 @@ void DesignSetupPage::updateScript()
     {
         script->append(QString("read_verilog ") + fileList->item(i)->text());
     }
+    script->append(QString("prep -top ") + top->text());
     script->append("");
 }
 
@@ -144,6 +152,7 @@ void DesignSetupPage::editScript()
     editButton->setEnabled(false);
     resetButton->setEnabled(true);
     script->setReadOnly(false);
+    top->setReadOnly(true);
 }
 
 void DesignSetupPage::resetScript()
@@ -153,5 +162,6 @@ void DesignSetupPage::resetScript()
     editButton->setEnabled(true);
     resetButton->setEnabled(false);
     script->setReadOnly(true);
+    top->setReadOnly(false);
     updateScript();
 }

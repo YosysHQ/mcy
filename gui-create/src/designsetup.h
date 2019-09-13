@@ -52,6 +52,7 @@ private Q_SLOTS:
     void deleteFiles();
     void editScript();
     void resetScript();
+    void textChanged(const QString &text);
 Q_SIGNALS:
     void theFileListChanged();
     void theScriptChanged();    
