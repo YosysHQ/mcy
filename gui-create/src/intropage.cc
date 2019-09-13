@@ -17,26 +17,26 @@
  *
  */
 
-#ifndef CREATEWIZARD_H
-#define CREATEWIZARD_H
+#include <QtWidgets>
+#include "createwizard.h"
+#include "intropage.h"
 
-#include <QWizard>
-#include <QLabel>
-#include <QListWidget>
-#include <QTextEdit>
-
-class CreateWizard : public QWizard
+IntroPage::IntroPage(QWidget *parent)
+    : QWizardPage(parent)
 {
-    Q_OBJECT
+    setTitle(tr("Introduction"));
 
-public:
-    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
-    CreateWizard(QWidget *parent = 0);
+    topLabel = new QLabel(tr("This wizard will help you create configuration for "
+                             "<i>Mutation Cover with Yosys</i>."));
+    topLabel->setWordWrap(true);
 
-    QSize sizeHint() const override { return QSize(800, 600); }
-    void accept() override;
-private Q_SLOTS:
-    void showHelp();    
-};
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(topLabel);
+    setLayout(layout);
+}
 
-#endif // CREATEWIZARD_H
+int IntroPage::nextId() const
+{
+    return CreateWizard::Page_SelectDirectory;
+}
+

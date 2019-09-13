@@ -17,26 +17,23 @@
  *
  */
 
-#ifndef CREATEWIZARD_H
-#define CREATEWIZARD_H
+#ifndef INTROPAGE_H
+#define INTROPAGE_H
 
 #include <QWizard>
 #include <QLabel>
-#include <QListWidget>
-#include <QTextEdit>
 
-class CreateWizard : public QWizard
+class IntroPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
-    CreateWizard(QWidget *parent = 0);
+    IntroPage(QWidget *parent = 0);
 
-    QSize sizeHint() const override { return QSize(800, 600); }
-    void accept() override;
-private Q_SLOTS:
-    void showHelp();    
+    int nextId() const override;
+
+private:
+    QLabel *topLabel;
 };
 
-#endif // CREATEWIZARD_H
+#endif // INTROPAGE_H

@@ -17,26 +17,26 @@
  *
  */
 
-#ifndef CREATEWIZARD_H
-#define CREATEWIZARD_H
+#ifndef SELECTDIR_H
+#define SELECTDIR_H
 
 #include <QWizard>
 #include <QLabel>
-#include <QListWidget>
-#include <QTextEdit>
 
-class CreateWizard : public QWizard
+class SelectDirectoryPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
-    CreateWizard(QWidget *parent = 0);
+    SelectDirectoryPage(QWidget *parent = 0);
 
-    QSize sizeHint() const override { return QSize(800, 600); }
-    void accept() override;
-private Q_SLOTS:
-    void showHelp();    
+    int nextId() const override;
+    bool isComplete() const override;
+    
+private:
+    void browse();
+
+    QLineEdit *directory;
 };
 
-#endif // CREATEWIZARD_H
+#endif // SELECTDIR_H

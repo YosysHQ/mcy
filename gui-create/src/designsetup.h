@@ -17,26 +17,44 @@
  *
  */
 
-#ifndef CREATEWIZARD_H
-#define CREATEWIZARD_H
+#ifndef DESIGNSETUP_H
+#define DESIGNSETUP_H
 
 #include <QWizard>
 #include <QLabel>
 #include <QListWidget>
 #include <QTextEdit>
 
-class CreateWizard : public QWizard
+class DesignSetupPage : public QWizardPage
 {
     Q_OBJECT
-
+    Q_PROPERTY(QStringList theFileList READ theFileList NOTIFY theFileListChanged)
+    Q_PROPERTY(QString theScript READ theScript NOTIFY theScriptChanged)
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
-    CreateWizard(QWidget *parent = 0);
+    DesignSetupPage(QWidget *parent = 0);
 
-    QSize sizeHint() const override { return QSize(800, 600); }
-    void accept() override;
+    int nextId() const override;
+
+    QStringList theFileList() const;
+    QString theScript() const;
+private:
+    void updateScript();
+
+    QLineEdit *top;
+    QListWidget *fileList;
+    QPushButton *addButton;
+    QPushButton *deleteButton;
+    QTextEdit *script;
+    QPushButton *editButton;
+    QPushButton *resetButton;
 private Q_SLOTS:
-    void showHelp();    
+    void addFiles();
+    void deleteFiles();
+    void editScript();
+    void resetScript();
+Q_SIGNALS:
+    void theFileListChanged();
+    void theScriptChanged();    
 };
 
-#endif // CREATEWIZARD_H
+#endif // DESIGNSETUP_H

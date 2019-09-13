@@ -17,26 +17,36 @@
  *
  */
 
-#ifndef CREATEWIZARD_H
-#define CREATEWIZARD_H
+#ifndef TESTSETUP_H
+#define TESTSETUP_H
 
 #include <QWizard>
 #include <QLabel>
 #include <QListWidget>
-#include <QTextEdit>
 
-class CreateWizard : public QWizard
+class TestSetupPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
-    CreateWizard(QWidget *parent = 0);
+    TestSetupPage(QWidget *parent = 0);
 
-    QSize sizeHint() const override { return QSize(800, 600); }
-    void accept() override;
+    int nextId() const override;
+
+private:
+    QLineEdit *mutations_size;
+
+    QListWidget *testList;
+    QPushButton *addTestButton;
+    QPushButton *delTestButton;
+    QListWidget *refTestList;
+    QPushButton *addRefTestButton;
+    QPushButton *delRefTestButton;
 private Q_SLOTS:
-    void showHelp();    
+    void addTest();
+    void delTest();
+    void addRefTest();
+    void delRefTest();
 };
 
-#endif // CREATEWIZARD_H
+#endif // TESTSETUP_H
