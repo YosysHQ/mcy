@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include "createwizard.h"
 #include "testsetup.h"
+#include "addtest.h"
 
 TestSetupPage::TestSetupPage(QWidget *parent)
     : QWizardPage(parent)
@@ -87,6 +88,9 @@ int TestSetupPage::nextId() const
 
 void TestSetupPage::addTest()
 {
+    AddTestDialog dlg;
+    dlg.setModal(true);
+    dlg.exec();
 }
 
 void TestSetupPage::delTest()
@@ -95,6 +99,9 @@ void TestSetupPage::delTest()
 
 void TestSetupPage::addRefTest()
 {
+    AddTestDialog dlg;
+    dlg.setModal(true);
+    dlg.exec();
 }
 
 void TestSetupPage::delRefTest()
