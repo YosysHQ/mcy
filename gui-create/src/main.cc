@@ -28,7 +28,6 @@ int main(int argc, char *argv[])
 
     CreateWizard wizard;
     wizard.setModal(true);
-    wizard.exec();        
-
+    wizard.show();        
     return app.exec();
 }

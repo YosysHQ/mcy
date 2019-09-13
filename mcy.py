@@ -50,6 +50,7 @@ def usage():
     print("  mcy [--trace] lcov <filename>")
     print("  mcy [--trace] dash [<source_dir>]")
     print("  mcy [--trace] gui [--src <source_dir>]")
+    print("  mcy [--trace] create")
     print("  mcy [--trace] purge")
     print()
     exit(1)
@@ -60,6 +61,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "--trace":
 
 if len(sys.argv) < 2:
     usage()
+
+if sys.argv[1] == "create":
+    os.execvp("mcy-create", ["mcy-create"] + sys.argv[2:])
+    exit(1)
 
 if not os.path.exists("config.mcy"):
     print("config.mcy not found")
