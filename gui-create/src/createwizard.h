@@ -111,6 +111,18 @@ public:
 
 private:
     QLineEdit *mutations_size;
+
+    QListWidget *testList;
+    QPushButton *addTestButton;
+    QPushButton *delTestButton;
+    QListWidget *refTestList;
+    QPushButton *addRefTestButton;
+    QPushButton *delRefTestButton;
+private Q_SLOTS:
+    void addTest();
+    void delTest();
+    void addRefTest();
+    void delRefTest();
 };
 
 #endif // CREATEWIZARD_H
