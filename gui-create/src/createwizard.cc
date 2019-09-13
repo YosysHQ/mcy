@@ -300,7 +300,7 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     registerField("mutations_size*", mutations_size);
     
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(new QLabel("size"));
+    layout->addWidget(new QLabel("Mutation size:"));
     layout->addWidget(mutations_size);
 
     setLayout(layout);
