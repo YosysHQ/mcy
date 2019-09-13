@@ -30,7 +30,7 @@ class CreateWizard : public QWizard
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_SelectFiles, Page_Options };
+    enum { Page_Intro, Page_SelectDirectory, Page_DesignSetup, Page_TestSetup };
     CreateWizard(QWidget *parent = 0);
 
     QSize sizeHint() const override { return QSize(800, 600); }
@@ -68,13 +68,13 @@ private:
     QLineEdit *directory;
 };
 
-class SelectFilesPage : public QWizardPage
+class DesignSetupPage : public QWizardPage
 {
     Q_OBJECT
     Q_PROPERTY(QStringList theFileList READ theFileList NOTIFY theFileListChanged)
     Q_PROPERTY(QString theScript READ theScript NOTIFY theScriptChanged)
 public:
-    SelectFilesPage(QWidget *parent = 0);
+    DesignSetupPage(QWidget *parent = 0);
 
     int nextId() const override;
 
@@ -82,7 +82,7 @@ public:
     QString theScript() const;
 private:
     void updateScript();
-    
+
     QLineEdit *top;
     QListWidget *fileList;
     QPushButton *addButton;
@@ -100,28 +100,17 @@ Q_SIGNALS:
     void theScriptChanged();    
 };
 
-class OptionsPage : public QWizardPage
+class TestSetupPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    OptionsPage(QWidget *parent = 0);
+    TestSetupPage(QWidget *parent = 0);
 
     int nextId() const override;
 
 private:
     QLineEdit *mutations_size;
-    QLineEdit *pick_cover_prcnt;
-    QLineEdit *weight_cover;
-    QLineEdit *weight_pq_w;
-    QLineEdit *weight_pq_b;
-    QLineEdit *weight_pq_c;
-    QLineEdit *weight_pq_s;
-
-    QLineEdit *weight_pq_mw;
-    QLineEdit *weight_pq_mb;
-    QLineEdit *weight_pq_mc;
-    QLineEdit *weight_pq_ms;
 };
 
 #endif // CREATEWIZARD_H

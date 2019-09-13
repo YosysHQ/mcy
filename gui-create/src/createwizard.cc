@@ -25,8 +25,8 @@ CreateWizard::CreateWizard(QWidget *parent)
 {
     setPage(Page_Intro, new IntroPage);
     setPage(Page_SelectDirectory, new SelectDirectoryPage);
-    setPage(Page_SelectFiles, new SelectFilesPage);
-    setPage(Page_Options, new OptionsPage);
+    setPage(Page_DesignSetup, new DesignSetupPage);
+    setPage(Page_TestSetup, new TestSetupPage);
 
     setStartId(Page_Intro);
 #ifndef Q_OS_MAC
@@ -47,7 +47,7 @@ void CreateWizard::showHelp()
     case Page_Intro:
         message = tr("TODO: Intro page help message.");
         break;
-    case Page_SelectFiles:
+    case Page_DesignSetup:
         message = tr("TODO: Select files help message.");
         break;
     default:
@@ -62,38 +62,7 @@ void CreateWizard::accept()
     QByteArray content;
     content += "[options]"; content += "\n";
     content += QString("size ") + field("mutations_size").toString(); content += "\n";
-    
-    if (!field("weight_pq_w").toString().isEmpty()) {
-        content += QString("weight_pq_w ") + field("weight_pq_w").toString(); content += "\n";
-    }
-    if (!field("weight_pq_mw").toString().isEmpty()) {
-        content += QString("weight_pq_mw ") + field("weight_pq_mw").toString(); content += "\n";
-    }
-
-    if (!field("weight_pq_b").toString().isEmpty()) {
-        content += QString("weight_pq_b ") + field("weight_pq_b").toString(); content += "\n";
-    }
-    if (!field("weight_pq_mb").toString().isEmpty()) {
-        content += QString("weight_pq_mb ") + field("weight_pq_mb").toString(); content += "\n";
-    }
-
-    if (!field("weight_pq_c").toString().isEmpty()) {
-        content += QString("weight_pq_c ") + field("weight_pq_c").toString(); content += "\n";
-    }
-    if (!field("weight_pq_mc").toString().isEmpty()) {
-        content += QString("weight_pq_mc ") + field("weight_pq_mc").toString(); content += "\n";
-    }
-
-    if (!field("weight_pq_s").toString().isEmpty()) {
-        content += QString("weight_pq_s ") + field("weight_pq_s").toString(); content += "\n";
-    }
-    if (!field("weight_pq_ms").toString().isEmpty()) {
-        content += QString("weight_pq_ms ") + field("weight_pq_ms").toString(); content += "\n";
-    }
-
-    content += QString("weight_cover ") + field("weight_cover").toString(); content += "\n";
-    content += QString("pick_cover_prcnt ") + field("pick_cover_prcnt").toString(); content += "\n";
-
+   
     content += "\n";
     
     content += "[script]"; content += "\n";
@@ -183,13 +152,13 @@ bool SelectDirectoryPage::isComplete() const
 
 int SelectDirectoryPage::nextId() const
 {
-    return CreateWizard::Page_SelectFiles;
+    return CreateWizard::Page_DesignSetup;
 }
 
-SelectFilesPage::SelectFilesPage(QWidget *parent)
+DesignSetupPage::DesignSetupPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Select design files..."));
+    setTitle("Design Setup...");
 
     top = new QLineEdit();
     
@@ -203,8 +172,8 @@ SelectFilesPage::SelectFilesPage(QWidget *parent)
     deleteButton = buttonBox_filesel->addButton("Delete", QDialogButtonBox::ActionRole);
     deleteButton->setEnabled(true);
 
-    QObject::connect(addButton,  &QPushButton::clicked, this, &SelectFilesPage::addFiles);
-    QObject::connect(deleteButton, &QPushButton::clicked, this, &SelectFilesPage::deleteFiles);
+    QObject::connect(addButton,  &QPushButton::clicked, this, &DesignSetupPage::addFiles);
+    QObject::connect(deleteButton, &QPushButton::clicked, this, &DesignSetupPage::deleteFiles);
 
     QDialogButtonBox *buttonBox_script = new QDialogButtonBox(Qt::Vertical, this);
     editButton = buttonBox_script->addButton("Edit", QDialogButtonBox::ActionRole);
@@ -212,8 +181,8 @@ SelectFilesPage::SelectFilesPage(QWidget *parent)
     resetButton = buttonBox_script->addButton("Reset", QDialogButtonBox::ActionRole);
     resetButton->setEnabled(false);
 
-    QObject::connect(editButton,  &QPushButton::clicked, this, &SelectFilesPage::editScript);
-    QObject::connect(resetButton, &QPushButton::clicked, this, &SelectFilesPage::resetScript);
+    QObject::connect(editButton,  &QPushButton::clicked, this, &DesignSetupPage::editScript);
+    QObject::connect(resetButton, &QPushButton::clicked, this, &DesignSetupPage::resetScript);
 
     script = new QTextEdit();
     script->show();
@@ -248,17 +217,17 @@ SelectFilesPage::SelectFilesPage(QWidget *parent)
     registerField("script*", this, "theScript");
 }
 
-QString SelectFilesPage::theScript() const
+QString DesignSetupPage::theScript() const
 {
     return script->toPlainText();
 }
 
-int SelectFilesPage::nextId() const
+int DesignSetupPage::nextId() const
 {
-    return CreateWizard::Page_Options;
+    return CreateWizard::Page_TestSetup;
 }
 
-void SelectFilesPage::updateScript()
+void DesignSetupPage::updateScript()
 {
     script->clear();
     for(int i = 0; i < fileList->count(); ++i)
@@ -268,7 +237,7 @@ void SelectFilesPage::updateScript()
     script->append("");
 }
 
-void SelectFilesPage::addFiles()
+void DesignSetupPage::addFiles()
 {
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFiles);
@@ -283,7 +252,7 @@ void SelectFilesPage::addFiles()
     Q_EMIT completeChanged();
 }
 
-QStringList SelectFilesPage::theFileList() const
+QStringList DesignSetupPage::theFileList() const
 {
     QStringList list;
     for(int i = 0; i < fileList->count(); ++i)
@@ -293,7 +262,7 @@ QStringList SelectFilesPage::theFileList() const
     return list;
 }
 
-void SelectFilesPage::deleteFiles()
+void DesignSetupPage::deleteFiles()
 {
     for(auto name : fileList->selectedItems()) {
         delete fileList->takeItem(fileList->row(name));
@@ -302,7 +271,7 @@ void SelectFilesPage::deleteFiles()
     Q_EMIT completeChanged();
 }
 
-void SelectFilesPage::editScript()
+void DesignSetupPage::editScript()
 {
     addButton->setEnabled(false);
     deleteButton->setEnabled(false);
@@ -311,7 +280,7 @@ void SelectFilesPage::editScript()
     script->setReadOnly(false);
 }
 
-void SelectFilesPage::resetScript()
+void DesignSetupPage::resetScript()
 {
     addButton->setEnabled(true);
     deleteButton->setEnabled(true);
@@ -321,81 +290,23 @@ void SelectFilesPage::resetScript()
     updateScript();
 }
 
-OptionsPage::OptionsPage(QWidget *parent)
+TestSetupPage::TestSetupPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Options"));
+    setTitle("Test Setup...");
 
-    QGridLayout *layout = new QGridLayout;
-    
-    layout->addWidget(new QLabel(tr("size")),0,0,1,1);
     mutations_size = new QLineEdit();
     mutations_size->setValidator( new QIntValidator(1, 100000, this) );
-    layout->addWidget(mutations_size,0,1,1,1);
     registerField("mutations_size*", mutations_size);
-
-    layout->addWidget(new QLabel(tr("pick_cover_prcnt")),1,0,1,1);
-    pick_cover_prcnt = new QLineEdit();
-    pick_cover_prcnt->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(pick_cover_prcnt,1,1,1,1);
-    registerField("pick_cover_prcnt*", pick_cover_prcnt);
     
-
-    layout->addWidget(new QLabel(tr("weight_cover")),2,0,1,1);
-    weight_cover = new QLineEdit();
-    weight_cover->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_cover,2,1,1,1);
-    registerField("weight_cover*", weight_cover);
-
-
-    layout->addWidget(new QLabel(tr("weight_pq_w")),3,0,1,1);
-    weight_pq_w = new QLineEdit();
-    weight_pq_w->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_w,3,1,1,1);
-    registerField("weight_pq_w", weight_pq_w);
-    layout->addWidget(new QLabel(tr("weight_pq_mw")),3,2,1,1);
-    weight_pq_mw = new QLineEdit();
-    weight_pq_mw->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_mw,3,3,1,1);
-    registerField("weight_pq_mw", weight_pq_mw);
-
-    layout->addWidget(new QLabel(tr("weight_pq_b")),4,0,1,1);
-    weight_pq_b = new QLineEdit();
-    weight_pq_b->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_b,4,1,1,1);
-    registerField("weight_pq_b", weight_pq_b);
-    layout->addWidget(new QLabel(tr("weight_pq_mb")),4,2,1,1);
-    weight_pq_mb = new QLineEdit();
-    weight_pq_mb->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_mb,4,3,1,1);
-    registerField("weight_pq_mb", weight_pq_mb);
-
-    layout->addWidget(new QLabel(tr("weight_pq_c")),5,0,1,1);
-    weight_pq_c = new QLineEdit();
-    weight_pq_c->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_c,5,1,1,1);
-    registerField("weight_pq_c", weight_pq_c);
-    layout->addWidget(new QLabel(tr("weight_pq_mc")),5,2,1,1);
-    weight_pq_mc = new QLineEdit();
-    weight_pq_mc->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_mc,5,3,1,1);
-    registerField("weight_pq_mc", weight_pq_mc);
-
-    layout->addWidget(new QLabel(tr("weight_pq_s")),6,0,1,1);
-    weight_pq_s = new QLineEdit();
-    weight_pq_s->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_s,6,1,1,1);
-    registerField("weight_pq_s", weight_pq_s);
-    layout->addWidget(new QLabel(tr("weight_pq_ms")),6,2,1,1);
-    weight_pq_ms = new QLineEdit();
-    weight_pq_ms->setValidator( new QIntValidator(0, 1000, this) );
-    layout->addWidget(weight_pq_ms,6,3,1,1);
-    registerField("weight_pq_ms", weight_pq_ms);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(new QLabel("size"));
+    layout->addWidget(mutations_size);
 
     setLayout(layout);
 }
 
-int OptionsPage::nextId() const
+int TestSetupPage::nextId() const
 {
     return -1;
 }
