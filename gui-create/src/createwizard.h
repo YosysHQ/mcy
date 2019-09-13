@@ -30,9 +30,10 @@ class CreateWizard : public QWizard
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_SelectDirectory, Page_SelectFiles, Page_ScriptEdit, Page_Options };
+    enum { Page_Intro, Page_SelectDirectory, Page_SelectFiles, Page_Options };
     CreateWizard(QWidget *parent = 0);
 
+    QSize sizeHint() const override { return QSize(800, 600); }
     void accept() override;
 private Q_SLOTS:
     void showHelp();    
@@ -71,38 +72,31 @@ class SelectFilesPage : public QWizardPage
 {
     Q_OBJECT
     Q_PROPERTY(QStringList theFileList READ theFileList NOTIFY theFileListChanged)
+    Q_PROPERTY(QString theScript READ theScript NOTIFY theScriptChanged)
 public:
     SelectFilesPage(QWidget *parent = 0);
 
     int nextId() const override;
 
     QStringList theFileList() const;
+    QString theScript() const;
 private:
+    void updateScript();
+    
+    QLineEdit *top;
     QListWidget *fileList;
     QPushButton *addButton;
     QPushButton *deleteButton;
+    QTextEdit *script;
+    QPushButton *editButton;
+    QPushButton *resetButton;
 private Q_SLOTS:
     void addFiles();
     void deleteFiles();
+    void editScript();
+    void resetScript();
 Q_SIGNALS:
     void theFileListChanged();
-};
-
-class ScriptEditPage : public QWizardPage
-{
-    Q_OBJECT
-    Q_PROPERTY(QString theScript READ theScript NOTIFY theScriptChanged)
-
-public:
-    ScriptEditPage(QWidget *parent = 0);
-
-    int nextId() const override;
-    void initializePage() override;
-
-    QString theScript() const;
-private:
-    QTextEdit *text;
-Q_SIGNALS:
     void theScriptChanged();    
 };
 

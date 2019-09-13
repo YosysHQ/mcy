@@ -26,7 +26,6 @@ CreateWizard::CreateWizard(QWidget *parent)
     setPage(Page_Intro, new IntroPage);
     setPage(Page_SelectDirectory, new SelectDirectoryPage);
     setPage(Page_SelectFiles, new SelectFilesPage);
-    setPage(Page_ScriptEdit, new ScriptEditPage);
     setPage(Page_Options, new OptionsPage);
 
     setStartId(Page_Intro);
@@ -192,28 +191,81 @@ SelectFilesPage::SelectFilesPage(QWidget *parent)
 {
     setTitle(tr("Select design files..."));
 
+    top = new QLineEdit();
+    
     fileList = new QListWidget;
     fileList->setDragDropMode(QAbstractItemView::InternalMove);
     fileList->setSelectionMode(QAbstractItemView::MultiSelection);
 
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Vertical, this);
-    addButton = buttonBox->addButton("Add", QDialogButtonBox::ActionRole);
-    deleteButton = buttonBox->addButton("Delete", QDialogButtonBox::ActionRole);
+    QDialogButtonBox *buttonBox_filesel = new QDialogButtonBox(Qt::Vertical, this);
+    addButton = buttonBox_filesel->addButton("Add", QDialogButtonBox::ActionRole);
+    addButton->setEnabled(true);
+    deleteButton = buttonBox_filesel->addButton("Delete", QDialogButtonBox::ActionRole);
+    deleteButton->setEnabled(true);
 
     QObject::connect(addButton,  &QPushButton::clicked, this, &SelectFilesPage::addFiles);
     QObject::connect(deleteButton, &QPushButton::clicked, this, &SelectFilesPage::deleteFiles);
 
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(fileList);
-    layout->addWidget(buttonBox);
+    QDialogButtonBox *buttonBox_script = new QDialogButtonBox(Qt::Vertical, this);
+    editButton = buttonBox_script->addButton("Edit", QDialogButtonBox::ActionRole);
+    editButton->setEnabled(true);
+    resetButton = buttonBox_script->addButton("Reset", QDialogButtonBox::ActionRole);
+    resetButton->setEnabled(false);
+
+    QObject::connect(editButton,  &QPushButton::clicked, this, &SelectFilesPage::editScript);
+    QObject::connect(resetButton, &QPushButton::clicked, this, &SelectFilesPage::resetScript);
+
+    script = new QTextEdit();
+    script->show();
+    script->setReadOnly(true);
+
+    QHBoxLayout *filesel_layout = new QHBoxLayout;
+    filesel_layout->setContentsMargins(0, 0, 0, 0);
+    filesel_layout->addWidget(fileList);
+    filesel_layout->addWidget(buttonBox_filesel);
+
+    QHBoxLayout *script_layout = new QHBoxLayout;
+    script_layout->setContentsMargins(0, 0, 0, 0);
+    script_layout->addWidget(script);
+    script_layout->addWidget(buttonBox_script);
+
+    QWidget *filesel = new QWidget();
+    filesel->setLayout(filesel_layout);
+    QWidget *scripted = new QWidget();
+    scripted->setLayout(script_layout);
+    
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(new QLabel("Top:"));
+    layout->addWidget(top);
+    layout->addWidget(new QLabel("Design files:"));
+    layout->addWidget(filesel);
+    layout->addWidget(new QLabel("Script:"));
+    layout->addWidget(scripted);
     setLayout(layout);
 
+    registerField("top*", top);
     registerField("theFileList*", this, "theFileList");
+    registerField("script*", this, "theScript");
+}
+
+QString SelectFilesPage::theScript() const
+{
+    return script->toPlainText();
 }
 
 int SelectFilesPage::nextId() const
 {
-    return CreateWizard::Page_ScriptEdit;
+    return CreateWizard::Page_Options;
+}
+
+void SelectFilesPage::updateScript()
+{
+    script->clear();
+    for(int i = 0; i < fileList->count(); ++i)
+    {
+        script->append(QString("read_verilog ") + fileList->item(i)->text());
+    }
+    script->append("");
 }
 
 void SelectFilesPage::addFiles()
@@ -227,6 +279,7 @@ void SelectFilesPage::addFiles()
         for(auto file : dialog.selectedFiles())
             fileList->addItem(dir.relativeFilePath(file));        
     }
+    updateScript();
     Q_EMIT completeChanged();
 }
 
@@ -245,7 +298,27 @@ void SelectFilesPage::deleteFiles()
     for(auto name : fileList->selectedItems()) {
         delete fileList->takeItem(fileList->row(name));
     }
+    updateScript();
     Q_EMIT completeChanged();
+}
+
+void SelectFilesPage::editScript()
+{
+    addButton->setEnabled(false);
+    deleteButton->setEnabled(false);
+    editButton->setEnabled(false);
+    resetButton->setEnabled(true);
+    script->setReadOnly(false);
+}
+
+void SelectFilesPage::resetScript()
+{
+    addButton->setEnabled(true);
+    deleteButton->setEnabled(true);
+    editButton->setEnabled(true);
+    resetButton->setEnabled(false);
+    script->setReadOnly(true);
+    updateScript();
 }
 
 OptionsPage::OptionsPage(QWidget *parent)
@@ -325,36 +398,4 @@ OptionsPage::OptionsPage(QWidget *parent)
 int OptionsPage::nextId() const
 {
     return -1;
-}
-
-ScriptEditPage::ScriptEditPage(QWidget *parent)
-    : QWizardPage(parent)
-{
-    setTitle(tr("Edit script"));
-
-    text = new QTextEdit();
-    text->show();
-    registerField("script", this, "theScript");
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(text);
-    setLayout(layout);
-}
-
-void ScriptEditPage::initializePage()
-{
-    QStringList fileList = field("theFileList").toStringList();
-    text->clear();
-    for (auto item : fileList)
-        text->append(QString("read_verilog ") + item);
-    text->append("");
-}
-
-QString ScriptEditPage::theScript() const
-{
-    return text->toPlainText();
-}
-
-int ScriptEditPage::nextId() const
-{
-    return CreateWizard::Page_Options;
 }
