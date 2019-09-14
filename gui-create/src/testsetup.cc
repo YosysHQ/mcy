@@ -97,6 +97,9 @@ void TestSetupPage::addTest()
 
 void TestSetupPage::delTest()
 {    
+    for(auto name : testList->selectedItems()) {
+        delete testList->takeItem(testList->row(name));
+    }    
 }
 
 void TestSetupPage::addRefTest()
@@ -113,6 +116,9 @@ void TestSetupPage::addRefTest()
 
 void TestSetupPage::delRefTest()
 {
+    for(auto name : refTestList->selectedItems()) {
+        delete refTestList->takeItem(refTestList->row(name));
+    }   
 }
 
 bool TestSetupPage::isNameValid(QString name)
