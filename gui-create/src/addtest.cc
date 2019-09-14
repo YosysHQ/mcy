@@ -31,8 +31,8 @@ TestFile::TestFile(const TestFile &other)
     percentage = other.percentage;
 }
 
-AddTestDialog::AddTestDialog(QString path, bool reference, QWidget *parent)
-    : QDialog(parent), path(path), reference(reference)
+AddTestDialog::AddTestDialog(QString path, bool reference, TestFile *data, QWidget *parent)
+    : QDialog(parent), path(path), reference(reference), checkName(true)
 {
     setWindowTitle("Add Test...");
 
@@ -66,6 +66,12 @@ AddTestDialog::AddTestDialog(QString path, bool reference, QWidget *parent)
     layout->addSpacerItem(new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
     layout->addWidget(buttonBox);
 
+    if (data) {
+        checkName = false;
+        name->setText(data->name);
+        name->setReadOnly(true);
+        file->setText(data->filename);
+    }
     setLayout(layout);
 }
 
@@ -93,7 +99,7 @@ void AddTestDialog::done(int r)
     if(r == QDialog::Accepted)
     {
         QString error;
-        if (((TestSetupPage*)parentWidget())->isNameValid(name->text())) {
+        if (checkName && ((TestSetupPage*)parentWidget())->isNameValid(name->text())) {
             error += "\nName already used for other test";
         }
         if(name->text().size() == 0)

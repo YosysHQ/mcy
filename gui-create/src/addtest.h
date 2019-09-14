@@ -43,7 +43,7 @@ class AddTestDialog : public QDialog
     Q_OBJECT
 
 public:
-    AddTestDialog(QString path, bool reference, QWidget *parent = 0);
+    AddTestDialog(QString path, bool reference, TestFile *data, QWidget *parent = 0);
     QSize sizeHint() const override { return QSize(640, 480); }
     TestFile getItem();
 
@@ -52,6 +52,7 @@ private Q_SLOTS:
     void done(int r);
 private:
     QString path;
+    bool checkName;
     bool reference;
     QLineEdit *name;
     QLineEdit *file;

@@ -48,6 +48,7 @@ private Q_SLOTS:
     void delTest();
     void addRefTest();
     void delRefTest();
+    void editTest(QListWidgetItem* item);
 };
 
 #endif // TESTSETUP_H

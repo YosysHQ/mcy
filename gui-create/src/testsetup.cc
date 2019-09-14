@@ -34,6 +34,7 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     testList = new QListWidget;
     testList->setDragDropMode(QAbstractItemView::InternalMove);
     testList->setSelectionMode(QAbstractItemView::MultiSelection);
+    QObject::connect(testList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
 
     QDialogButtonBox *buttonBox_test = new QDialogButtonBox(Qt::Vertical, this);
     addTestButton = buttonBox_test->addButton("Add", QDialogButtonBox::ActionRole);
@@ -46,6 +47,7 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     refTestList = new QListWidget;
     refTestList->setDragDropMode(QAbstractItemView::InternalMove);
     refTestList->setSelectionMode(QAbstractItemView::MultiSelection);
+    QObject::connect(testList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
 
     QDialogButtonBox *buttonBox_refTest = new QDialogButtonBox(Qt::Vertical, this);
     addRefTestButton = buttonBox_refTest->addButton("Add", QDialogButtonBox::ActionRole);
@@ -83,7 +85,7 @@ int TestSetupPage::nextId() const
 
 void TestSetupPage::addTest()
 {
-    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), false, this);
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), false, nullptr, this);
     dlg.setModal(true);
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -99,7 +101,7 @@ void TestSetupPage::delTest()
 
 void TestSetupPage::addRefTest()
 {
-    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), true, this);
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), true, nullptr, this);
     dlg.setModal(true);
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -124,5 +126,16 @@ bool TestSetupPage::isNameValid(QString name)
         if (refTestList->item(i)->data(Qt::UserRole).value<TestFile>().name == name) {
             return true;
         }
+    }
+}
+
+void TestSetupPage::editTest(QListWidgetItem* item)
+{
+    TestFile data = item->data(Qt::UserRole).value<TestFile>();
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), data.reference, &data, this);
+    dlg.setModal(true);
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        item->setData(Qt::UserRole, QVariant::fromValue(dlg.getItem()));
     }
 }
