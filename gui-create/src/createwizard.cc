@@ -77,7 +77,7 @@ void CreateWizard::accept()
     content += "[files]"; content += "\n";
     QStringList fileList = field("theFileList").toStringList();
     for (auto item : fileList) {
-        content += QString("read_verilog ") + item;
+        content += item;
         content += "\n";
     }
     content += "\n";
@@ -86,7 +86,7 @@ void CreateWizard::accept()
     content += "tag(\"NOC\")"; content += "\n";
     content += "\n";
 
-    QFile headerFile("config.mcy");
+    QFile headerFile(QDir::cleanPath(field("directory").toString() + QDir::separator() + "config.mcy"));
     if (!headerFile.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(nullptr, QObject::tr("Create Wizard"),
                              QObject::tr("Cannot write file %1:\n%2")
