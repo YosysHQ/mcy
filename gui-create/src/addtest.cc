@@ -71,6 +71,10 @@ AddTestDialog::AddTestDialog(QString path, bool reference, TestFile *data, QWidg
         name->setText(data->name);
         name->setReadOnly(true);
         file->setText(data->filename);
+        int index = testType->findText(data->type);
+        if ( index != -1 ) {
+            testType->setCurrentIndex(index);
+        }
     }
     setLayout(layout);
 }
@@ -91,6 +95,7 @@ TestFile AddTestDialog::getItem()
     val.name = name->text();
     val.filename = file->text();
     val.reference = reference;    
+    val.type = testType->currentText();
     return val;
 }
 

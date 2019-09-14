@@ -47,7 +47,7 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     refTestList = new QListWidget;
     refTestList->setDragDropMode(QAbstractItemView::InternalMove);
     refTestList->setSelectionMode(QAbstractItemView::MultiSelection);
-    QObject::connect(testList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
+    QObject::connect(refTestList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
 
     QDialogButtonBox *buttonBox_refTest = new QDialogButtonBox(Qt::Vertical, this);
     addRefTestButton = buttonBox_refTest->addButton("Add", QDialogButtonBox::ActionRole);
