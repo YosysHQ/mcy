@@ -68,6 +68,7 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     refTestList->setDragDropMode(QAbstractItemView::InternalMove);
     refTestList->setSelectionMode(QAbstractItemView::MultiSelection);
     QObject::connect(refTestList, &QTreeWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
+    QObject::connect(refTestList, &QTreeWidget::itemChanged, this, &TestSetupPage::itemChanged);
 
     QDialogButtonBox *buttonBox_refTest = new QDialogButtonBox(Qt::Vertical, this);
     addRefTestButton = buttonBox_refTest->addButton("Add", QDialogButtonBox::ActionRole);
@@ -170,5 +171,15 @@ void TestSetupPage::editTest(QTreeWidgetItem *item, int column)
     if (dlg.exec() == QDialog::Accepted)
     {
         item->setData(0, Qt::UserRole, QVariant::fromValue(dlg.getItem()));
+    }
+}
+
+void TestSetupPage::itemChanged(QTreeWidgetItem *item, int column)
+{
+    TestFile data = item->data(0, Qt::UserRole).value<TestFile>();
+    if (column==1)
+    {
+        data.probe = item->checkState(1) == Qt::Checked;
+        item->setData(0, Qt::UserRole, QVariant::fromValue(data));
     }
 }

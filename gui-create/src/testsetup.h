@@ -49,6 +49,7 @@ private Q_SLOTS:
     void addRefTest();
     void delRefTest();
     void editTest(QTreeWidgetItem *item, int column);
+    void itemChanged(QTreeWidgetItem *item, int column);
 };
 
 #endif // TESTSETUP_H
