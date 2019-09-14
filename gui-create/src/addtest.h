@@ -29,11 +29,15 @@ class AddTestDialog : public QDialog
     Q_OBJECT
 
 public:
-    AddTestDialog(QWidget *parent = 0);
+    AddTestDialog(QString path, QWidget *parent = 0);
     QSize sizeHint() const override { return QSize(640, 480); }
 
+private Q_SLOTS:
+    void browseFile();
 private:
+    QString path;
     QLineEdit *name;
+    QLineEdit *file;
     QComboBox *testType;
 };
 

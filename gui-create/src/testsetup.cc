@@ -83,7 +83,7 @@ int TestSetupPage::nextId() const
 
 void TestSetupPage::addTest()
 {
-    AddTestDialog dlg;
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()));
     dlg.setModal(true);
     dlg.exec();
 }
@@ -94,7 +94,7 @@ void TestSetupPage::delTest()
 
 void TestSetupPage::addRefTest()
 {
-    AddTestDialog dlg;
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()));
     dlg.setModal(true);
     dlg.exec();
 }

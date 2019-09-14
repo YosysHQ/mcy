@@ -20,8 +20,8 @@
 #include <QtWidgets>
 #include "addtest.h"
 
-AddTestDialog::AddTestDialog(QWidget *parent)
-    : QDialog(parent)
+AddTestDialog::AddTestDialog(QString path,QWidget *parent)
+    : QDialog(parent), path(path)
 {
     setWindowTitle("Add Test...");
 
@@ -37,13 +37,34 @@ AddTestDialog::AddTestDialog(QWidget *parent)
     testType = new QComboBox();
     testType->addItems(testTypeList);    
 
+    QHBoxLayout *fileLayout = new QHBoxLayout;    
+    QPushButton *browseButton = new QPushButton(tr("&Browse..."), this);
+    connect(browseButton, &QAbstractButton::clicked, this, &AddTestDialog::browseFile);
+    file = new QLineEdit();
+    file->setReadOnly(true);
+    fileLayout->addWidget(file);
+    fileLayout->addWidget(browseButton);    
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(new QLabel("Name:"));    
     layout->addWidget(name);    
     layout->addWidget(new QLabel("Type:"));    
     layout->addWidget(testType);    
+    layout->addWidget(new QLabel("File:"));
+    layout->addLayout(fileLayout);
     layout->addSpacerItem(new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
     layout->addWidget(buttonBox);
 
     setLayout(layout);
 }
+
+void AddTestDialog::browseFile()
+{
+    QString fileName =
+        QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select Test File..."), path, "Test Files (*.*)"));
+
+    if (!fileName.isEmpty()) {
+        file->setText(fileName);
+    }
+}
+

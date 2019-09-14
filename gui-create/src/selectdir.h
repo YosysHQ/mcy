@@ -33,9 +33,9 @@ public:
     int nextId() const override;
     bool isComplete() const override;
     
-private:
+private Q_SLOTS:
     void browse();
-
+private:
     QLineEdit *directory;
 };
 

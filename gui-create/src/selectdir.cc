@@ -42,7 +42,7 @@ SelectDirectoryPage::SelectDirectoryPage(QWidget *parent)
 void SelectDirectoryPage::browse()
 {
     QString dir =
-        QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Find Files"), QDir::currentPath()));
+        QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Select Working Directory..."), QDir::currentPath()));
 
     if (!dir.isEmpty()) {
         directory->setText(dir);
