@@ -33,6 +33,7 @@ public:
 
     int nextId() const override;
 
+    bool isNameValid(QString name);
 private:
     QLineEdit *mutations_size;
 

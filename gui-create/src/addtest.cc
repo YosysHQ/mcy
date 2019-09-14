@@ -19,9 +19,20 @@
 
 #include <QtWidgets>
 #include "addtest.h"
+#include "testsetup.h"
 
-AddTestDialog::AddTestDialog(QString path,QWidget *parent)
-    : QDialog(parent), path(path)
+TestFile::TestFile(const TestFile &other)
+{
+    name = other.name;
+    filename = other.filename;
+    type = other.type;
+    reference = other.reference;
+    probe = other.probe;
+    percentage = other.percentage;
+}
+
+AddTestDialog::AddTestDialog(QString path, bool reference, QWidget *parent)
+    : QDialog(parent), path(path), reference(reference)
 {
     setWindowTitle("Add Test...");
 
@@ -68,3 +79,42 @@ void AddTestDialog::browseFile()
     }
 }
 
+TestFile AddTestDialog::getItem()
+{
+    TestFile val;
+    val.name = name->text();
+    val.filename = file->text();
+    val.reference = reference;    
+    return val;
+}
+
+void AddTestDialog::done(int r)
+{
+    if(r == QDialog::Accepted)
+    {
+        QString error;
+        if (((TestSetupPage*)parentWidget())->isNameValid(name->text())) {
+            error += "\nName already used for other test";
+        }
+        if(name->text().size() == 0)
+        {
+            error += "\nName of test not defined";
+        }
+        if(file->text().size() == 0)
+        {
+            error += "\nTest file not defined";
+        }
+        if (!error.isEmpty()) {
+            QMessageBox::warning(this, tr("MCY"),
+                    QString("Errors found :") + error,
+                    QMessageBox::Ok);
+            return;
+        }
+        QDialog::done(r);
+    }
+    else
+    {
+        QDialog::done(r);
+        return;
+    }
+}

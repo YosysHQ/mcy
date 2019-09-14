@@ -24,18 +24,35 @@
 #include <QLineEdit>
 #include <QComboBox>
 
+struct TestFile
+{    
+    TestFile() : reference(false),probe(false) { }
+    TestFile(const TestFile &other);
+    ~TestFile() { }    
+    QString name;
+    QString filename;
+    QString type;
+    bool reference;
+    bool probe;
+    int percentage;
+};
+Q_DECLARE_METATYPE(TestFile)
+
 class AddTestDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    AddTestDialog(QString path, QWidget *parent = 0);
+    AddTestDialog(QString path, bool reference, QWidget *parent = 0);
     QSize sizeHint() const override { return QSize(640, 480); }
+    TestFile getItem();
 
 private Q_SLOTS:
     void browseFile();
+    void done(int r);
 private:
     QString path;
+    bool reference;
     QLineEdit *name;
     QLineEdit *file;
     QComboBox *testType;

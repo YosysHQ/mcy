@@ -83,9 +83,14 @@ int TestSetupPage::nextId() const
 
 void TestSetupPage::addTest()
 {
-    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()));
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), false, this);
     dlg.setModal(true);
-    dlg.exec();
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        TestFile item = dlg.getItem();
+        QListWidgetItem* newItem = new QListWidgetItem(item.name, testList);
+        newItem->setData(Qt::UserRole, QVariant::fromValue(item));
+    }
 }
 
 void TestSetupPage::delTest()
@@ -94,11 +99,30 @@ void TestSetupPage::delTest()
 
 void TestSetupPage::addRefTest()
 {
-    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()));
+    AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), true, this);
     dlg.setModal(true);
-    dlg.exec();
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        TestFile item = dlg.getItem();
+        QListWidgetItem* newItem = new QListWidgetItem(item.name, refTestList);
+        newItem->setData(Qt::UserRole, QVariant::fromValue(item));
+    }
 }
 
 void TestSetupPage::delRefTest()
 {
+}
+
+bool TestSetupPage::isNameValid(QString name)
+{
+    for (int i = 0; i < testList->count(); ++i) {        
+        if (testList->item(i)->data(Qt::UserRole).value<TestFile>().name == name) {
+            return true;
+        }
+    }
+    for (int i = 0; i < refTestList->count(); ++i) {
+        if (refTestList->item(i)->data(Qt::UserRole).value<TestFile>().name == name) {
+            return true;
+        }
+    }
 }
