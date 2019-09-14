@@ -65,19 +65,14 @@ DesignSetupPage::DesignSetupPage(QWidget *parent)
     script_layout->setContentsMargins(0, 0, 0, 0);
     script_layout->addWidget(script);
     script_layout->addWidget(buttonBox_script);
-
-    QWidget *filesel = new QWidget();
-    filesel->setLayout(filesel_layout);
-    QWidget *scripted = new QWidget();
-    scripted->setLayout(script_layout);
     
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(new QLabel("Top:"));
     layout->addWidget(top);
     layout->addWidget(new QLabel("Design files:"));
-    layout->addWidget(filesel);
+    layout->addLayout(filesel_layout);
     layout->addWidget(new QLabel("Script:"));
-    layout->addWidget(scripted);
+    layout->addLayout(script_layout);
     setLayout(layout);
 
     registerField("top*", top);

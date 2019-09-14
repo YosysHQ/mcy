@@ -32,7 +32,6 @@ SelectDirectoryPage::SelectDirectoryPage(QWidget *parent)
     connect(browseButton, &QAbstractButton::clicked, this, &SelectDirectoryPage::browse);
     directory = new QLineEdit();
     directory->setReadOnly(true);
-    directory->setReadOnly(true);
     directory->setText(QDir::toNativeSeparators(QDir::currentPath()));
     layout->addWidget(directory);
     layout->addWidget(browseButton);

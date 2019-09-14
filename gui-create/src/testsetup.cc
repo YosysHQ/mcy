@@ -65,18 +65,13 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     refTest_layout->addWidget(refTestList);
     refTest_layout->addWidget(buttonBox_refTest);
 
-    QWidget *testWidget = new QWidget();
-    testWidget->setLayout(test_layout);
-    QWidget *refTestWidget = new QWidget();
-    refTestWidget->setLayout(refTest_layout);
-
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(new QLabel("Mutation size:"));
     layout->addWidget(mutations_size);
     layout->addWidget(new QLabel("Tests:"));
-    layout->addWidget(testWidget);
+    layout->addLayout(test_layout);
     layout->addWidget(new QLabel("Reference tests:"));
-    layout->addWidget(refTestWidget);
+    layout->addLayout(refTest_layout);
 
     setLayout(layout);
 }
