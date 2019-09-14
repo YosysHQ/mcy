@@ -22,7 +22,7 @@
 
 #include <QWizard>
 #include <QLabel>
-#include <QListWidget>
+#include <QTreeWidget>
 
 class TestSetupPage : public QWizardPage
 {
@@ -37,10 +37,10 @@ public:
 private:
     QLineEdit *mutations_size;
 
-    QListWidget *testList;
+    QTreeWidget *testList;
     QPushButton *addTestButton;
     QPushButton *delTestButton;
-    QListWidget *refTestList;
+    QTreeWidget *refTestList;
     QPushButton *addRefTestButton;
     QPushButton *delRefTestButton;
 private Q_SLOTS:
@@ -48,7 +48,7 @@ private Q_SLOTS:
     void delTest();
     void addRefTest();
     void delRefTest();
-    void editTest(QListWidgetItem* item);
+    void editTest(QTreeWidgetItem *item, int column);
 };
 
 #endif // TESTSETUP_H

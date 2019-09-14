@@ -31,10 +31,18 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     mutations_size->setValidator( new QIntValidator(1, 100000, this) );
     registerField("mutations_size*", mutations_size);
 
-    testList = new QListWidget;
+    testList = new QTreeWidget;
+    testList->setRootIsDecorated(false);
+    testList->header()->setStretchLastSection(false);
+    testList->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    QStringList headerLabelsTest;
+    headerLabelsTest.push_back(tr("Name"));
+    testList->setColumnCount(headerLabelsTest.count());
+    testList->setHeaderLabels(headerLabelsTest);
+
     testList->setDragDropMode(QAbstractItemView::InternalMove);
     testList->setSelectionMode(QAbstractItemView::MultiSelection);
-    QObject::connect(testList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
+    QObject::connect(testList, &QTreeWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
 
     QDialogButtonBox *buttonBox_test = new QDialogButtonBox(Qt::Vertical, this);
     addTestButton = buttonBox_test->addButton("Add", QDialogButtonBox::ActionRole);
@@ -44,10 +52,22 @@ TestSetupPage::TestSetupPage(QWidget *parent)
     QObject::connect(delTestButton, &QPushButton::clicked, this, &TestSetupPage::delTest);
 
 
-    refTestList = new QListWidget;
+    refTestList = new QTreeWidget;
+    refTestList->setRootIsDecorated(false);
+    refTestList->header()->setStretchLastSection(false);
+    refTestList->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    refTestList->setColumnWidth(1, 20);
+    refTestList->setColumnWidth(2, 20);
+    QStringList headerLabels;
+    headerLabels.push_back(tr("Name"));
+    headerLabels.push_back(tr("Probe"));
+    headerLabels.push_back(tr("%"));
+    refTestList->setColumnCount(headerLabels.count());
+    refTestList->setHeaderLabels(headerLabels);
+
     refTestList->setDragDropMode(QAbstractItemView::InternalMove);
     refTestList->setSelectionMode(QAbstractItemView::MultiSelection);
-    QObject::connect(refTestList, &QListWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
+    QObject::connect(refTestList, &QTreeWidget::itemDoubleClicked, this, &TestSetupPage::editTest);
 
     QDialogButtonBox *buttonBox_refTest = new QDialogButtonBox(Qt::Vertical, this);
     addRefTestButton = buttonBox_refTest->addButton("Add", QDialogButtonBox::ActionRole);
@@ -90,16 +110,18 @@ void TestSetupPage::addTest()
     if (dlg.exec() == QDialog::Accepted)
     {
         TestFile item = dlg.getItem();
-        QListWidgetItem* newItem = new QListWidgetItem(item.name, testList);
-        newItem->setData(Qt::UserRole, QVariant::fromValue(item));
+        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+        newItem->setText(0, item.name);
+        newItem->setData(0, Qt::UserRole, QVariant::fromValue(item));
+        testList->addTopLevelItem(newItem);
     }
 }
 
 void TestSetupPage::delTest()
 {    
-    for(auto name : testList->selectedItems()) {
-        delete testList->takeItem(testList->row(name));
-    }    
+    for(auto item : testList->selectedItems()) {
+        delete item;
+    }
 }
 
 void TestSetupPage::addRefTest()
@@ -109,39 +131,44 @@ void TestSetupPage::addRefTest()
     if (dlg.exec() == QDialog::Accepted)
     {
         TestFile item = dlg.getItem();
-        QListWidgetItem* newItem = new QListWidgetItem(item.name, refTestList);
-        newItem->setData(Qt::UserRole, QVariant::fromValue(item));
+        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+        newItem->setText(0, item.name);
+        newItem->setCheckState(1, Qt::Unchecked);
+        newItem->setText(2, QString::number(item.percentage));
+        newItem->setData(0, Qt::UserRole, QVariant::fromValue(item));
+        refTestList->addTopLevelItem(newItem);
     }
 }
 
 void TestSetupPage::delRefTest()
 {
-    for(auto name : refTestList->selectedItems()) {
-        delete refTestList->takeItem(refTestList->row(name));
-    }   
+    for(auto item : refTestList->selectedItems()) {
+        delete item;
+    }
 }
 
 bool TestSetupPage::isNameValid(QString name)
 {
-    for (int i = 0; i < testList->count(); ++i) {        
-        if (testList->item(i)->data(Qt::UserRole).value<TestFile>().name == name) {
+    for (int i = 0; i < testList->topLevelItemCount(); ++i) {        
+        if (testList->topLevelItem(i)->data(0, Qt::UserRole).value<TestFile>().name == name) {
             return true;
         }
     }
-    for (int i = 0; i < refTestList->count(); ++i) {
-        if (refTestList->item(i)->data(Qt::UserRole).value<TestFile>().name == name) {
+    for (int i = 0; i < refTestList->topLevelItemCount(); ++i) {
+        if (refTestList->topLevelItem(i)->data(0, Qt::UserRole).value<TestFile>().name == name) {
             return true;
         }
     }
+    return false;
 }
 
-void TestSetupPage::editTest(QListWidgetItem* item)
+void TestSetupPage::editTest(QTreeWidgetItem *item, int column)
 {
-    TestFile data = item->data(Qt::UserRole).value<TestFile>();
+    TestFile data = item->data(0, Qt::UserRole).value<TestFile>();
     AddTestDialog dlg(QDir::cleanPath(field("directory").toString()), data.reference, &data, this);
     dlg.setModal(true);
     if (dlg.exec() == QDialog::Accepted)
     {
-        item->setData(Qt::UserRole, QVariant::fromValue(dlg.getItem()));
+        item->setData(0, Qt::UserRole, QVariant::fromValue(dlg.getItem()));
     }
 }
