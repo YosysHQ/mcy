@@ -52,6 +52,7 @@ def usage():
     print("  mcy [--trace] gui [--src <source_dir>]")
     print("  mcy [--trace] create")
     print("  mcy [--trace] purge")
+    print("  mcy [--trace] portlist")
     print()
     exit(1)
 
@@ -481,6 +482,37 @@ if sys.argv[1] in ("reset", "status"):
 if sys.argv[1] == "purge":
     shutil.rmtree("tasks", ignore_errors=True)
     shutil.rmtree("database", ignore_errors=True)
+    shutil.rmtree("temp", ignore_errors=True)
+    exit(0)
+
+######################################################
+
+if sys.argv[1] == "portlist":
+    try:
+        opts, args = getopt.getopt(sys.argv[2:], "", [])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+
+    for o, a in opts:
+        pass
+
+    if not os.path.exists("temp"):
+        os.mkdir("temp")
+
+    with open("temp/design.ys", "w") as f:
+        for line in cfg.script:
+            print(line, file=f)
+        print("tee -o temp/portlist.txt portlist", file=f)
+
+    task = Task("yosys -ql temp/design.log temp/design.ys", silent=True)
+    task.wait()
+
+    with open("temp/portlist.txt", "r") as f:
+        for line in f:
+            if not line.startswith("module"):
+                print(line.strip())
+
     exit(0)
 
 ######################################################
