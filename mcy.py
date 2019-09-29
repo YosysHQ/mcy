@@ -51,6 +51,7 @@ def usage():
     print("  mcy [--trace] dash [<source_dir>]")
     print("  mcy [--trace] gui [--src <source_dir>]")
     print("  mcy [--trace] create")
+    print("  mcy [--trace] generate")
     print("  mcy [--trace] purge")
     print("  mcy [--trace] portlist")
     print()
@@ -65,6 +66,10 @@ if len(sys.argv) < 2:
 
 if sys.argv[1] == "create":
     os.execvp("mcy-create", ["mcy-create"] + sys.argv[2:])
+    exit(1)
+
+if sys.argv[1] == "generate":
+    os.execvp("mcy-gen", ["mcy-gen"] + sys.argv[2:])
     exit(1)
 
 if not os.path.exists("config.mcy"):
