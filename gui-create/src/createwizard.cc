@@ -64,12 +64,12 @@ void CreateWizard::showHelp()
 void CreateWizard::accept()
 {
     QByteArray content;
-    content += "[options]"; content += "\n";
+    content += "[options]\n";
     content += QString("size ") + field("mutations_size").toString(); content += "\n";
    
     content += "\n";
     
-    content += "[script]"; content += "\n";
+    content += "[script]\n";
     content += field("script").toString();
     content += "\n";
     content += "\n";
@@ -82,9 +82,19 @@ void CreateWizard::accept()
     }
     content += "\n";
 
-    content += "[logic]"; content += "\n";
-    content += "tag(\"NOC\")"; content += "\n";
+    content += "[logic]\n";
+    content += "tag(\"NOC\")\n";
     content += "\n";
+    
+    content += "\n";
+    content += "[report]\n";
+    content += "if tags(\"!NOC\"):\n";
+    content += "    print(\"Coverage: %.2f%%\" % (100.0*tags(\"COVERED\")/tags(\"!NOC\")))\n";
+    content += "if tags():\n";
+    content += "    print(\"Noc percentage: %.2f%%\" % (100.0*tags(\"NOC\")/tags()))\n";
+    content += "if tags(\"PROBE\"):\n";
+    content += "    print(\"Gap percentage: %.2f%%\" % (100.0*tags(\"GAP\")/tags(\"PROBE\")))\n";
+
 
     QFile headerFile(QDir::cleanPath(field("directory").toString() + QDir::separator() + "config.mcy"));
     if (!headerFile.open(QFile::WriteOnly | QFile::Text)) {
