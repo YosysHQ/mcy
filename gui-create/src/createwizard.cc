@@ -66,7 +66,7 @@ void CreateWizard::accept()
     QByteArray content;
     content += "[options]\n";
     content += QString("size ") + field("mutations_size").toString(); content += "\n";
-   
+    content += "tags COVERED UNCOVERED PROBE GAP NOC\n";
     content += "\n";
     
     content += "[script]\n";
