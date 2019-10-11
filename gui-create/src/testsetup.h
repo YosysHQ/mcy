@@ -32,7 +32,8 @@ public:
     TestSetupPage(QWidget *parent = 0);
 
     int nextId() const override;
-
+    bool isComplete() const override;
+    
     bool isNameValid(QString name);
 private:
     QLineEdit *mutations_size;

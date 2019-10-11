@@ -114,7 +114,8 @@ void TestSetupPage::addTest()
         QTreeWidgetItem *newItem = new QTreeWidgetItem();
         newItem->setText(0, item.name);
         newItem->setData(0, Qt::UserRole, QVariant::fromValue(item));
-        testList->addTopLevelItem(newItem);
+        testList->addTopLevelItem(newItem);        
+        Q_EMIT completeChanged();
     }
 }
 
@@ -123,6 +124,7 @@ void TestSetupPage::delTest()
     for(auto item : testList->selectedItems()) {
         delete item;
     }
+    Q_EMIT completeChanged();
 }
 
 void TestSetupPage::addRefTest()
@@ -182,4 +184,9 @@ void TestSetupPage::itemChanged(QTreeWidgetItem *item, int column)
         data.probe = item->checkState(1) == Qt::Checked;
         item->setData(0, Qt::UserRole, QVariant::fromValue(data));
     }
+}
+
+bool TestSetupPage::isComplete() const
+{
+    return (!mutations_size->text().isEmpty() && testList->topLevelItemCount()>0);     
 }
