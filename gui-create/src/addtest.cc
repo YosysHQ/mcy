@@ -43,7 +43,7 @@ AddTestDialog::AddTestDialog(QString path, bool reference, TestFile *data, QWidg
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     
     QStringList testTypeList;
-    testTypeList << "icarus" << "isim" << "modelsim" << "verilator" << "xsim" << "custom";
+    testTypeList << "iverilog" << "isim" << "modelsim" << "verilator" << "xsim" << "custom";
 
     testType = new QComboBox();
     testType->addItems(testTypeList);    
