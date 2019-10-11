@@ -18,6 +18,7 @@
  */
 
 #include <QtWidgets>
+#include <QProcess>
 #include "createwizard.h"
 #include "intropage.h"
 #include "selectdir.h"
@@ -65,6 +66,30 @@ void CreateWizard::showHelp()
 
 void CreateWizard::accept()
 {
+    for(int i=0;i<testSetupPage->tests()->topLevelItemCount();i++){
+        TestFile tf = testSetupPage->tests()->topLevelItem(i)->data(0, Qt::UserRole).value<TestFile>();            
+        QProcess process;
+        QStringList args;
+        args << "generate";
+        args << tf.type;
+        args << "--tb";
+        args << tf.filename;
+        args << "--output";
+        args << tf.name + ".sh";
+        
+        process.setProgram("mcy");
+        process.setArguments(args);
+        printf("%s\n",args.join(' ').toStdString().c_str());
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("PYTHONUNBUFFERED","1");
+        process.setProcessEnvironment(env);    
+        process.setWorkingDirectory(QDir(field("directory").toString()).canonicalPath());
+        process.setProcessChannelMode(QProcess::MergedChannels);       
+        process.start();   
+        process.waitForFinished();
+        //return process.readAllStandardOutput();
+    }
+
     QByteArray content;
     content += "[options]\n";
     content += QString("size ") + field("mutations_size").toString(); content += "\n";
