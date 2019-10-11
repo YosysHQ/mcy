@@ -90,8 +90,8 @@ void CreateWizard::accept()
         content += "if result(\"" + tf.name + "\") == \"FAIL\":\n";
         content += "    tag(\"COVERED\")\n";
         content += "    return\n";
-        content += "tag(\"NOC\")\n";
     }
+    content += "tag(\"NOC\")\n";
     
     content += "\n";
     content += "[report]\n";
