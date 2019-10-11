@@ -33,8 +33,11 @@ public:
 
     int nextId() const override;
     bool isComplete() const override;
-    
+
     bool isNameValid(QString name);
+    
+    const QTreeWidget* tests() const { return testList; }
+    const QTreeWidget* refTestes() const { return refTestList; }
 private:
     QLineEdit *mutations_size;
 

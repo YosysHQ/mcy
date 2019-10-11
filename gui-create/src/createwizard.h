@@ -25,6 +25,8 @@
 #include <QListWidget>
 #include <QTextEdit>
 
+#include "testsetup.h"
+
 class CreateWizard : public QWizard
 {
     Q_OBJECT
@@ -36,7 +38,9 @@ public:
     QSize sizeHint() const override { return QSize(800, 600); }
     void accept() override;
 private Q_SLOTS:
-    void showHelp();    
+    void showHelp();
+private:
+    TestSetupPage *testSetupPage;
 };
 
 #endif // CREATEWIZARD_H

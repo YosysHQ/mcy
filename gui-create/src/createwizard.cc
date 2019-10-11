@@ -23,6 +23,7 @@
 #include "selectdir.h"
 #include "designsetup.h"
 #include "testsetup.h"
+#include "addtest.h"
 
 CreateWizard::CreateWizard(QWidget *parent)
     : QWizard(parent)
@@ -30,7 +31,8 @@ CreateWizard::CreateWizard(QWidget *parent)
     setPage(Page_Intro, new IntroPage);
     setPage(Page_SelectDirectory, new SelectDirectoryPage);
     setPage(Page_DesignSetup, new DesignSetupPage);
-    setPage(Page_TestSetup, new TestSetupPage);
+    testSetupPage = new TestSetupPage;
+    setPage(Page_TestSetup, testSetupPage);
 
     setStartId(Page_Intro);
 #ifndef Q_OS_MAC
@@ -83,8 +85,13 @@ void CreateWizard::accept()
     content += "\n";
 
     content += "[logic]\n";
-    content += "tag(\"NOC\")\n";
-    content += "\n";
+    for(int i=0;i<testSetupPage->tests()->topLevelItemCount();i++){
+        TestFile tf = testSetupPage->tests()->topLevelItem(i)->data(0, Qt::UserRole).value<TestFile>();    
+        content += "if result(\"" + tf.name + "\") == \"FAIL\":\n";
+        content += "    tag(\"COVERED\")\n";
+        content += "    return\n";
+        content += "tag(\"NOC\")\n";
+    }
     
     content += "\n";
     content += "[report]\n";
@@ -95,6 +102,14 @@ void CreateWizard::accept()
     content += "if tags(\"PROBE\"):\n";
     content += "    print(\"Gap percentage: %.2f%%\" % (100.0*tags(\"GAP\")/tags(\"PROBE\")))\n";
 
+    content += "\n";
+    for(int i=0;i<testSetupPage->tests()->topLevelItemCount();i++){
+        TestFile tf = testSetupPage->tests()->topLevelItem(i)->data(0, Qt::UserRole).value<TestFile>();
+        content += "[test " + tf.name + "]\n";
+        content += "maxbatchsize 10\n";
+        content += "expect PASS FAIL\n";
+        content += "run bash $PRJDIR/" + tf.name + ".sh\n";
+    }
 
     QFile headerFile(QDir::cleanPath(field("directory").toString() + QDir::separator() + "config.mcy"));
     if (!headerFile.open(QFile::WriteOnly | QFile::Text)) {
