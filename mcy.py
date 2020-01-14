@@ -33,9 +33,9 @@ def force_shutdown(signum, frame):
 
 if os.name == "posix":
     signal.signal(signal.SIGHUP, force_shutdown)
-signal.signal(signal.SIGINT, force_shutdown)
-signal.signal(signal.SIGTERM, force_shutdown)
-signal.signal(signal.SIGPIPE, force_shutdown)
+    signal.signal(signal.SIGINT, force_shutdown)
+    signal.signal(signal.SIGTERM, force_shutdown)
+    signal.signal(signal.SIGPIPE, force_shutdown)
 
 def usage():
     print()
