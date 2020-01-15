@@ -22,19 +22,19 @@ def sqlite3_connect():
     return db
 
 def force_shutdown(signum, frame):
-    if signum != signal.SIGPIPE or not silent_sigpipe:
+    if (os.name != 'nt' and signum != signal.SIGPIPE) or not silent_sigpipe:
         print("MCY ---- Keyboard interrupt or external termination signal ----", file=sys.stderr, flush=True)
-    exit(1)
+    sys.exit(1)
 
 if os.name == "posix":
     signal.signal(signal.SIGHUP, force_shutdown)
+    signal.signal(signal.SIGPIPE, force_shutdown)
 signal.signal(signal.SIGINT, force_shutdown)
 signal.signal(signal.SIGTERM, force_shutdown)
-signal.signal(signal.SIGPIPE, force_shutdown)
 
 if not os.path.exists("config.mcy"):
     print("config.mcy not found")
-    exit(1)
+    sys.exit(1)
 
 
 @app.route("/", methods=['GET', 'POST'])
