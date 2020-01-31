@@ -12,3 +12,6 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/mcy/dash
 	cp -r dash/. $(DESTDIR)$(PREFIX)/share/mcy/dash/.	
 	$(MAKE) -C gui install
+
+html:
+	make -C docs html
