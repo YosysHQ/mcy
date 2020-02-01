@@ -29,14 +29,14 @@ module bitcnt (
 	//  0  0  1   CLZ_32
 	//  0  1  0   CTZ_64
 	//  0  1  1   CTZ_32
-	//  1  0  0   PCNT_64
-	//  1  0  1   PCNT_32
+	//  1  0  0   CNT_64
+	//  1  0  1   CNT_32
 	//  1  1  0   *unused*
 	//  1  1  1   *unused*
 
-	wire mode32 = func[0];
-	wire revmode = !func[1];
-	wire czmode = !func[2];
+	wire mode32 = din_func[0];
+	wire revmode = !din_func[1];
+	wire czmode = !din_func[2];
 
 	integer i;
 	reg [63:0] tmp;
@@ -54,8 +54,8 @@ module bitcnt (
 
 		cnt = 0;
 		for (i = 0; i < 64; i = i+1)
-			cnt = cnt + tmp[i];
+			cnt = cnt + (tmp[i] && (i < 32 || !mode32));
 	end 
 
-	assign dout_rd = cnt;
+	assign dout_data = cnt;
 endmodule
