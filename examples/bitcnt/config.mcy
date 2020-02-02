@@ -1,0 +1,37 @@
+[options]
+size 1000
+tags COVERED UNCOVERED NOCHANGE FMGAP
+
+[script]
+read_verilog bitcnt.v
+prep -top bitcnt
+
+[files]
+bitcnt.v
+
+[logic]
+sim_okay = result("test_sim") == "PASS"
+eq_okay = result("test_eq") == "PASS"
+
+if sim_okay and not eq_okay:
+    tag("UNCOVERED")
+elif not sim_okay and not eq_okay:
+    tag("COVERED")
+elif sim_okay and eq_okay:
+    tag("NOCHANGE")
+else:
+    tag("FMGAP")
+
+[report]
+if tags("FMGAP"):
+    print("Found %d mutations exposing a formal gap!")
+if tags("COVERED")+tags("UNCOVERED"):
+    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
+
+[test test_sim]
+expect PASS FAIL
+run bash $PRJDIR/test_sim.sh
+
+[test test_eq]
+expect PASS FAIL
+run bash $PRJDIR/test_eq.sh
