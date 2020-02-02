@@ -315,24 +315,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     QtProperty *topItem = addTopLevelProperty("Source");
     addProperty(topItem, QVariant::String, "Name", source);
 
-    if (mutationId==-1) {
-        QtProperty *mutItem = addTopLevelProperty("Mutations");
-        QList<int> mutations = database->getMutationsForSource(source);
-        for (auto mutationId : mutations) {
-            QtProperty *mItem = addSubGroup(mutItem, "Mutation " + QString::number(mutationId));
-            for (auto option : database->getMutationOption(mutationId)) {
-                addProperty(mItem, QVariant::String, option.first, option.second, option.first);
-            }
-            QtProperty *tagsItem = addSubGroup(mItem, "Tags");
-            for (auto tag : database->getTagsForMutation(mutationId)) {
-                addProperty(tagsItem, QVariant::String, "", tag);
-            }
-            QtProperty *resItem = addSubGroup(mItem, "Results");
-            for (auto result : database->getMutationResults(mutationId)) {
-                addProperty(resItem, QVariant::String, result.first, result.second);
-            }
-        }
-    } else {        
+    if (mutationId!=-1) {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
