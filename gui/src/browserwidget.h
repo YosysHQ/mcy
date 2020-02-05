@@ -20,6 +20,7 @@
 #ifndef BROWSERWIDGET_H
 #define BROWSERWIDGET_H
 
+#include <QComboBox>
 #include <QListWidget>
 #include <QMouseEvent>
 #include <QTabWidget>
@@ -47,7 +48,7 @@ class BrowserWidget : public QWidget
     QtProperty *addSubGroup(QtProperty *topItem, const QString &name);
     // history handling
     void updateButtons();
-    void addToHistory(QTreeWidget* tree, QTreeWidgetItem *item);
+    void addToHistory(QTreeWidget *tree, QTreeWidgetItem *item);
     bool eventFilter(QObject *obj, QEvent *ev);
 
   private Q_SLOTS:
@@ -59,8 +60,8 @@ class BrowserWidget : public QWidget
     void onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     // property view slots
     void onPropertyDoubleClicked(QTreeWidgetItem *item, int column);
-    // search slots
-    void onSearchInserted();
+    // tag filter slots
+    void onTagFilterChange(const QString &text);
 
   public Q_SLOTS:
     void selectSource(QString source);
@@ -77,9 +78,8 @@ class BrowserWidget : public QWidget
     QTreeWidget *sourceList;
     QTreeWidget *mutationsList;
 
-    // search
-    QLineEdit *searchEdit;
-    QString currentSearch;
+    // tag filter
+    QComboBox *tagFilter;
 
     // property
     QtVariantPropertyManager *variantManager;
@@ -92,7 +92,7 @@ class BrowserWidget : public QWidget
     QMap<QString, QtProperty *> idToProperty;
 
     // history
-    std::vector<std::pair<QTreeWidget*,QTreeWidgetItem *>> history;
+    std::vector<std::pair<QTreeWidget *, QTreeWidgetItem *>> history;
     int history_index;
     bool history_ignore;
 

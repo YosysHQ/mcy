@@ -33,23 +33,20 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     tabWidget = new QTabWidget();
 
     sourceList = new QTreeWidget();
-    sourceList->setHeaderHidden(true);    
-    for(QString name : database->getSources()) 
-    {
+    sourceList->setHeaderHidden(true);
+    for (QString name : database->getSources()) {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(sourceList);
-        treeItem->setText(0, name);        
-        for(QString line : database->getSourcesLines(name)) 
-        {
+        treeItem->setText(0, name);
+        for (QString line : database->getSourcesLines(name)) {
             QTreeWidgetItem *lineItem = new QTreeWidgetItem(treeItem);
             lineItem->setText(0, "Line " + line);
             lineItem->setData(0, Qt::UserRole, name + ":" + line);
-            for (int mutation : database->getMutationsForSource(name + ":" + line))
-            {
+            for (int mutation : database->getMutationsForSource(name + ":" + line)) {
                 QTreeWidgetItem *subItem = new QTreeWidgetItem(lineItem);
                 subItem->setText(0, "Mutation " + QString::number(mutation));
                 subItem->setData(0, Qt::UserRole, QString::number(mutation));
                 lineItem->addChild(subItem);
-            }            
+            }
             treeItem->addChild(lineItem);
         }
         sourceList->addTopLevelItem(treeItem);
@@ -59,15 +56,13 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 
     mutationsList = new QTreeWidget();
     mutationsList->setHeaderHidden(true);
-    for(int mutation : database->getMutations()) 
-    {
+    for (int mutation : database->getMutations()) {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(mutationsList);
         treeItem->setText(0, "Mutation " + QString::number(mutation));
         treeItem->setData(0, Qt::UserRole, QString::number(mutation));
-        for (QString name: database->getSourcesForMutation(mutation))
-        {
+        for (QString name : database->getSourcesForMutation(mutation)) {
             QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
-            subItem->setText(0, name);        
+            subItem->setText(0, name);
             treeItem->addChild(subItem);
         }
         mutationsList->addTopLevelItem(treeItem);
@@ -90,11 +85,9 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     propertyEditor->treeWidget()->setSelectionMode(QAbstractItemView::ExtendedSelection);
     propertyEditor->treeWidget()->viewport()->setMouseTracking(true);
 
-    searchEdit = new QLineEdit();
-    searchEdit->setClearButtonEnabled(true);
-    searchEdit->addAction(QIcon(":/icons/resources/zoom.png"), QLineEdit::LeadingPosition);
-    searchEdit->setPlaceholderText("Search...");
-    connect(searchEdit, &QLineEdit::returnPressed, this, &BrowserWidget::onSearchInserted);
+    tagFilter = new QComboBox();
+    tagFilter->addItems(database->getUniqueTags());
+    connect(tagFilter, &QComboBox::currentTextChanged, this, &BrowserWidget::onTagFilterChange);
 
     actionFirst = new QAction("", this);
     actionFirst->setIcon(QIcon(":/icons/resources/resultset_first.png"));
@@ -103,11 +96,11 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         history_ignore = true;
         history_index = 0;
         auto curr = history.at(history_index);
-        if (tabWidget->currentWidget()!=curr.first) {
-            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+        if (tabWidget->currentWidget() != curr.first) {
+            ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
             tabWidget->setCurrentWidget(curr.first);
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
-        } else 
+        } else
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
         curr.first->currentItem()->setHidden(false);
         updateButtons();
@@ -120,11 +113,11 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         history_ignore = true;
         history_index--;
         auto curr = history.at(history_index);
-        if (tabWidget->currentWidget()!=curr.first) {
-            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+        if (tabWidget->currentWidget() != curr.first) {
+            ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
             tabWidget->setCurrentWidget(curr.first);
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
-        } else 
+        } else
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
         curr.first->currentItem()->setHidden(false);
         updateButtons();
@@ -137,11 +130,11 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         history_ignore = true;
         history_index++;
         auto curr = history.at(history_index);
-        if (tabWidget->currentWidget()!=curr.first) {
-            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+        if (tabWidget->currentWidget() != curr.first) {
+            ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
             tabWidget->setCurrentWidget(curr.first);
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
-        } else 
+        } else
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
         curr.first->currentItem()->setHidden(false);
         updateButtons();
@@ -154,11 +147,11 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         history_ignore = true;
         history_index = int(history.size() - 1);
         auto curr = history.at(history_index);
-        if (tabWidget->currentWidget()!=curr.first) {
-            ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+        if (tabWidget->currentWidget() != curr.first) {
+            ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
             tabWidget->setCurrentWidget(curr.first);
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::Select);
-        } else 
+        } else
             curr.first->setCurrentItem(curr.second, 0, QItemSelectionModel::ClearAndSelect);
         curr.first->currentItem()->setHidden(false);
         updateButtons();
@@ -170,7 +163,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(actionClear, &QAction::triggered, this, [this] {
         history_index = -1;
         history.clear();
-        addToHistory((QTreeWidget*)tabWidget->currentWidget(), ((QTreeWidget*)tabWidget->currentWidget())->currentItem());
+        addToHistory((QTreeWidget *)tabWidget->currentWidget(),
+                     ((QTreeWidget *)tabWidget->currentWidget())->currentItem());
     });
 
     QToolBar *toolbar = new QToolBar();
@@ -185,7 +179,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     topWidget->setLayout(vbox1);
     vbox1->setSpacing(5);
     vbox1->setContentsMargins(0, 0, 0, 0);
-    vbox1->addWidget(searchEdit);
+    vbox1->addWidget(tagFilter);
     vbox1->addWidget(tabWidget);
 
     QWidget *toolbarWidget = new QWidget();
@@ -220,15 +214,17 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
             &BrowserWidget::onPropertyDoubleClicked);
 
     connect(sourceList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onSourceDoubleClicked);
-    connect(sourceList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &BrowserWidget::onSourceSelectionChanged);
+    connect(sourceList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            &BrowserWidget::onSourceSelectionChanged);
 
     connect(mutationsList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onMutationDoubleClicked);
-    connect(mutationsList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &BrowserWidget::onMutationSelectionChanged);
+    connect(mutationsList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            &BrowserWidget::onMutationSelectionChanged);
 
     history_index = -1;
     history_ignore = false;
 
-    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::ClearAndSelect);    
+    sourceList->setCurrentItem(sourceList->topLevelItem(0), 0, QItemSelectionModel::ClearAndSelect);
     QTimer::singleShot(0, sourceList, SLOT(setFocus()));
 }
 
@@ -243,13 +239,13 @@ void BrowserWidget::updateButtons()
     actionLast->setEnabled(history_index < (count - 1));
 }
 
-void BrowserWidget::addToHistory(QTreeWidget* tree, QTreeWidgetItem *item)
+void BrowserWidget::addToHistory(QTreeWidget *tree, QTreeWidgetItem *item)
 {
     if (!history_ignore) {
         int count = int(history.size());
         for (int i = count - 1; i > history_index; i--)
             history.pop_back();
-        history.push_back(std::make_pair(tree,item));
+        history.push_back(std::make_pair(tree, item));
         history_index++;
     }
     history_ignore = false;
@@ -298,12 +294,12 @@ QtProperty *BrowserWidget::addSubGroup(QtProperty *topItem, const QString &name)
 void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = sourceList->currentItem();
-    if (selected.size()==0 || item == nullptr|| item->parent() == nullptr)
+    if (selected.size() == 0 || item == nullptr || item->parent() == nullptr)
         return;
 
     QString source = item->data(0, Qt::UserRole).toString();
     int mutationId = -1;
-    if (item->parent()->parent()!=nullptr) {
+    if (item->parent()->parent() != nullptr) {
         source = item->parent()->data(0, Qt::UserRole).toString();
         mutationId = item->data(0, Qt::UserRole).toInt();
     }
@@ -315,7 +311,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     QtProperty *topItem = addTopLevelProperty("Source");
     addProperty(topItem, QVariant::String, "Name", source);
 
-    if (mutationId!=-1) {
+    if (mutationId != -1) {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
@@ -334,12 +330,12 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = mutationsList->currentItem();
-    if (selected.size()==0 || item == nullptr)
+    if (selected.size() == 0 || item == nullptr)
         return;
 
     QString source = "";
     int mutationId = -1;
-    if (item->parent()==nullptr) {
+    if (item->parent() == nullptr) {
         mutationId = item->data(0, Qt::UserRole).toInt();
     } else {
         source = item->text(0);
@@ -350,7 +346,7 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
 
     clearProperties();
 
-    if (source=="") {
+    if (source == "") {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
@@ -363,7 +359,7 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
         for (auto result : database->getMutationResults(mutationId)) {
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
-    } else {        
+    } else {
         QtProperty *topItem = addTopLevelProperty("Source");
         addProperty(topItem, QVariant::String, "Name", source);
 
@@ -380,17 +376,17 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
     }
-
 }
 
 void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 {
-    if (item->parent()==nullptr) return;
+    if (item->parent() == nullptr)
+        return;
 
     bool ok;
     QString source = item->data(0, Qt::UserRole).toString();
     QString mut = "";
-    if (item->parent()->parent()!=nullptr) {
+    if (item->parent()->parent() != nullptr) {
         source = item->parent()->data(0, Qt::UserRole).toString();
         mut = item->data(0, Qt::UserRole).toString();
     }
@@ -402,7 +398,7 @@ void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 
 void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
 {
-    if (item->parent()==nullptr)
+    if (item->parent() == nullptr)
         return;
 
     bool ok;
@@ -421,23 +417,13 @@ void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
     selectSource(selectedProperty->valueText());
 }
 
-void BrowserWidget::onSearchInserted()
-{
-    for (int i = 0; i < sourceList->topLevelItemCount(); i++)
-        sourceList->topLevelItem(i)->setHidden(true);
-    tabWidget->setCurrentWidget(sourceList);
-    QList<QTreeWidgetItem *> matches(sourceList->findItems(searchEdit->text(), Qt::MatchFlag::MatchContains));
-    for (QTreeWidgetItem *item : matches)
-        item->setHidden(false);
-}
-
 void BrowserWidget::selectSource(QString source)
 {
     QTreeWidgetItemIterator it(sourceList);
     while (*it) {
-        if ((*it)->data(0, Qt::UserRole)==source) {
-            if (tabWidget->currentWidget()!=sourceList) {
-                ((QTreeWidget*)tabWidget->currentWidget())->selectionModel()->clearSelection();
+        if ((*it)->data(0, Qt::UserRole) == source) {
+            if (tabWidget->currentWidget() != sourceList) {
+                ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
                 tabWidget->setCurrentWidget(sourceList);
             }
             sourceList->setCurrentItem(*it, 0, QItemSelectionModel::ClearAndSelect);
@@ -453,7 +439,7 @@ bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::KeyPress) {
             QKeyEvent *key = static_cast<QKeyEvent *>(event);
             if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return)) {
-                onSourceDoubleClicked(sourceList->currentItem(),0);
+                onSourceDoubleClicked(sourceList->currentItem(), 0);
             } else {
                 return QObject::eventFilter(obj, event);
             }
@@ -465,7 +451,7 @@ bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::KeyPress) {
             QKeyEvent *key = static_cast<QKeyEvent *>(event);
             if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return)) {
-                onMutationDoubleClicked(mutationsList->currentItem(),0);
+                onMutationDoubleClicked(mutationsList->currentItem(), 0);
             } else {
                 return QObject::eventFilter(obj, event);
             }
@@ -475,5 +461,31 @@ bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
         }
     } else {
         return QObject::eventFilter(obj, event);
+    }
+}
+
+void BrowserWidget::onTagFilterChange(const QString &text)
+{
+    QList<int> mutations = database->getMutationsForTag(text);
+    for (int i = 0; i < sourceList->topLevelItemCount(); i++) {
+        QTreeWidgetItem *item = sourceList->topLevelItem(i);
+        for (int j = 0; j < item->childCount(); j++) {
+            QTreeWidgetItem *it = item->child(j);
+            for (int k = 0; k < it->childCount(); k++) {
+                QTreeWidgetItem *dataItem = it->child(k);
+                if (text == DbManager::ALL_TAGS)
+                    dataItem->setHidden(false);
+                else
+                    dataItem->setHidden(mutations.contains(dataItem->data(0, Qt::UserRole).toInt()) == 0);
+            }
+        }
+    }
+    for (int i = 0; i < mutationsList->topLevelItemCount(); i++) {
+        QTreeWidgetItem *dataItem = mutationsList->topLevelItem(i);
+        if (text == DbManager::ALL_TAGS)
+            dataItem->setHidden(false);
+        else {
+            dataItem->setHidden(mutations.contains(dataItem->data(0, Qt::UserRole).toInt()) == 0);
+        }
     }
 }
