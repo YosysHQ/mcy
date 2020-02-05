@@ -30,8 +30,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion("1.0");
     QCommandLineParser parser;
     parser.addPositionalArgument("project", "Project folder/directory to use");
-    QCommandLineOption sourceDirectoryOption(QStringList() << "src" << "source-directory",
-                                            "Copy all source files into <directory>.", "directory");
+    QCommandLineOption sourceDirectoryOption(QStringList() << "src"
+                                                           << "source-directory",
+                                             "Copy all source files into <directory>.", "directory");
     parser.addOption(sourceDirectoryOption);
     parser.addHelpOption();
     parser.addVersionOption();
