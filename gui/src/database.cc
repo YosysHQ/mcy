@@ -21,6 +21,8 @@
 #include <QSqlQuery>
 #include <QVariant>
 
+const QString DbManager::ALL_TAGS = "All tags";
+
 DbManager::DbManager(const QString &path)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
@@ -44,7 +46,8 @@ int DbManager::getMutationsCount()
 QStringList DbManager::getSources()
 {
     QStringList sources;
-    QSqlQuery query("SELECT DISTINCT SUBSTR(srctag,0,INSTR(srctag,':')) FROM sources ORDER BY SUBSTR(srctag,0,INSTR(srctag,':'))");
+    QSqlQuery query("SELECT DISTINCT SUBSTR(srctag,0,INSTR(srctag,':')) FROM sources ORDER BY "
+                    "SUBSTR(srctag,0,INSTR(srctag,':'))");
     while (query.next()) {
         sources << query.value(0).toString();
     }
@@ -54,7 +57,9 @@ QStringList DbManager::getSources()
 QStringList DbManager::getSourcesLines(QString filename)
 {
     QStringList sources;
-    QSqlQuery query("SELECT CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER) FROM sources WHERE SUBSTR(srctag,0,INSTR(srctag,':')) = \""+ filename +"\" ORDER BY CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
+    QSqlQuery query("SELECT CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER) FROM sources WHERE "
+                    "SUBSTR(srctag,0,INSTR(srctag,':')) = \"" +
+                    filename + "\" ORDER BY CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
     while (query.next()) {
         sources << query.value(0).toString();
     }
@@ -93,15 +98,17 @@ QString DbManager::getFileContent(QString filename)
 QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
 {
     QMap<int, QPair<int, int>> retVal;
-    QString str = "SELECT REPLACE(opt_value,'" + filename + ":',''),"
-                                                            "       COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),"
-                                                            "       COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)"
-                                                            "   FROM options"
-                                                            "   JOIN tags ON (options.mutation_id = tags.mutation_id)"
-                                                            "   WHERE opt_type = 'src'"
-                                                            "       AND opt_value LIKE '" +
-                  filename + ":%' "
-                             "   GROUP BY opt_value ";
+    QString str = "SELECT REPLACE(opt_value,'" + filename +
+                  ":',''),"
+                  "       COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),"
+                  "       COUNT(CASE WHEN tag = 'UNCOVERED' THEN 1 END)"
+                  "   FROM options"
+                  "   JOIN tags ON (options.mutation_id = tags.mutation_id)"
+                  "   WHERE opt_type = 'src'"
+                  "       AND opt_value LIKE '" +
+                  filename +
+                  ":%' "
+                  "   GROUP BY opt_value ";
     QSqlQuery query(str);
     while (query.next()) {
         retVal.insert(query.value(0).toInt(), QPair<int, int>(query.value(1).toInt(), query.value(2).toInt()));
@@ -111,14 +118,16 @@ QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
 
 QList<int> DbManager::getLinesYetToCover(QString filename)
 {
-    QList<int>retVal;
-    QString str = "SELECT REPLACE(opt_value,'" + filename + ":','') "
-                                                            "   FROM options"
-                                                            "   WHERE opt_type = 'src'"
-                                                            "       AND mutation_id NOT IN (SELECT mutation_id FROM tags)"
-                                                            "       AND opt_value LIKE '" +
-                  filename + ":%' "
-                             "   GROUP BY opt_value ";
+    QList<int> retVal;
+    QString str = "SELECT REPLACE(opt_value,'" + filename +
+                  ":','') "
+                  "   FROM options"
+                  "   WHERE opt_type = 'src'"
+                  "       AND mutation_id NOT IN (SELECT mutation_id FROM tags)"
+                  "       AND opt_value LIKE '" +
+                  filename +
+                  ":%' "
+                  "   GROUP BY opt_value ";
     QSqlQuery query(str);
     while (query.next()) {
         retVal.append(query.value(0).toInt());
@@ -139,7 +148,8 @@ QList<int> DbManager::getMutationsForSource(QString source)
 QStringList DbManager::getSourcesForMutation(int mutationId)
 {
     QStringList retVal;
-    QSqlQuery query("SELECT opt_value FROM options WHERE opt_type = 'src' AND mutation_id = " + QString::number(mutationId));
+    QSqlQuery query("SELECT opt_value FROM options WHERE opt_type = 'src' AND mutation_id = " +
+                    QString::number(mutationId));
     while (query.next()) {
         retVal << query.value(0).toString();
     }
@@ -173,4 +183,25 @@ QStringList DbManager::getTagsForMutation(int mutationId)
         tags << query.value(0).toString();
     }
     return tags;
+}
+
+QStringList DbManager::getUniqueTags()
+{
+    QStringList tags;
+    QSqlQuery query("SELECT tag FROM tags GROUP BY tag");
+    tags << DbManager::ALL_TAGS;
+    while (query.next()) {
+        tags << query.value(0).toString();
+    }
+    return tags;
+}
+
+QList<int> DbManager::getMutationsForTag(QString tag)
+{
+    QList<int> retVal;
+    QSqlQuery query("SELECT mutation_id FROM tags WHERE tag = '" + tag + "'");
+    while (query.next()) {
+        retVal.append(query.value(0).toInt());
+    }
+    return retVal;
 }

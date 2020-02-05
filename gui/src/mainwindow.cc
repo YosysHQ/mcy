@@ -103,8 +103,9 @@ void MainWindow::createMenusAndBars()
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, tr("MCY-GUI"), tr("The <b>Mutation Cover with Yosys GUI</b> is part of "
-                                               "<br/><b>SymbioticEDA</b> solution for formal verification."));
+    QMessageBox::about(this, tr("MCY-GUI"),
+                       tr("The <b>Mutation Cover with Yosys GUI</b> is part of "
+                          "<br/><b>SymbioticEDA</b> solution for formal verification."));
 }
 
 void MainWindow::openCodeViewTab(QString filename)
@@ -114,7 +115,7 @@ void MainWindow::openCodeViewTab(QString filename)
         if (sourceDir.isEmpty()) {
             QString content = database.getFileContent(filename);
             if (content.isEmpty()) {
-                QMessageBox::critical(this, tr("MCY-GUI"), tr("Database does not contain this file !!!"));                
+                QMessageBox::critical(this, tr("MCY-GUI"), tr("Database does not contain this file !!!"));
                 return;
             }
             code->loadContent(content.toLocal8Bit().constData());
@@ -126,7 +127,7 @@ void MainWindow::openCodeViewTab(QString filename)
                 QByteArray contents = file.readAll();
                 code->loadContent(contents.constData());
             } else {
-                QMessageBox::critical(this, tr("MCY-GUI"), tr("File does not exists !!!"));                
+                QMessageBox::critical(this, tr("MCY-GUI"), tr("File does not exists !!!"));
                 return;
             }
         }

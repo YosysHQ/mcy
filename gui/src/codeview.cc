@@ -131,8 +131,7 @@ void CodeView::selectLine(int line) { gotoLine(line - 1); }
 
 void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage, QList<int> yetToCover)
 {
-    for( int i=0; i<yetToCover.count(); ++i )
-    {
+    for (int i = 0; i < yetToCover.count(); ++i) {
         int line = yetToCover[i] - 1;
         marginSetText(line, "?");
         marginSetStyle(line, STYLE_LINENUMBER);
