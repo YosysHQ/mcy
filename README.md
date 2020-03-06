@@ -1,6 +1,16 @@
 # Mutation Cover with Yosys
 
+`mcy` is a new tool to help digital designers and project managers understand and improve testbench coverage.
+
+*If you have a testbench, and it fails, you know you have a problem. But if it passes, you know nothing if you don’t know what your testbench is actually testing for.*
+
+Given a self checking testbench, `mcy` generates 1000s of mutations by modifying individual signals in a post synthesis netlist. These mutations are then filtered using Formal Verification techniques, keeping only those that can cause an important change in the design’s output.
+
+All mutated designs are run against the testbench to check that the testbench will detect and fail for a relevant mutation. The testbench can then be improved to get 100% complete coverage.
+
 ## Quickstart
+
+Install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
 
 Install `mcy`:
 
@@ -8,15 +18,15 @@ Install `mcy`:
 sudo make install
 ```
 
-Run the example project (may run for a while):
+Run an example project (may run for a while):
 
 ```
-cd example
+cd examples/bitcnt
 mcy init
 mcy run -j8
 ```
 
-Remember to install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
+The examples additionally require Icarus Verilog (https://github.com/steveicarus/iverilog) to run the testbench under test.
 
 ## Tutorial
 
