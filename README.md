@@ -18,6 +18,8 @@ All mutated designs are run against the testbench to check that the testbench wi
 
 ![MCY Dash Screenshot](https://github.com/YosysHQ/mcy/raw/master/docs/images/mcy-dash.png)
 
+**For more information please contact matt@symbioticeda.com**
+
 ## Quickstart
 
 Install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
