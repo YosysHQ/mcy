@@ -317,7 +317,7 @@ def wait_tasks(n):
             task.poll()
 
 class Task:
-    def __init__(self, command, callback=None, silent=False):
+    def __init__(self, command, callback=None, silent=False, logfilename=None):
         global taskidx
         taskidx += 1
         self.taskidx = taskidx
@@ -325,6 +325,7 @@ class Task:
         if not silent:
             print(command)
         self.callback = callback
+        self.logfilename = logfilename
         self.p = subprocess.Popen(command, shell=True, stdin=subprocess.DEVNULL)
         taskdb[taskidx] = self
         self.running = True
@@ -340,6 +341,8 @@ class Task:
             del taskdb[self.taskidx]
         if rc != 0:
             print("Command '%s' returned non-zero return code %d." % (self.command, rc))
+            if self.logfilename is not None:
+                print("See '%s' for details." % self.logfilename)
             exit(1)
         if self.callback is not None:
             self.callback()
@@ -612,12 +615,14 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
 
     command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d MUTATIONS=\"%s\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % \
             (task_id, 1 if keepdir else 0, " ".join(["%d" % mut for mut in mut_list]))
+    logfilename = None
     if not verbose:
         with open("tasks/%s/logfile.txt" % task_id, "w") as f:
             for msg in infomsgs: print(msg, file=f)
         command += "; exec >>logfile.txt"
+        logfilename = "tasks/%s/logfile.txt" % task_id
     command += "; %s %s" % (cfg.tests[t].run, tst_args)
-    task = Task(command, callback, silent=(not verbose))
+    task = Task(command, callback, silent=(not verbose), logfilename=logfilename)
 
     return True
 
