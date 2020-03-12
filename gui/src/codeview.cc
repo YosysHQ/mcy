@@ -133,12 +133,14 @@ void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage, QList<int> yetTo
 {
     for (int i = 0; i < yetToCover.count(); ++i) {
         int line = yetToCover[i] - 1;
+        if (line<0) continue;
         marginSetText(line, "?");
         marginSetStyle(line, STYLE_LINENUMBER);
     }
     QMap<int, QPair<int, int>>::const_iterator it = coverage.constBegin();
     while (it != coverage.constEnd()) {
         int line = it.key() - 1;
+        if (line<0) continue;
         auto val = it.value();
         if (val.second > 0) {
             markerAdd(line, 0);
