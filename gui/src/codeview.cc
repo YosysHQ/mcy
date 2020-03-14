@@ -147,9 +147,23 @@ void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QStrin
         marginSetText(line, "?");
         marginSetStyle(line, STYLE_LINENUMBER);
     }
-    QMap<QString, QPair<int, int>>::const_iterator it = coverage.constBegin();
-    while (it != coverage.constEnd()) {
-        int line = extractLineNumber(it.key()) - 1;
+
+    QMap<int, QPair<int, int>> cov;
+    QMap<QString, QPair<int, int>>::const_iterator cit = coverage.constBegin();
+    while (cit != coverage.constEnd()) {
+        int line = extractLineNumber(cit.key());
+        if (cov.contains(line)) {
+            QPair<int, int>& p = cov[line];
+            p.first += cit.value().first;
+            p.second += cit.value().second;
+        } else
+            cov[line] = cit.value(); 
+        ++cit;
+    }
+
+    QMap<int, QPair<int, int>>::const_iterator it = cov.constBegin();
+    while (it != cov.constEnd()) {
+        int line = it.key() - 1;
         if (line>=0) {
             auto val = it.value();
             if (val.second > 0) {
