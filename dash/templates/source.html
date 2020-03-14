@@ -56,7 +56,7 @@
   <div class="row">
     <table>
       <td><pre><code style="float:left;margin:0;padding-right:10px;text-align:right;width:80px;">{% for n in range(1,num) %}{{ n }}<br/>{% endfor %}</code></pre></td>
-      <td><pre><code style="float:left;margin:0;padding-right:10px;text-align:right;width:40px;">{% for n in range(1,num) %}{% set  src = "%s:%d" % (filename, n) %}{% if src in covercache %}{% if covercache[src].used %}{% if covercache[src].uncovered %}<span class="badge badge-danger badge-counter">{{ covercache[src].uncovered }}</span>{% else %}<span class="badge badge-success badge-counter">{{ covercache[src].covered }}</span>{% endif %}{% else %}<span class="badge badge-warning badge-counter">?</span>{% endif %}{% endif %}<br/>{% endfor %}</code></pre>    </td>
+      <td><pre><code style="float:left;margin:0;padding-right:10px;text-align:right;width:40px;">{% for n in range(1,num) %}{% set  src = "%d" % (n) %}{% if src in covercache %}{% if covercache[src].used %}{% if covercache[src].uncovered %}<span class="badge badge-danger badge-counter">{{ covercache[src].uncovered }}</span>{% else %}<span class="badge badge-success badge-counter">{{ covercache[src].covered }}</span>{% endif %}{% else %}<span class="badge badge-warning badge-counter">?</span>{% endif %}{% endif %}<br/>{% endfor %}</code></pre>    </td>
       <td><pre><code class="verilog">{{ source }}</code></pre></td>
   </table>
   </div>

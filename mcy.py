@@ -752,6 +752,9 @@ if sys.argv[1] == "source":
     covercache = dict()
 
     for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
+        src = src.replace(filename + ":","")
+        if ("." in src):
+            src = src[:src.index(".")]
         covercache[src] = types.SimpleNamespace(covered=0, uncovered=0, used=0)
 
     for src, covered, uncovered in db.execute("""
@@ -764,12 +767,15 @@ if sys.argv[1] == "source":
              AND opt_value LIKE ?
         GROUP BY opt_value
     """, [filename + ":%"]):
+        src = src.replace(filename + ":","")
+        if ("." in src):
+            src = src[:src.index(".")]
         covercache[src].covered += covered
         covercache[src].uncovered += uncovered
         covercache[src].used = 1
 
     for linenr, line in enumerate(filedata.rstrip("\n").split("\n")):
-        src = "%s:%d" % (filename, linenr+1)
+        src = "%d" % (linenr+1)
 
         if src in covercache:
             if covercache[src].used:

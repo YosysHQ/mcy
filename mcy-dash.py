@@ -135,13 +135,15 @@ def source():
             else:
                 filedata = ""
         else:
-            filedata = fd[0].decode('unicode_escape')
-
+            filedata = fd[0][0].decode('unicode_escape')
         # Fix DOS-style and old Macintosh-style line endings
         filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
         num = len(filedata.split('\n'))        
        
         for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
+            src = src.replace(filename + ":","")
+            if ("." in src):
+                src = src[:src.index(".")]
             covercache[src] = types.SimpleNamespace(covered=0, uncovered=0, used=0)
 
         for src, covered, uncovered in db.execute("""
@@ -154,6 +156,9 @@ def source():
                 AND opt_value LIKE ?
             GROUP BY opt_value
         """, [filename + ":%"]):
+            src = src.replace(filename + ":","")
+            if ("." in src):
+                src = src[:src.index(".")]
             covercache[src].covered += covered
             covercache[src].uncovered += uncovered
             covercache[src].used = 1
