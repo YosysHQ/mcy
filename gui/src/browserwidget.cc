@@ -391,9 +391,7 @@ void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
         mut = item->data(0, Qt::UserRole).toString();
     }
     QStringList param = source.split(':');
-    int line = param.at(1).toInt(&ok);
-    if (ok)
-        Q_EMIT selectLine(param.at(0), line);
+    Q_EMIT selectLine(param.at(0), param.at(1));
 }
 
 void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
@@ -403,9 +401,7 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
 
     bool ok;
     QStringList param = item->text(0).split(':');
-    int line = param.at(1).toInt(&ok);
-    if (ok)
-        Q_EMIT selectLine(param.at(0), line);
+    Q_EMIT selectLine(param.at(0), param.at(1));
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
@@ -421,7 +417,8 @@ void BrowserWidget::selectSource(QString source)
 {
     QTreeWidgetItemIterator it(sourceList);
     while (*it) {
-        if ((*it)->data(0, Qt::UserRole) == source) {
+        QString val = (*it)->data(0, Qt::UserRole).toString();
+        if (val == source || val.startsWith(source+".")) {
             if (tabWidget->currentWidget() != sourceList) {
                 ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
                 tabWidget->setCurrentWidget(sourceList);

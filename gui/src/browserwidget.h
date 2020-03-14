@@ -67,7 +67,7 @@ class BrowserWidget : public QWidget
     void selectSource(QString source);
 
   Q_SIGNALS:
-    void selectLine(QString filename, int line);
+    void selectLine(QString filename, QString line);
 
   private:
     // database

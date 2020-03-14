@@ -127,29 +127,40 @@ void CodeView::loadContent(const char *content)
     setMarginSensitiveN(2, true);
 }
 
-void CodeView::selectLine(int line) { gotoLine(line - 1); }
+static int extractLineNumber(QString line) {
+    if (line.contains('.'))
+    {
+        line = line.left(line.indexOf('.'));
+    }
+    return line.toInt();
+}
 
-void CodeView::setCoverage(QMap<int, QPair<int, int>> coverage, QList<int> yetToCover)
+void CodeView::selectLine(QString line) {
+    gotoLine(extractLineNumber(line) - 1); 
+}
+
+void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)
 {
     for (int i = 0; i < yetToCover.count(); ++i) {
-        int line = yetToCover[i] - 1;
+        int line = extractLineNumber(yetToCover[i]) - 1;
         if (line<0) continue;
         marginSetText(line, "?");
         marginSetStyle(line, STYLE_LINENUMBER);
     }
-    QMap<int, QPair<int, int>>::const_iterator it = coverage.constBegin();
+    QMap<QString, QPair<int, int>>::const_iterator it = coverage.constBegin();
     while (it != coverage.constEnd()) {
-        int line = it.key() - 1;
-        if (line<0) continue;
-        auto val = it.value();
-        if (val.second > 0) {
-            markerAdd(line, 0);
-            // markerAdd(line,1);
-            marginSetText(line, std::to_string(-val.second).c_str());
-            marginSetStyle(line, STYLE_LINENUMBER);
-        } else {
-            marginSetText(line, std::to_string(val.first).c_str());
-            marginSetStyle(line, STYLE_LINENUMBER);
+        int line = extractLineNumber(it.key()) - 1;
+        if (line>=0) {
+            auto val = it.value();
+            if (val.second > 0) {
+                markerAdd(line, 0);
+                // markerAdd(line,1);
+                marginSetText(line, std::to_string(-val.second).c_str());
+                marginSetStyle(line, STYLE_LINENUMBER);
+            } else {
+                marginSetText(line, std::to_string(val.first).c_str());
+                marginSetStyle(line, STYLE_LINENUMBER);
+            }
         }
         ++it;
     }

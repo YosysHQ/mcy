@@ -57,9 +57,9 @@ QStringList DbManager::getSources()
 QStringList DbManager::getSourcesLines(QString filename)
 {
     QStringList sources;
-    QSqlQuery query("SELECT CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER) FROM sources WHERE "
+    QSqlQuery query("SELECT SUBSTR(srctag,INSTR(srctag,':')+1) FROM sources WHERE "
                     "SUBSTR(srctag,0,INSTR(srctag,':')) = \"" +
-                    filename + "\" ORDER BY CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
+                    filename + "\" ORDER BY SUBSTR(srctag,INSTR(srctag,':')+1)");
     while (query.next()) {
         sources << query.value(0).toString();
     }
@@ -95,9 +95,9 @@ QString DbManager::getFileContent(QString filename)
     return "";
 }
 
-QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
+QMap<QString, QPair<int, int>> DbManager::getCoverage(QString filename)
 {
-    QMap<int, QPair<int, int>> retVal;
+    QMap<QString, QPair<int, int>> retVal;
     QString str = "SELECT REPLACE(opt_value,'" + filename +
                   ":',''),"
                   "       COUNT(CASE WHEN tag =   'COVERED' THEN 1 END),"
@@ -111,14 +111,14 @@ QMap<int, QPair<int, int>> DbManager::getCoverage(QString filename)
                   "   GROUP BY opt_value ";
     QSqlQuery query(str);
     while (query.next()) {
-        retVal.insert(query.value(0).toInt(), QPair<int, int>(query.value(1).toInt(), query.value(2).toInt()));
+        retVal.insert(query.value(0).toString(), QPair<int, int>(query.value(1).toInt(), query.value(2).toInt()));
     }
     return retVal;
 }
 
-QList<int> DbManager::getLinesYetToCover(QString filename)
+QList<QString> DbManager::getLinesYetToCover(QString filename)
 {
-    QList<int> retVal;
+    QList<QString> retVal;
     QString str = "SELECT REPLACE(opt_value,'" + filename +
                   ":','') "
                   "   FROM options"
@@ -130,7 +130,7 @@ QList<int> DbManager::getLinesYetToCover(QString filename)
                   "   GROUP BY opt_value ";
     QSqlQuery query(str);
     while (query.next()) {
-        retVal.append(query.value(0).toInt());
+        retVal.append(query.value(0).toString());
     }
     return retVal;
 }

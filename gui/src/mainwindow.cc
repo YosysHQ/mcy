@@ -139,7 +139,7 @@ void MainWindow::openCodeViewTab(QString filename)
             browser->selectSource(source);
         });
         connect(code, &ScintillaEdit::marginClicked, [=](int position, int modifiers, int margin) {
-            code->selectLine(code->lineFromPosition(position) + 1);
+            code->selectLine(QString::number(code->lineFromPosition(position) + 1));
         });
     }
     centralTabWidget->setCurrentWidget(views[filename]);
@@ -157,7 +157,7 @@ void MainWindow::closeCodeViewTab(int index)
     centralTabWidget->removeTab(index);
 }
 
-void MainWindow::selectLine(QString filename, int line)
+void MainWindow::selectLine(QString filename, QString line)
 {
     openCodeViewTab(filename);
     QWidget *current = centralTabWidget->currentWidget();

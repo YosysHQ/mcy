@@ -46,7 +46,7 @@ class MainWindow : public QMainWindow
     void closeCodeViewTab(int index);
 
   protected Q_SLOTS:
-    void selectLine(QString filename, int line);
+    void selectLine(QString filename, QString line);
     void about();
 
   protected:

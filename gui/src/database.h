@@ -35,8 +35,8 @@ class DbManager
     QList<int> getMutations();
     QStringList getFileList();
     QString getFileContent(QString filename);
-    QMap<int, QPair<int, int>> getCoverage(QString filename);
-    QList<int> getLinesYetToCover(QString filename);
+    QMap<QString, QPair<int, int>> getCoverage(QString filename);
+    QList<QString> getLinesYetToCover(QString filename);
     QList<int> getMutationsForSource(QString source);
     QStringList getSourcesForMutation(int mutationId);
     QList<QPair<QString, QString>> getMutationOption(int mutationId);
