@@ -576,7 +576,12 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
 
     with open("tasks/%s/input.txt" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
-            mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
+            try:
+                mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
+            except:
+                print("Mutation number %s' not found in database." % mut)
+                exit(1)
+                pass
             infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
             print("  %d %d %s" % (idx+1, mut, mut_str))
             print("%d %s" % (idx+1, mut_str), file=f)
@@ -621,6 +626,9 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
             for msg in infomsgs: print(msg, file=f)
         command += "; exec >>logfile.txt"
         logfilename = "tasks/%s/logfile.txt" % task_id
+    if (t not in cfg.tests):
+        print("Test '%s' not found." % t)
+        exit(1)
     command += "; %s %s" % (cfg.tests[t].run, tst_args)
     task = Task(command, callback, silent=(not verbose), logfilename=logfilename)
 
