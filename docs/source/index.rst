@@ -15,3 +15,6 @@ All mutated designs are run against the testbench to check that the testbench wi
 
    quickstart.rst
    tutorial.rst
+   cmds.rst
+   config.rst
+   mutate.rst
