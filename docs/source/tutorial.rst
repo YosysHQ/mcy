@@ -4,7 +4,7 @@ Tutorial
 
 This guide will explain how to set up a project from scratch using the bit-counter project in ``examples/bitcnt`` as an example. A shorter overview of the project is also available in `this youtube video`_.
 
-_this youtube video: https://youtu.be/NKzqRum1ksg
+.. _this youtube video: https://youtu.be/NKzqRum1ksg
 
 You should start out with the following files:
 
