@@ -2,7 +2,11 @@
 Tutorial
 --------
 
-This guide will explain how to set up a project from scratch using the bit-counter project in ``examples/bitcnt`` as an example. You should start out with the following files:
+This guide will explain how to set up a project from scratch using the bit-counter project in ``examples/bitcnt`` as an example. A shorter overview of the project is also available in `this youtube video`_.
+
+_this youtube video: https://youtu.be/NKzqRum1ksg
+
+You should start out with the following files:
 
 ``bitcnt_tb.v``: a self-checking testbench (or a set of testbenches) for which you wish to measure coverage. This is not restricted to HDL testbenches but can be any kind of test that can be launched without manual intervention and can return a PASS/FAIL result.
 
@@ -204,24 +208,28 @@ This instantiates the ``bitcnt`` module twice, once with the mutation disabled (
 
 The ``bitcnt`` module has multiple modes of operation selected by the input ``din_func``. The LSB ``din_func[0]`` selects between 32-bit and 64-bit operand mode, and the MSBs ``din_func[2:1]`` choose between three counting modes, count leading zeros (CLZ), count trailing zeros (CTZ), or popcount (CNT). The fourth option, ``din_func[2:1]==2'b11`` is not a valid operation.
 
-The goal is to be as precise as possible about the conditions under which we expect the same output. Therefore we will disambiguate between the 32 and 64-bit modes and allow the upper input and output bits of ``uut`` and ``ref`` to not be identical in 32-bit mode. We will also only check ``dout_data`` if ``din_func`` is a valid value.
+The goal is to be as precise as possible about the conditions under which we expect the same output. Therefore we will never check anything in the case of the unused opcode ``din_func[2:1] == 2'b11``. We will also disambiguate between the 32 and 64-bit modes and allow the upper input and output bits of ``uut`` and ``ref`` to not be identical in 32-bit mode.
 
 At the end of the miter module (before ``endmodule``), insert the following code:
 
 .. code-block:: text
 
 	always @* begin
-		if (din_func[0]) begin
-			assume (ref_din_data[31:0] == uut_din_data[31:0]);
-			if (din_func[2:1] != 3) begin
+		casez (din_func)
+			3'b11z: begin
+				// unused opcode: don't check anything
+			end
+			3'bzz1: begin
+				// 32-bit opcodes, only constrain lower 32 bits and only check lower 32 bits
+				assume (ref_din_data[31:0] == uut_din_data[31:0]);
 				assert (ref_dout_data[31:0] == uut_dout_data[31:0]);
 			end
-		end else begin
-			assume (ref_din_data == uut_din_data);
-			if (din_func[2:1] != 3) begin
+			3'bzz0: begin
+				// 64-bit opcodes, constrain all 64 input bits and check all 64 output bits
+				assume (ref_din_data == uut_din_data);
 				assert (ref_dout_data == uut_dout_data);
 			end
-		end
+		endcase
 	end
 
 We will use SymbiYosys to check these formal properties. Create the file ``test_eq.sby`` and enter the following configuration:
@@ -376,7 +384,7 @@ This time, the tests will take longer to run, so enable parallel runs (replace `
 
 ``reset`` will keep the existing results for the previously tested mutations but add more mutations to reach the new requested size.
 
-While the tests are being run, in a second terminal, you can run (again in the ``examples/bitcnt`` directory)
+While the tests are being run, in a second terminal, you can run (in the base project directory where your ``config.mcy`` is located)
 
 .. code-block:: text
 
