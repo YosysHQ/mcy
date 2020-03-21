@@ -38,16 +38,20 @@ module miter (
 	);
 
 	always @* begin
-		if (din_func[0]) begin
-			assume (ref_din_data[31:0] == uut_din_data[31:0]);
-			if (din_func[2:1] != 3) begin
+		casez (din_func)
+			3'b11z: begin
+				// unused opcode: don't check anything
+			end
+			3'bzz1: begin
+				// 32-bit opcodes, only constrain lower 32 bits and only check lower 32 bits
+				assume (ref_din_data[31:0] == uut_din_data[31:0]);
 				assert (ref_dout_data[31:0] == uut_dout_data[31:0]);
 			end
-		end else begin
-			assume (ref_din_data == uut_din_data);
-			if (din_func[2:1] != 3) begin
+			3'bzz0: begin
+				// 64-bit opcodes, constrain all 64 input bits and check all 64 output bits
+				assume (ref_din_data == uut_din_data);
 				assert (ref_dout_data == uut_dout_data);
 			end
-		end
+		endcase
 	end
 endmodule
