@@ -19,10 +19,11 @@ module testbench (
 	input [63:0] din_data_a,
 	input [63:0] din_data_b,
 	input [ 2:0] din_func,
-	input [ 7:0] shamt
+	input [ 5:0] shamt
 );
 	wire [63:0] dout_data_a;
 	wire [63:0] dout_data_b;
+	wire [63:0] any_onehot = 1 << shamt;
 
 	bitcnt A (
 		.din_data  (din_data_a),
@@ -63,10 +64,16 @@ module testbench (
 				assert (dout_data_a + 1 == dout_data_b);
 			end
 			3'b 100: begin
-				// 64-bit population count  --  TBD
+				// 64-bit population count
+				assume (din_data_a != din_data_b);
+				assume ((din_data_a | any_onehot) == din_data_b);
+				assert (dout_data_a + 1 == dout_data_b);
 			end
 			3'b 101: begin
-				// 32-bit population count  --  TBD
+				// 32-bit population count
+				assume (din_data_a[31:0] != din_data_b[31:0]);
+				assume ((din_data_a[31:0] | any_onehot[31:0]) == din_data_b[31:0]);
+				assert (dout_data_a + 1 == dout_data_b);
 			end
 		endcase
 	end

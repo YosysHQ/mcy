@@ -4,7 +4,7 @@ depth 1
 expect pass,fail
 
 [engines]
-smtbmc yices
+smtbmc boolector
 
 [script]
 read_verilog -sv test_fm.sv

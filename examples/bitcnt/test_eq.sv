@@ -43,9 +43,9 @@ module miter (
 				// unused opcode: don't check anything
 			end
 			3'bzz1: begin
-				// 32-bit opcodes, only constrain lower 32 bits and only check lower 32 bits
+				// 32-bit opcodes, only constrain lower 32 input bits and check all 64 output bits
 				assume (ref_din_data[31:0] == uut_din_data[31:0]);
-				assert (ref_dout_data[31:0] == uut_dout_data[31:0]);
+				assert (ref_dout_data == uut_dout_data);
 			end
 			3'bzz0: begin
 				// 64-bit opcodes, constrain all 64 input bits and check all 64 output bits
