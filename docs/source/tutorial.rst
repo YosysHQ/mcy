@@ -307,7 +307,7 @@ Now that we have set up the two tests, we need to tell ``mcy`` how we want to an
 
 - the simulation testbench passes and the equivalence test passes: the mutation does not introduce a relevant change to the functionality of the module (NOCHANGE).
 
-- the simulation testbench fails but the equivalence test passes: the equivalence test must not have been set up correctly, and there is a gap between formal description and expected behaviour (FMGAP).
+- the simulation testbench fails but the equivalence test passes: the equivalence test must not have been set up correctly, and there is a gap between formal description and expected behaviour (EQGAP).
 
 Declare these four tags in the ``[options]`` section:
 
@@ -315,7 +315,7 @@ Declare these four tags in the ``[options]`` section:
 
 	[options]
 	size 10
-	tags COVERED UNCOVERED NOCHANGE FMGAP
+	tags COVERED UNCOVERED NOCHANGE EQGAP
 
 Then, under the ``[logic]`` section, describe how to tag the tests:
 
@@ -330,25 +330,27 @@ Then, under the ``[logic]`` section, describe how to tag the tests:
 	    tag("COVERED")
 	elif sim_okay and eq_okay:
 	    tag("NOCHANGE")
+	elif not tb_okay and eq_okay:
+	    tag("EQGAP")
 	else:
-	    tag("FMGAP")
+	    assert 0
 
 This section essentially defines a python function, and can use the predefined functions ``result("<name>")`` (where ``<name>`` is a test defined in a ``[test <name>]`` section) and ``tag("<name>")`` (for any tag defined under ``tags`` in the ``[options]`` section). A single mutation can be tagged with multiple tags, or with no tags at all.
 
-When you have multiple tests of differing length, you can use lazy evaluation to run tests conditionally. For a given mutation, a test is only executed when the ``[logic]`` section calls ``result()``. (To see how this feature is used see the other example project, ``picorv32_primes``.)
+When you have multiple tests of differing length, you can use lazy evaluation to run tests conditionally. For a given mutation, a test is only executed when the ``[logic]`` section calls ``result()``. (An example of this is given in the bonus section at the end of this tutorial.)
 
 Finally, fill in the ``[report]`` section as follows:
 
 .. code-block:: text
 
 	[report]
-	if tags("FMGAP"):
-	    print("Found %d mutations exposing a formal gap!" % tags("FMGAP"))
+	if tags("EQGAP"):
+	    print("Found %d mutations exposing a formal gap!" % tags("EQGAP"))
 	if tags("COVERED")+tags("UNCOVERED"):
 	    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
 
 This is again a section that defines a python function. Here, the function ``tags("<name>")`` can be used to obtain the number of mutations tagged with a given tag.
-If there is a formal gap, this is highly problematic so this will be reported first. Secondly, we print a coverage metric calculated as the percent of covered mutations out of all mutations that induce a relevant design change, i.e. both those tagged as covered and as uncovered.
+If there is a formal gap, this is highly problematic so it will be reported first. Secondly, we print a coverage metric calculated as the percent of covered mutations out of all mutations that induce a relevant design change, i.e. both those tagged as covered and as uncovered.
 
 Running mcy
 ~~~~~~~~~~~
@@ -415,3 +417,128 @@ You can try to improve the testbench in ``bitcnt_tb.v`` to achieve better covera
 	mcy purge
 
 As mutations are generated randomly, the better your coverage, the larger the size required to find uncovered cases. If you reach 100%, try increasing the size further.
+
+Bonus: Integrating a second test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Often, you will have a whole collection of tests of differing size and strictness. These can all be integrated into a single ``mcy`` project to obtain a coverage metric for the test suite as a whole. In this section we will add a second, longer-running but more thorough testbench to increase the coverage metric.
+
+``test_fm`` is a formal testbench that fully verifies that the module fulfils a formal definition of the desired behaviour. Because it significantly increases the runtime of the example, ``test_fm`` is disabled by default in the ``bitcnt`` example. It can be enabled or disabled by setting the variable ``use_formal`` defined in ``config.mcy``.
+
+For the purposes of this tutorial, the files ``test_fm.sv`` and ``test_fm.sby`` represent a second pre-existing testbench, just like ``bitcount_tb.v``. Therefore, simply copy them to your project directory from the ``bitcnt`` example directory:
+
+.. code-block:: text
+
+	cp <mcy source dir>/examples/bitcnt/test_fm.{sv,sby} .
+
+If you are curious how the formal verification is implemented, you may take a look at the contents. In essence, for each opcode, it asserts that the output conforms to an inductively defined function. For example, for the popcount operation, if ``din_data_b`` has exactly one more bit set than ``din_data_a``, then the count ``dout_data_b`` should be one higher than ``dout_data_a``. This definition is deliberately very different from the implementation of the module, to avoid the common situation where a person writing the same logic twice will make the same errors both times. However, because the ``bitcnt`` module is so simple, trying to find a different way of expressing it results in a rather more convoluted description than one would usually find in a practical example.
+
+Next, we will create the script to run this test on a mutated design. Create a file named ``test_fm.sh`` in your project directory with the following contents:
+
+.. code-block:: text
+
+	#!/bin/bash
+
+	exec 2>&1
+	set -ex
+
+	{
+		echo "read_ilang ../../database/design.il"
+		cut -f2- -d' ' input.txt
+		echo "write_ilang mutated.il"
+	} > mutate.ys
+
+	yosys -ql mutate.log mutate.ys
+
+	ln -s ../../test_fm.sv ../../test_fm.sby .
+	sby -f test_fm.sby
+
+	gawk "{ print 1, \$1; }" test_fm/status >> output.txt
+
+	exit 0
+
+Since we are using SymbiYosys for this test as well, the script overall resembles ``test_eq.sh``. The main difference is the line applying the mutation, where we directly use the mutate command passed in ``input.txt`` without creating a ``mutsel`` input, since we need a mutated replacement module with the same interface as the original ``bitcnt`` module to substitute in the testbench.
+
+As before, we will need the ``database/`` and ``tasks/`` directories for a trial run, but this time we can use the existing ``mcy`` project to create them.
+
+If the file ``database/design.il`` does not exist, run ``mcy init`` to create it.
+
+Next, run ``mcy task -k test_sim 1``. Take note of the task uuid printed.
+
+Enter the directory ``tasks/${uuid}`` created by this command and run ``bash ../../test_fm.sh`` to check that the test functions correctly (it should return PASS, because task 1 is always ``mutate -mode none`` which introduces no mutation).
+
+If it works as expected, we can add this test to the mcy configuration. In ``config.mcy``, under the section ``[options]`` reduce the size again while we work and add a new tag ``FMONLY``:
+
+.. code-block:: text
+
+	[options]
+	size 10
+	tags COVERED UNCOVERED NOCHANGE EQGAP FMONLY
+
+At the bottom of the file, add a new section for the new test:
+
+.. code-block:: text
+
+	[test test_fm]
+	expect PASS FAIL
+	run bash $PRJDIR/test_fm.sh
+
+Finally, we will adjust the ``[logic]`` section to use this new test. First, define the variable ``use_formal`` so we can turn on and off this expensive test at will:
+
+.. code-block:: text
+
+	[logic]
+	use_formal = True
+
+Second, after the two original tests are run, but before the tags are applied, insert a new piece of code:
+
+.. code-block:: text
+	:emphasize-lines: 4-7
+
+	tb_okay = (result("test_sim") == "PASS")
+	eq_okay = (result("test_eq") == "PASS")
+
+	if tb_okay and use_formal:
+	    tb_okay = (result("test_fm") == "PASS")
+	    if not tb_okay:
+	        tag("FMONLY")
+
+	if tb_okay and not eq_okay:
+	    tag("UNCOVERED")
+	elif ...
+
+This will run ``test_fm`` only in the case where ``use_formal`` is enabled and ``tb_okay`` is true, i.e. the simulation testbench did not identify any problem with the module. This means that this long-running test will only be executed for a small portion of the mutations.
+
+As the variable ``tb_okay`` is potentially modified in this ``if`` before the original tagging logic runs, the ``COVERED`` tag is now applied to any mutation that was caught by either the simulation or the formal verification testbench. Mutations for which only the formal test was able to detect a problem are tagged with ``FMONLY`` so that we can trace which tests cover which mutations.
+
+Test that this new configuration works correctly:
+
+.. code-block:: text
+
+	mcy purge
+	mcy init
+	mcy run
+
+Depending on your randomly generated mutations, you may some mutations tagged as ``FMONLY``. Check if the following line appears in ``mcy status``:
+
+.. code-block:: text
+
+	Tagged 1 mutations as "FMONLY".
+
+If not, you can generate new mutations by re-running the above commands, or by increasing the number of mutations.
+
+If everything is working correctly, you can now return the mutation set size to its original value.
+
+.. code-block:: text
+
+	[options]
+	size 1000
+
+Running mcy will now require significantly more time, so don't forget to enable parallelism:
+
+.. code-block:: text
+
+	mcy reset
+	mcy run -j$(nproc)
+
+This time, you should achieve 100% coverage, as the formal testbench comprehensively checks whether the output is correct for any possible combination of inputs.
