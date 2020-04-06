@@ -44,36 +44,42 @@ module testbench (
 				assume (din_data_a != 0);
 				assume (din_data_a >> 1 == din_data_b);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a[63]) assert(dout_data_a == 0);
 			end
 			3'b 001: begin
 				// 32-bit count leading zeros
 				assume (din_data_a[31:0] != 0);
 				assume (din_data_a[31:0] >> 1 == din_data_b[31:0]);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a[31]) assert(dout_data_a == 0);
 			end
 			3'b 010: begin
 				// 64-bit count trailing zeros
 				assume (din_data_a != 0);
 				assume (din_data_a << 1 == din_data_b);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a[0]) assert(dout_data_a == 0);
 			end
 			3'b 011: begin
 				// 32-bit count trailing zeros
 				assume (din_data_a[31:0] != 0);
 				assume (din_data_a[31:0] << 1 == din_data_b[31:0]);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a[0]) assert(dout_data_a == 0);
 			end
 			3'b 100: begin
 				// 64-bit population count
 				assume (din_data_a != din_data_b);
 				assume ((din_data_a | any_onehot) == din_data_b);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a == 0) assert(dout_data_a == 0);
 			end
 			3'b 101: begin
 				// 32-bit population count
 				assume (din_data_a[31:0] != din_data_b[31:0]);
 				assume ((din_data_a[31:0] | any_onehot[31:0]) == din_data_b[31:0]);
 				assert (dout_data_a + 1 == dout_data_b);
+				if (din_data_a[31:0] == 0) assert(dout_data_a == 0);
 			end
 		endcase
 	end
