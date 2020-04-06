@@ -421,7 +421,7 @@ As mutations are generated randomly, the better your coverage, the larger the si
 Bonus: Integrating a second test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Often, you will have a whole collection of tests of differing size and strictness. These can all be integrated into a single ``mcy`` project to obtain a coverage metric for the test suite as a whole. In this section we will add a second, longer-running but more thorough testbench to increase the coverage metric.
+Often, you will have a whole collection of tests of differing scope and strictness. These can all be integrated into a single ``mcy`` project to obtain a coverage metric for the test suite as a whole. In this section we will add a second, longer-running but more thorough testbench to increase the coverage metric.
 
 ``test_fm`` is a formal testbench that fully verifies that the module fulfils a formal definition of the desired behaviour. Because it significantly increases the runtime of the example, ``test_fm`` is disabled by default in the ``bitcnt`` example. It can be enabled or disabled by setting the variable ``use_formal`` defined in ``config.mcy``.
 
@@ -467,7 +467,7 @@ Next, run ``mcy task -k test_sim 1``. Take note of the task uuid printed.
 
 Enter the directory ``tasks/${uuid}`` created by this command and run ``bash ../../test_fm.sh`` to check that the test functions correctly (it should return PASS, because task 1 is always ``mutate -mode none`` which introduces no mutation).
 
-If it works as expected, we can add this test to the mcy configuration. In ``config.mcy``, under the section ``[options]`` reduce the size again while we work and add a new tag ``FMONLY``:
+If it works as expected, we can add this test to the ``mcy`` configuration. In ``config.mcy``, under the section ``[options]`` reduce the size again while we work and add a new tag ``FMONLY``:
 
 .. code-block:: text
 
@@ -493,7 +493,6 @@ Finally, we will adjust the ``[logic]`` section to use this new test. First, def
 Second, after the two original tests are run, but before the tags are applied, insert a new piece of code:
 
 .. code-block:: text
-	:emphasize-lines: 4-7
 
 	tb_okay = (result("test_sim") == "PASS")
 	eq_okay = (result("test_eq") == "PASS")
@@ -519,22 +518,22 @@ Test that this new configuration works correctly:
 	mcy init
 	mcy run
 
-Depending on your randomly generated mutations, you may some mutations tagged as ``FMONLY``. Check if the following line appears in ``mcy status``:
+Depending on your randomly generated mutations, you may have some mutations tagged as ``FMONLY`` in your initial set of 10. Check if the following line appears in ``mcy status``:
 
 .. code-block:: text
 
 	Tagged 1 mutations as "FMONLY".
 
-If not, you can generate new mutations by re-running the above commands, or by increasing the number of mutations.
+If you wish, you can generate new mutations by re-running the above commands, or by increasing the number of mutations.
 
-If everything is working correctly, you can now return the mutation set size to its original value.
+If everything is working correctly, you can return the mutation set size to its original value.
 
 .. code-block:: text
 
 	[options]
 	size 1000
 
-Running mcy will now require significantly more time, so don't forget to enable parallelism:
+Running ``mcy`` will now require significantly more time, so don't forget to enable parallelism:
 
 .. code-block:: text
 
