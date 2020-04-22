@@ -5,9 +5,6 @@ set -ex
 
 bash ../../create_mutated.sh -o mutated.il
 
-## run the above script to create mutated.il
-yosys -ql mutate.log mutate.ys
-
 ## run formal property check
 ln -s ../../test_fm.sv ../../test_fm.sby .
 sby -f test_fm.sby
