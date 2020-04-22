@@ -158,17 +158,9 @@ Create a file ``test_eq.sh`` and add the following script:
 	exec 2>&1
 	set -ex
 
-	{
-		echo "read_ilang ../../database/design.il"
-		while read -r idx mut; do
-			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
-		done < input.txt
-		echo "write_ilang mutated.il"
-	} > mutate.ys
+	bash ../../create_mutated.sh -c -o mutated.il
 
-	yosys -ql mutate.log mutate.ys
-
-Next, we will create a miter circuit that instatiates both the original and the mutated module. Create a file named ``test_eq.sv`` and enter the following code:
+Next, we will create a miter circuit that compares the original and the mutated module. Create a file named ``test_eq.sv`` and enter the following code:
 
 .. code-block:: text
 
