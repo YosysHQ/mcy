@@ -4,7 +4,7 @@ exec 2>&1
 set -ex
 
 ## create the mutated design
-bash ../../create_mutated.sh
+bash $SCRIPTS/create_mutated.sh
 
 ## run the testbench with the mutated module substituted for the original
 iverilog -o sim ../../bitcnt_tb.v mutated.v

@@ -75,7 +75,7 @@ design. Add a bash preamble, then call the script ``create_mutated.sh``:
 	exec 2>&1
 	set -ex
 
-	bash ../../create_mutated.sh
+	bash $SCRIPTS/create_mutated.sh
 
 When ``mcy`` runs, the tests will be executed in a temporary directory ``tests/<uuid>``, so
 the paths should be relative to this location.
@@ -158,7 +158,7 @@ Create a file ``test_eq.sh`` and add the following script:
 	exec 2>&1
 	set -ex
 
-	bash ../../create_mutated.sh -c -o mutated.il
+	bash $SCRIPTS/create_mutated.sh -c -o mutated.il
 
 Next, we will create a miter circuit that compares the original and the mutated module. Create a file named ``test_eq.sv`` and enter the following code:
 
@@ -426,7 +426,7 @@ Next, we will create the script to run this test on a mutated design. Create a f
 	exec 2>&1
 	set -ex
 
-	bash ../../create_mutated.sh -o mutated.il
+	bash $SCRIPTS/create_mutated.sh -o mutated.il
 
 	ln -s ../../test_fm.sv ../../test_fm.sby .
 	sby -f test_fm.sby
