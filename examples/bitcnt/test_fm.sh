@@ -3,15 +3,7 @@
 exec 2>&1
 set -ex
 
-## create yosys script with instructions how to export the mutated design
-{
-	# read synthesized design
-	echo "read_ilang ../../database/design.il"
-	# apply mutation
-	cut -f2- -d' ' input.txt
-	# export design to RTLIL
-	echo "write_ilang mutated.il"
-} > mutate.ys
+bash ../../create_mutated.sh -o mutated.il
 
 ## run the above script to create mutated.il
 yosys -ql mutate.log mutate.ys
