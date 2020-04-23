@@ -134,11 +134,9 @@ void MainWindow::openCodeViewTab(QString filename)
         code->setCoverage(database.getCoverage(filename), database.getLinesYetToCover(filename));
         views.insert(filename, code);
         centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), filename);
-        connect(code, &CodeView::updateUi, [=](int updated) {
-            QString source = filename + ":" + QString::number(code->lineFromPosition(code->currentPos()) + 1);
-            browser->selectSource(source);
-        });
         connect(code, &ScintillaEdit::marginClicked, [=](int position, int modifiers, int margin) {
+            QString source = filename + ":" + QString::number(code->lineFromPosition(position) + 1);
+            browser->selectSource(source);
             code->selectLine(QString::number(code->lineFromPosition(position) + 1));
         });
     }
