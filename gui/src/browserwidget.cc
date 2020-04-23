@@ -324,6 +324,9 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
         for (auto result : database->getMutationResults(mutationId)) {
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
+    } else {
+        QStringList param = source.split(':');
+        Q_EMIT selectLine(param.at(0), param.at(1));
     }
 }
 
@@ -375,6 +378,9 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
         for (auto result : database->getMutationResults(mutationId)) {
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
+        bool ok;
+        QStringList param = source.split(':');
+        Q_EMIT selectLine(param.at(0), param.at(1));
     }
 }
 
@@ -389,9 +395,8 @@ void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
     if (item->parent()->parent() != nullptr) {
         source = item->parent()->data(0, Qt::UserRole).toString();
         mut = item->data(0, Qt::UserRole).toString();
+        selectMutation(mut);
     }
-    QStringList param = source.split(':');
-    Q_EMIT selectLine(param.at(0), param.at(1));
 }
 
 void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
@@ -399,9 +404,7 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
     if (item->parent() == nullptr)
         return;
 
-    bool ok;
-    QStringList param = item->text(0).split(':');
-    Q_EMIT selectLine(param.at(0), param.at(1));
+    selectSource(item->text(0));
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
@@ -430,6 +433,22 @@ void BrowserWidget::selectSource(QString source)
     }
 }
 
+void BrowserWidget::selectMutation(QString mutation)
+{
+    QTreeWidgetItemIterator it(mutationsList);
+    while (*it) {
+        QString val = (*it)->data(0, Qt::UserRole).toString();
+        if (val == mutation) {
+            if (tabWidget->currentWidget() != mutationsList) {
+                ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
+                tabWidget->setCurrentWidget(mutationsList);
+            }
+            mutationsList->setCurrentItem(*it, 0, QItemSelectionModel::ClearAndSelect);
+            break;
+        }
+        ++it;
+    }
+}
 bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == sourceList) {

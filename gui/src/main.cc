@@ -47,19 +47,18 @@ int main(int argc, char *argv[])
         location = positionalArguments[0];
     }
     if (boost::filesystem::exists(location.toStdString())) {
-        if (!boost::filesystem::is_directory(location.toStdString())) {
-            printf("File location is not directory.\n");
-            return -1;
-        }
-        boost::filesystem::path path = boost::filesystem::path(location.toStdString()) / "database";
-        if (!boost::filesystem::exists(path)) {
-            printf("Database directory does not exists.\n");
-            return -1;
-        }
-        path /= "db.sqlite3";
-        if (!boost::filesystem::exists(path)) {
-            printf("Database file does not exists.\n");
-            return -1;
+        if (boost::filesystem::is_directory(location.toStdString())) {
+            boost::filesystem::path path = boost::filesystem::path(location.toStdString()) / "database";
+            if (!boost::filesystem::exists(path)) {
+                printf("Database directory does not exists.\n");
+                return -1;
+            }
+            path /= "db.sqlite3";
+            if (!boost::filesystem::exists(path)) {
+                printf("Database file does not exists.\n");
+                return -1;
+            }
+            location = path.string().c_str();
         }
     } else {
         printf("File location does not exists.\n");
