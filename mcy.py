@@ -157,7 +157,7 @@ with open("config.mcy", "r") as f:
             if len(entries) == 0:
                 continue
             if len(entries) == 1:
-                cfg.files[os.path.basename(entries[0])] = entries[0]
+                cfg.files[entries[0]] = entries[0]
                 continue
             if len(entries) == 2:
                 cfg.files[entries[0]] = entries[1]
