@@ -37,7 +37,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    explicit MainWindow(QString workingDir, QString sourceDir, QWidget *parent = 0);
+    explicit MainWindow(QString dbFile, QString sourceDir, QWidget *parent = 0);
     virtual ~MainWindow();
 
   protected:

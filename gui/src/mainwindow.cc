@@ -28,8 +28,8 @@
 
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
-MainWindow::MainWindow(QString workingDir, QString sourceDir, QWidget *parent)
-        : QMainWindow(parent), database(workingDir + "/database/db.sqlite3"), sourceDir(sourceDir)
+MainWindow::MainWindow(QString dbFile, QString sourceDir, QWidget *parent)
+        : QMainWindow(parent), database(dbFile), sourceDir(sourceDir)
 {
     initBasenameResource();
     qRegisterMetaType<std::string>();
