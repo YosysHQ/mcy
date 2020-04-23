@@ -65,6 +65,7 @@ class BrowserWidget : public QWidget
 
   public Q_SLOTS:
     void selectSource(QString source);
+    void selectMutation(QString mutation);
 
   Q_SIGNALS:
     void selectLine(QString filename, QString line);
