@@ -375,6 +375,9 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
         for (auto result : database->getMutationResults(mutationId)) {
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
+        bool ok;
+        QStringList param = source.split(':');
+        Q_EMIT selectLine(param.at(0), param.at(1));
     }
 }
 
@@ -399,9 +402,7 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
     if (item->parent() == nullptr)
         return;
 
-    bool ok;
-    QStringList param = item->text(0).split(':');
-    Q_EMIT selectLine(param.at(0), param.at(1));
+    selectSource(item->text(0));
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
