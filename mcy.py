@@ -44,8 +44,8 @@ def usage():
     print("  mcy [--trace] reset")
     print("  mcy [--trace] status")
     print("  mcy [--trace] list [--details] [<id_or_tag>..]")
-    print("  mcy [--trace] run [-jN] [--reset] [<id_or_tag>..]")
-    print("  mcy [--trace] task -v -k <test> <id_or_tag>..")
+    print("  mcy [--trace] run [-jN] [--reset] [<id>..]")
+    print("  mcy [--trace] task [-v] [-k] <test> <id_or_tag>..")
     print("  mcy [--trace] source [-e <encoding>] <filename> [<filename>]")
     print("  mcy [--trace] lcov <filename>")
     print("  mcy [--trace] dash [<source_dir>]")
@@ -608,7 +608,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 running.remove((mut, tst))
                 checklist.remove(mut)
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
-        
+
         if len(checklist) != 0:
             raise Exception('Empty mutation checklist')
         if not keepdir:
