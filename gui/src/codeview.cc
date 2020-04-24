@@ -19,6 +19,7 @@
 
 #include "codeview.h"
 #include <QFontDatabase>
+#include <QMessageBox>
 #include "SciLexer.h"
 #include "ScintillaEdit.h"
 
@@ -127,23 +128,22 @@ void CodeView::loadContent(const char *content)
     setMarginSensitiveN(2, true);
 }
 
-static int extractLineNumber(QString line) {
-    if (line.contains('.'))
-    {
+static int extractLineNumber(QString line)
+{
+    if (line.contains('.')) {
         line = line.left(line.indexOf('.'));
     }
     return line.toInt();
 }
 
-void CodeView::selectLine(QString line) {
-    gotoLine(extractLineNumber(line) - 1); 
-}
+void CodeView::selectLine(QString line) { gotoLine(extractLineNumber(line) - 1); }
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)
 {
     for (int i = 0; i < yetToCover.count(); ++i) {
         int line = extractLineNumber(yetToCover[i]) - 1;
-        if (line<0) continue;
+        if (line < 0)
+            continue;
         marginSetText(line, "?");
         marginSetStyle(line, STYLE_LINENUMBER);
     }
@@ -153,18 +153,18 @@ void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QStrin
     while (cit != coverage.constEnd()) {
         int line = extractLineNumber(cit.key());
         if (cov.contains(line)) {
-            QPair<int, int>& p = cov[line];
+            QPair<int, int> &p = cov[line];
             p.first += cit.value().first;
             p.second += cit.value().second;
         } else
-            cov[line] = cit.value(); 
+            cov[line] = cit.value();
         ++cit;
     }
 
     QMap<int, QPair<int, int>>::const_iterator it = cov.constBegin();
     while (it != cov.constEnd()) {
         int line = it.key() - 1;
-        if (line>=0) {
+        if (line >= 0) {
             auto val = it.value();
             if (val.second > 0) {
                 markerAdd(line, 0);
@@ -177,5 +177,19 @@ void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QStrin
             }
         }
         ++it;
+    }
+}
+
+void CodeView::find(QString text, bool forward)
+{
+    int start_pos = int(forward ? selectionEnd() : selectionStart());
+    int end_pos = forward ? length() : 0;
+    QPair<int, int> found = findText(0, text.toUtf8().constData(), start_pos, end_pos);
+    if (found.first >= 0) {
+        ensureVisible(lineFromPosition(found.first));
+        setSel(found.first, found.second);
+        return;
+    } else {
+        QMessageBox::warning(this, "Not found", "Text not found.");
     }
 }

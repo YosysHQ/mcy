@@ -17,47 +17,30 @@
  *
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef FIND_DIALOG_H
+#define FIND_DIALOG_H
 
-#include "database.h"
+#include <QDialog>
 
-#include <QMainWindow>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QTabWidget>
-
-Q_DECLARE_METATYPE(std::string)
-
+class QLineEdit;
+class QPushButton;
 class CodeView;
-class BrowserWidget;
 
-class MainWindow : public QMainWindow
+class FindDialog : public QDialog
 {
     Q_OBJECT
 
   public:
-    explicit MainWindow(QString dbFile, QString sourceDir, QWidget *parent = 0);
-    virtual ~MainWindow();
+    FindDialog(QWidget *parent, CodeView *code);
 
-  protected:
-    void createMenusAndBars();
-    void openCodeViewTab(QString filename);
-    void closeCodeViewTab(int index);
+  public Q_SLOTS:
+    void findClicked(bool forward);
 
-  protected Q_SLOTS:
-    void selectLine(QString filename, QString line);
-    void about();
-    void find();
-
-  protected:
-    QTabWidget *centralTabWidget;
-    BrowserWidget *browser;
-    QMap<QString, CodeView *> views;
-    QMenuBar *menuBar;
-    QStatusBar *statusBar;
-    DbManager database;
-    QString sourceDir;
+  private:
+    QPushButton *findNextButton;
+    QPushButton *findPrevButton;
+    QLineEdit *lineEdit;
+    CodeView *code;
 };
 
-#endif // MAINWINDOW_H
+#endif // FIND_DIALOG_H

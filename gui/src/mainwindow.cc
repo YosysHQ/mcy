@@ -25,6 +25,7 @@
 #include <QTabBar>
 #include "browserwidget.h"
 #include "codeview.h"
+#include "finddialog.h"
 
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
@@ -79,6 +80,7 @@ void MainWindow::createMenusAndBars()
 {
     menuBar = new QMenuBar();
     QMenu *menuFile = new QMenu("&File", menuBar);
+    QMenu *menuFind = new QMenu("Find", menuBar);
     QMenu *menuHelp = new QMenu("&Help", menuBar);
 
     QAction *actionExit = new QAction("Exit", this);
@@ -88,12 +90,18 @@ void MainWindow::createMenusAndBars()
     connect(actionExit, &QAction::triggered, this, &MainWindow::close);
     menuFile->addAction(actionExit);
 
+    QAction *actionFind = new QAction("Find", this);
+    actionFind->setShortcuts(QKeySequence::Find);
+    connect(actionFind, &QAction::triggered, this, &MainWindow::find);
+    menuFind->addAction(actionFind);
+
     QAction *actionAbout = new QAction("&About", this);
     actionAbout->setStatusTip("Show the application's about box");
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     menuHelp->addAction(actionAbout);
 
     menuBar->addAction(menuFile->menuAction());
+    menuBar->addAction(menuFind->menuAction());
     menuBar->addAction(menuHelp->menuAction());
     setMenuBar(menuBar);
 
@@ -106,6 +114,18 @@ void MainWindow::about()
     QMessageBox::about(this, tr("MCY-GUI"),
                        tr("The <b>Mutation Cover with Yosys GUI</b> is part of "
                           "<br/><b>SymbioticEDA</b> solution for formal verification."));
+}
+
+void MainWindow::find()
+{
+    QWidget *current = centralTabWidget->currentWidget();
+    if (current != nullptr) {
+        if (std::string(current->metaObject()->className()) == "CodeView") {
+            CodeView *code = (CodeView *)current;
+            FindDialog *dialog = new FindDialog(this, code);
+            dialog->show();
+        }
+    }
 }
 
 void MainWindow::openCodeViewTab(QString filename)

@@ -421,7 +421,7 @@ void BrowserWidget::selectSource(QString source)
     QTreeWidgetItemIterator it(sourceList);
     while (*it) {
         QString val = (*it)->data(0, Qt::UserRole).toString();
-        if (val == source || val.startsWith(source+".")) {
+        if (val == source || val.startsWith(source + ".")) {
             if (tabWidget->currentWidget() != sourceList) {
                 ((QTreeWidget *)tabWidget->currentWidget())->selectionModel()->clearSelection();
                 tabWidget->setCurrentWidget(sourceList);
