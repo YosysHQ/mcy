@@ -43,10 +43,10 @@ mcy task [-v] [-k] <test> <id_or_tag>..
 	This command runs the test ``<test>`` on the mutations matching the ID or tag ``<id_or_tag>``, of which there can be multiple. The test is executed even if the result is cached in the database. If the ``-v`` flag is passed, the output of the task execution is printed to stdout instead of the file ``tasks/<uuid>/logfile.txt``. If ``-k`` is passed, the temporary task execution directory ``tasks/<uuid>`` is not deleted when the task finishes.
 
 mcy source [-e <encoding>] <filename> [<filename>]
-	This command reprints the source file(s) <filename>, with annotations on the left side margin for each line of code with the number of mutations tagged COVERED or UNCOVERED (the name of the tags used is hardcoded). The number of COVERED mutations in displayed as a positive number, whereas UNCOVERED mutations are shown as negative numbers, similar to what is shown in ``mcy gui``. Source files are printed from database cache, which is written when ``mcy init`` is called, so the version displayed is always the one the mutations were applied to. The optional ``-e`` parameter allows specifying the file encoding. (Python's `standard encodings <https://docs.python.org/3/library/codecs.html#standard-encodings>`_ are supported, default is utf8.)
+	This command reprints the source file(s) <filename>, with annotations on the left side margin for each line of code with the number of mutations tagged COVERED or UNCOVERED (the name of the tags used is hardcoded). The number of COVERED mutations is displayed as a positive number, whereas UNCOVERED mutations are shown as negative numbers, similar to what is shown in ``mcy gui``. Source files are printed from database cache, which is written when ``mcy init`` is called, so the version displayed is always the one the mutations were applied to. The optional ``-e`` parameter allows specifying the file encoding. (Python's `standard encodings <https://docs.python.org/3/library/codecs.html#standard-encodings>`_ are supported, default is utf8.)
 
 mcy lcov <filename>
-	This command prints coverage information in lcov format (??)
+	This command prints coverage information in the format used by ``lcov`` and similar code coverage visualisation tools.
 
 mcy dash
 	This command launches the dashboard server. Navigate to the address shown to access the dashboard where you can monitor the ``mcy`` status and download the mcy database for viewing with ``mcy-gui``. This is intended to be used when running ``mcy`` on a remote server or as part of CI.
