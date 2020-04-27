@@ -66,8 +66,7 @@ In the ``[files]`` section, list the paths to the files required by the script:
 Script to run the testbench on the mutated module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Create a file named ``test_sim.sh``. This will run the existing testbench on the mutated
-design. The beginning of the file will be boilerplate that writes out the design with the
-selected mutation to verilog:
+design. Add a bash preamble, then call the script ``create_mutated.sh``:
 
 .. code-block:: text
 
@@ -76,19 +75,12 @@ selected mutation to verilog:
 	exec 2>&1
 	set -ex
 
-	{
-		echo "read_ilang ../../database/design.il"
-		while read -r idx mut; do
-			echo "mutate ${mut#* }"
-		done < input.txt
-		echo "write_verilog -attr2comment mutated.v"
-	} > mutate.ys
+	bash $SCRIPTS/create_mutated.sh
 
-	yosys -ql mutate.log mutate.ys
-
-
-When mcy runs, the tests will be executed in a temporary directory ``tests/<uuid>``, so
+When ``mcy`` runs, the tests will be executed in a temporary directory ``tests/<uuid>``, so
 the paths should be relative to this location.
+
+The script ``create_mutated.sh`` reads the mutation description files prepared in the temporary task directory by ``mcy`` and (if called with no additional arguments) writes a file ``mutated.v`` containing the mutated module.
 
 Next, insert whatever code will run your testbench as usual, but replacing the original
 source for the module to be mutated (``bitcount.v``) with the mutated source
@@ -155,7 +147,7 @@ This is the most work-intensive part of an ``mcy`` project, but also what makes 
 
 The advantage of using formal methods is that they will exhaustively explore all possible input combinations, which is prohibitive for a simulation testbench for most non-trivial designs due to combinatorial explosion. But the ``mcy`` approach is also less difficult than outright formally verifying the design, as it is generally easier to describe whether a change to the output is "important" than to describe the correct behaviour directly.
 
-Unlike in the previous test where we asked Yosys to export the mutated module with the same interface as the original module so we could seamlessly replace it in the testbench, here we will use a different command to get a module where we can enable or disable the mutation at will based on an input signal ``mutsel``.
+Unlike in the previous test where we exported the mutated module with the same interface as the original module so we could seamlessly replace it in the testbench, here we will use the ``-c`` option to get a module where we can enable or disable the mutation at will based on an input signal ``mutsel``. We will also export to ILANG format instead of Verilog since SymbiYosys understands it.
 
 Create a file ``test_eq.sh`` and add the following script:
 
@@ -166,17 +158,9 @@ Create a file ``test_eq.sh`` and add the following script:
 	exec 2>&1
 	set -ex
 
-	{
-		echo "read_ilang ../../database/design.il"
-		while read -r idx mut; do
-			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
-		done < input.txt
-		echo "write_ilang mutated.il"
-	} > mutate.ys
+	bash $SCRIPTS/create_mutated.sh -c -o mutated.il
 
-	yosys -ql mutate.log mutate.ys
-
-Next, we will create a miter circuit that instatiates both the original and the mutated module. Create a file named ``test_eq.sv`` and enter the following code:
+Next, we will create a miter circuit that compares the original and the mutated module. Create a file named ``test_eq.sv`` and enter the following code:
 
 .. code-block:: text
 
@@ -442,13 +426,7 @@ Next, we will create the script to run this test on a mutated design. Create a f
 	exec 2>&1
 	set -ex
 
-	{
-		echo "read_ilang ../../database/design.il"
-		cut -f2- -d' ' input.txt
-		echo "write_ilang mutated.il"
-	} > mutate.ys
-
-	yosys -ql mutate.log mutate.ys
+	bash $SCRIPTS/create_mutated.sh -o mutated.il
 
 	ln -s ../../test_fm.sv ../../test_fm.sby .
 	sby -f test_fm.sby
@@ -457,7 +435,7 @@ Next, we will create the script to run this test on a mutated design. Create a f
 
 	exit 0
 
-Since we are using SymbiYosys for this test as well, the script overall resembles ``test_eq.sh``. The main difference is the line applying the mutation, where we directly use the mutate command passed in ``input.txt`` without creating a ``mutsel`` input, since we need a mutated replacement module with the same interface as the original ``bitcnt`` module to substitute in the testbench.
+Since we are using SymbiYosys for this test as well, the script overall resembles ``test_eq.sh``. The main difference is that we do not pass ``-c`` to ``create_mutated.sh``, since we need a mutated replacement module with the same interface as the original ``bitcnt`` module to substitute in the testbench.
 
 As before, we will need the ``database/`` and ``tasks/`` directories for a trial run, but this time we can use the existing ``mcy`` project to create them.
 

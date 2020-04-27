@@ -3,20 +3,8 @@
 exec 2>&1
 set -ex
 
-## create yosys script with instructions how to export the mutated design
-{
-	# read synthesized design
-	echo "read_ilang ../../database/design.il"
-	while read -r idx mut; do
-		# add mutation to the design (always enabled)
-		echo "mutate ${mut#* }"
-	done < input.txt
-	# export design to verilog
-	echo "write_verilog -attr2comment mutated.v"
-} > mutate.ys
-
-## run the above script to create mutated.v
-yosys -ql mutate.log mutate.ys
+## create the mutated design
+bash $SCRIPTS/create_mutated.sh
 
 ## run the testbench with the mutated module substituted for the original
 iverilog -o sim ../../bitcnt_tb.v mutated.v

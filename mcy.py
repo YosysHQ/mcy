@@ -10,6 +10,11 @@ running = set()
 dbtrace = False
 silent_sigpipe = False
 
+def root_path():
+    fn = getattr(sys.modules['__main__'], '__file__')
+    root_path = os.path.abspath(os.path.dirname(fn))
+    return root_path
+
 def sqlite3_connect():
     db = sqlite3.connect("database/db.sqlite3")
     if dbtrace:
@@ -608,7 +613,7 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 running.remove((mut, tst))
                 checklist.remove(mut)
                 print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
-        
+
         if len(checklist) != 0:
             raise Exception('Empty mutation checklist')
         if not keepdir:
@@ -617,9 +622,11 @@ def run_task(db, whitelist, tst=None, mut_list=None, verbose=False, keepdir=Fals
                 os.rmdir("tasks/")
             except OSError:
                 pass
-
-    command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d MUTATIONS=\"%s\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % \
-            (task_id, 1 if keepdir else 0, " ".join(["%d" % mut for mut in mut_list]))
+    script_path = root_path() + '/../share/mcy/scripts' # for install
+    if (not os.path.exists(script_path)):
+        script_path = root_path() + '/scripts' # for development
+    command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d MUTATIONS=\"%s\" SCRIPTS=\"%s\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % \
+            (task_id, 1 if keepdir else 0, " ".join(["%d" % mut for mut in mut_list]), script_path)
     logfilename = None
     if not verbose:
         with open("tasks/%s/logfile.txt" % task_id, "w") as f:
