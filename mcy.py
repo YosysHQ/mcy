@@ -81,6 +81,7 @@ cfg.opt_size = 20
 cfg.opt_tags = None
 cfg.opt_seed = None
 cfg.mutopts = dict()
+cfg.setup = list()
 cfg.script = list()
 cfg.logic = list()
 cfg.report = list()
@@ -98,7 +99,7 @@ with open("config.mcy", "r") as f:
         match = re.match(r"^\[(.*)\]\s*$", line)
         if match:
             entries = match.group(1).split()
-            if len(entries) == 1 and entries[0] in ("options", "script", "logic", "report", "files"):
+            if len(entries) == 1 and entries[0] in ("options", "script", "setup", "logic", "report", "files"):
                 section, sectionarg = entries[0], None
                 continue
             if len(entries) == 2 and entries[0] == "test":
@@ -129,6 +130,10 @@ with open("config.mcy", "r") as f:
             if len(entries) > 1 and entries[0] == "select":
                 cfg.select += entries[1:]
                 continue
+
+        if section == "setup":
+            cfg.setup.append(line.rstrip())
+            continue
 
         if section == "script":
             cfg.script.append(line.rstrip())
@@ -389,6 +394,14 @@ if sys.argv[1] == "init":
 
     print("creating database directory")
     os.mkdir("database")
+
+    if cfg.setup:
+        print("running setup")
+        with open("database/setup.sh", "w") as f:
+            for line in cfg.setup:
+                print(line, file=f)
+        task = Task("bash database/setup.sh")
+        task.wait()
 
     with open("database/design.ys", "w") as f:
         for line in cfg.script:
