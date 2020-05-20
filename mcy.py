@@ -45,7 +45,7 @@ signal.signal(signal.SIGTERM, force_shutdown)
 def usage():
     print()
     print("Usage:")
-    print("  mcy [--trace] init")
+    print("  mcy [--trace] init [--nosetup]")
     print("  mcy [--trace] reset")
     print("  mcy [--trace] status")
     print("  mcy [--trace] list [--details] [<id_or_tag>..]")
@@ -380,13 +380,15 @@ class Task:
 
 if sys.argv[1] == "init":
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "", [])
+        opts, args = getopt.getopt(sys.argv[2:], "", ["nosetup"])
     except getopt.GetoptError as err:
         print(err)
         usage()
 
+    dosetup = True
     for o, a in opts:
-        pass
+        if o == "--nosetup":
+            dosetup = False
 
     if os.path.exists("database"):
         print("found existing database/ directory.")
@@ -395,7 +397,7 @@ if sys.argv[1] == "init":
     print("creating database directory")
     os.mkdir("database")
 
-    if cfg.setup:
+    if dosetup and cfg.setup:
         print("running setup")
         with open("database/setup.sh", "w") as f:
             for line in cfg.setup:
