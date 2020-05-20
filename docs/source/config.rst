@@ -22,16 +22,28 @@ This section contains various configuration options for the mutation generation 
 
 	.. note:: The ``select`` keyword here is not the Yosys ``select`` command. The argument ``<selection>`` is used as the optional selection argument to the Yosys ``mutate`` command. While the selection pattern format is identical, you cannot use select subcommands such as ``-module``.
 
-Mutation generation options: for a description of how these values influence the mutation generation algorithm, see :ref:`mutgen`.
+Mutation generation options: ``mcy`` attempts to distribute mutations into all parts of the design. The documentation section :ref:`mutgen` describes the mutation generation algorithm, and how these values affect it.
 
 ``weight_cover``
-	Optional. Default: 500
+	Optional. Weight for source location coverage. See :ref:`mutgen` for details. Default: 500
 
-``weight_pq_w weight_pq_b weight_pq_c weight_pq_s weight_pq_mw weight_pq_mb weight_pq_mc weight_pq_ms``
-	Optional. Default: 100
+``weight_pq_w weight_pq_b weight_pq_c weight_pq_s``
+	Optional. Weights for the per-design wire/bit/cell/src queues.
+	See :ref:`mutgen` for details. Default: 100
+
+``weight_pq_mw weight_pq_mb weight_pq_mc weight_pq_ms``
+	Optional. Weights for the per-module wire/bit/cell/src queues.
+	See :ref:`mutgen` for details. Default: 100
 
 ``pick_cover_prcnt``
-	Optional. Default: 80
+	Optional. Chance that source location coverage influences which queue item is picked. See :ref:`mutgen` for details. Default: 80
+
+``[setup]``
+-----------
+
+Optional. This section can contain a bash script to be executed at the beginning of ``mcy init``, before the design is elaborated using the ``[script]`` section, which is useful for various setup tasks that only need to be done once for use in the design and/or tests. This script is executed in the base project directory (where ``config.mcy`` is located).
+
+Execution of this script can be skipped with ``mcy init --nosetup``.
 
 ``[script]``
 ------------

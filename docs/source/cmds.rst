@@ -8,7 +8,7 @@ Command Reference
 	> mcy help
 
 	Usage:
-		mcy [--trace] init
+		mcy [--trace] init [--nosetup]
 		mcy [--trace] reset
 		mcy [--trace] status
 		mcy [--trace] list [--details] [<id_or_tag>..]
@@ -22,8 +22,8 @@ Command Reference
 
 All commands require the project configuration file ``config.mcy`` to be present in the current directory.
 
-mcy init
-	This command initializes the mcy database. It prepares the design using the script from the ``[script]`` section in ``config.mcy``, and generates a list of mutations conforming to the settings in the ``[options]`` section. It queues all mutations to be tested when ``mcy run`` is called.
+mcy init [--nosetup]
+	This command initializes the mcy database. It runs the optional setup script from the ``[setup]`` section in ``config.mcy`` first, then prepares the design using the script from the ``[script]`` section, and generates a list of mutations conforming to the settings in the ``[options]`` section. It queues all mutations to be tested when ``mcy run`` is called.
 	The command fails if the ``database`` directory exists. Run ``mcy purge`` to delete this directory if it is present.
 
 mcy reset

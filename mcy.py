@@ -45,7 +45,7 @@ signal.signal(signal.SIGTERM, force_shutdown)
 def usage():
     print()
     print("Usage:")
-    print("  mcy [--trace] init")
+    print("  mcy [--trace] init [--nosetup]")
     print("  mcy [--trace] reset")
     print("  mcy [--trace] status")
     print("  mcy [--trace] list [--details] [<id_or_tag>..]")
@@ -81,6 +81,7 @@ cfg.opt_size = 20
 cfg.opt_tags = None
 cfg.opt_seed = None
 cfg.mutopts = dict()
+cfg.setup = list()
 cfg.script = list()
 cfg.logic = list()
 cfg.report = list()
@@ -98,7 +99,7 @@ with open("config.mcy", "r") as f:
         match = re.match(r"^\[(.*)\]\s*$", line)
         if match:
             entries = match.group(1).split()
-            if len(entries) == 1 and entries[0] in ("options", "script", "logic", "report", "files"):
+            if len(entries) == 1 and entries[0] in ("options", "script", "setup", "logic", "report", "files"):
                 section, sectionarg = entries[0], None
                 continue
             if len(entries) == 2 and entries[0] == "test":
@@ -129,6 +130,10 @@ with open("config.mcy", "r") as f:
             if len(entries) > 1 and entries[0] == "select":
                 cfg.select += entries[1:]
                 continue
+
+        if section == "setup":
+            cfg.setup.append(line.rstrip())
+            continue
 
         if section == "script":
             cfg.script.append(line.rstrip())
@@ -375,13 +380,15 @@ class Task:
 
 if sys.argv[1] == "init":
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "", [])
+        opts, args = getopt.getopt(sys.argv[2:], "", ["nosetup"])
     except getopt.GetoptError as err:
         print(err)
         usage()
 
+    dosetup = True
     for o, a in opts:
-        pass
+        if o == "--nosetup":
+            dosetup = False
 
     if os.path.exists("database"):
         print("found existing database/ directory.")
@@ -389,6 +396,14 @@ if sys.argv[1] == "init":
 
     print("creating database directory")
     os.mkdir("database")
+
+    if dosetup and cfg.setup:
+        print("running setup")
+        with open("database/setup.sh", "w") as f:
+            for line in cfg.setup:
+                print(line, file=f)
+        task = Task("bash database/setup.sh")
+        task.wait()
 
     with open("database/design.ys", "w") as f:
         for line in cfg.script:

@@ -5,7 +5,7 @@ The first step in any test script is to obtain the mutated module to run the tes
 
 There are three configurations that are commonly used:
 
-1. Permanently enabled single mutation. Applying a single mutation without any control options results in a module with he same interface as the original module that can be substituted in a testbench without requiring any modifications. This is generally the most straightforward way to run the testsuite that is being evaluated.
+1. Permanently enabled single mutation. Applying a single mutation without any control options results in a module with the same interface as the original module that can be substituted in a testbench without requiring any modifications. This is generally the most straightforward way to run the testsuite that is being evaluated.
 
 2. Selectable single mutation. Applying a single mutation with a control signal results in a module with one additional input, ``mutsel``. The mutation will be enabled if ``mutsel==1`` and disabled if ``mutsel==0``. Generally used in the equivalence test, where the same module can be instantiated twice with different ``mutsel`` inputs. This avoids problems with module name collision between the original and mutated version, and allows the use of ``fmcombine`` which can speed up the formal property solver.
 
