@@ -60,13 +60,15 @@ This section lists the files used by the design that should be added to the data
 -----------
 
 This section describes how the mutations should be tagged based on the results of one or more tests.
-It contains a python script making use of the predefined functions ``result(testname)`` and ``tag(tagname)``.
+It contains a python script making use of the predefined functions ``result(testname)``, ``tag(tagname)`` and optionally ``rng(n)``.
 
 Valid arguments to ``result(testname)`` are names of tests defined in a ``[test testname]`` section.
 Its return value is the return value of the test, as written to ``output.txt`` in the test script execution. Both values are strings, so e.g. for a test defined as ``[test sim]``, the function should be called as ``result("sim")`` and may return ``"PASS"`` or ``"FAIL"``.
 Calling this function causes the test in question to be scheduled. This means that it is possible to execute a test conditionally on another result.
 
 Valid arguments to ``tag(tagname)`` are tags defined in the ``[options]`` section under ``tags``, again as strings. Calling this function causes the mutation to be tagged with this tag.
+
+``rng(n)`` takes a positive integer ``n`` and returns a pseudo-random number between ``0`` and ``n``. It is affected by the ``seed`` set in ``[options]``, or the seed chosen at random if this is not set.
 
 A common combination of using these functions is the following:
 
