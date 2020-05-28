@@ -41,7 +41,7 @@ Mutation generation options: ``mcy`` attempts to distribute mutations into all p
 ``[setup]``
 -----------
 
-Optional. This section can contain a bash script to be executed at the beginning of ``mcy init``, before the design is elaborated using the ``[script]`` section, which is useful for various setup tasks that only need to be done once for use in the design and/or tests. This script is executed in the base project directory (where ``config.mcy`` is located).
+Optional. This section can contain a bash script to be executed at the beginning of ``mcy init``, before the design is elaborated using the ``[script]`` section, which is useful for various setup tasks that only need to be done once for use in the design and/or tests. This script is executed in the ``database/setup`` directory. (This directory is deleted when ``mcy purge`` is run.)
 
 Execution of this script can be skipped with ``mcy init --nosetup``.
 

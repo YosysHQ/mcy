@@ -380,26 +380,38 @@ class Task:
 
 if sys.argv[1] == "init":
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "", ["nosetup"])
+        opts, args = getopt.getopt(sys.argv[2:], "f", ["nosetup"])
     except getopt.GetoptError as err:
         print(err)
         usage()
 
     dosetup = True
+    force = False
     for o, a in opts:
         if o == "--nosetup":
             dosetup = False
+        if o == "-f":
+            force = True
 
     if os.path.exists("database"):
-        print("found existing database/ directory.")
-        exit(1)
-
-    print("creating database directory")
-    os.mkdir("database")
+        if not force:
+            print("found existing database/ directory.")
+            exit(1)
+        else:
+            try:
+                os.remove("database/db.sqlite3")
+            except FileNotFoundError:
+                pass
+    else:
+        print("creating database directory")
+        os.mkdir("database")
 
     if dosetup and cfg.setup:
         print("running setup")
+        if not os.path.exists("database/setup"):
+            os.mkdir("database/setup")
         with open("database/setup.sh", "w") as f:
+            print("cd database/setup", file=f)
             for line in cfg.setup:
                 print(line, file=f)
         task = Task("bash database/setup.sh")

@@ -22,9 +22,10 @@ Command Reference
 
 All commands require the project configuration file ``config.mcy`` to be present in the current directory.
 
-mcy init [--nosetup]
+mcy init [-f] [--nosetup]
 	This command initializes the mcy database. It runs the optional setup script from the ``[setup]`` section in ``config.mcy`` first, then prepares the design using the script from the ``[script]`` section, and generates a list of mutations conforming to the settings in the ``[options]`` section. It queues all mutations to be tested when ``mcy run`` is called.
-	The command fails if the ``database`` directory exists. Run ``mcy purge`` to delete this directory if it is present.
+	The command fails if the ``database`` directory exists. Run ``mcy purge`` to delete this directory if it is present, or pass ``-f`` to force overwriting the contents.
+	The ``--nosetup`` option skips running the setup section. In combination, ``mcy init -f --nosetup`` allows re-initializing the project without re-running the setup script. This is useful when the configuration file was changed, but the setup script's output does not need to be re-generated.
 
 mcy reset
 	This command will reset various state. If the ``size`` parameter in the section ``[options]`` of ``config.mcy`` was increased, it will create additional mutations. It will re-run the tagging logic of the ``[logic]`` section and re-tag all mutations for which results are cached in the database. It queues the mutations for which results are not available to be tested when ``mcy run`` is called. It will also delete an existing ``tasks`` directory.
