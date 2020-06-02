@@ -411,7 +411,6 @@ if sys.argv[1] == "init":
         if not os.path.exists("database/setup"):
             os.mkdir("database/setup")
         with open("database/setup.sh", "w") as f:
-            print("cd database/setup", file=f)
             for line in cfg.setup:
                 print(line, file=f)
         task = Task("bash database/setup.sh")
