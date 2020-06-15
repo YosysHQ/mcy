@@ -50,7 +50,7 @@ The ``bitcnt`` example shows an implementation of the naive logic:
 
 This unconditionally runs both the test suite (which consists of a single testbench ``test_sim``), and the equivalence check ``test_eq``. The first three cases are the expected ones: if the equivalence check says there is a relevant difference in behavior between the original and mutated designs, then if the testbench catches it the mutation is covered, and if it fails to catch it it is not covered. If the equivalence check and the testbench both agree that the original and mutated designs behave the same way, the mutation is not useful for evaluating testbench quality and can be ignored.
 
-Keep an eye out for that fourth category! In a correctly set up project, this should never happen. If the equivalence check finds that the mutation does not affect the behavior, but the testbench finds a bug, one of them is wrong. Either the equivalence check is failing to find relevant behavioral changes, or the testbench is failing compliant designs. Investigate these cases thoroughly and fix the problem. Only proceed to optimize the logic once you are not observing any cases of the fourth type.
+Keep an eye out for that fourth category! In a correctly set up project, this should never happen. If the equivalence check finds that the mutation does not affect the behavior, but the testbench finds a bug, one of them is wrong. Either the equivalence check is failing to find relevant behavioral changes, or the testbench is failing compliant designs. Investigate these cases thoroughly. If the behavior with the mutation in question is OK, adjust the testbench to pass it. If the behavior is not OK, modify the equivalence check to detect the problematic change. Only proceed to optimize the logic once you are not observing any cases of the fourth type.
 
 For performance reasons, you will often want to end up at a logically equivalent but very different flow in the ``[logic]`` section, and this can be a source of confusion when looking at more complex, optimized examples. There are two assumptions that can be used to avoid running some of the tests, and still arrive at the same result:
 
@@ -62,7 +62,7 @@ In particular, this means that if the equivalence check passes, there is no need
 
 .. topic:: Assumption 2: The test suite will not return false failures for a working design.
 
-	It will not fail randomly, and it will not flag benign changes in behavior that conform to the specification.
+	Ensure that your testbenches are tolerant of small changes in behavior that are not relevant to correctness, such as e.g. the values of output bits that are unused in certain modes.
 
 With this assumption, if any test in the suite returns FAIL, there is no need to run either other tests from the test suite or the equivalence check: the mutation is covered.
 This allows you to run short unit tests first, and determine the result quickly for the more "obviously buggy" mutations.
