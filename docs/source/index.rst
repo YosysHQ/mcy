@@ -21,4 +21,5 @@ All mutated designs are run against the testbench to check that the testbench wi
    cmds.rst
    config.rst
    testsetup.rst
+   eqsetup.rst
    mutate.rst

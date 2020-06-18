@@ -1,3 +1,5 @@
+.. _mutate:
+
 Mutation export options
 =======================
 
@@ -44,10 +46,65 @@ For the bitcount example, it might look like this:
 
 Note that the indices always go from ``1`` to ``maxbatchsize`` within a task. They are different from the mutation IDs displayed by ``mcy list`` or the GUI, do not confuse the two!
 
+Writing a custom mutation export script
+---------------------------------------
+
+If ``create_mutated.sh`` is insufficient for your use case, you may need to write a custom script to create the mutated sources. This script should take the mutation commands from ``input.txt`` and call yosys to apply the mutations and export the mutated source to the right format. The easiest way to do this is to first write the yosys commands to a ``.ys`` script file and then run it.
+
+The yosys script (``mutate.ys`` in this example) that you need to generate should be structured like this:
+
+- Read the intermediary file containing the elaborated design:
+
+	.. code-block:: text
+
+		echo "read_verilog ../../database/design.il" > mutate.ys
+
+- Apply the mutate command(s) found in ``input.txt``.
+
+	If there is only one mutation, and you do not wish to create a ``mutsel`` input, enter the command as-is, just remove the leading ``1``, e.g. like this:
+
+	.. code-block:: text
+
+		cut -f2- -d' ' input.txt >> mutate.ys
+
+	If you do wish to add a ``mutsel`` input to the design, you need to add the ``-ctrl`` parameter to the ``mutate`` command's arguments:
+
+	.. code-block:: text
+
+		while read -r idx mut; do
+			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }" >> mutate.ys
+		done < input.txt
+
+	This code snippet works for one or many mutations in ``input.txt`` thanks to the ``while`` loop. If there are multiple mutations to be applied, it will add all the mutate commands to the script. Always make sure to add the control input when there are multiple mutations!
+
+- Optionally, add any other yosys commands you wish to use to transform the design to work with your testbench. For example, if you want to run the design on hardware, you may synthesize it here:
+
+	.. code-block:: text
+
+		echo "synth_ice40 -top top_module" >> mutate.ys
+
+	You can also change the name of the module if needed:
+
+	.. code-block:: text
+
+		echo "rename top_module mutated" >> mutate.ys
+
+- Finally, export the design to a format that can be used by your testbench. In the example of the hardware test, this might be json:
+
+	.. code-block:: text
+
+		echo "write_json mutated.json" >> mutate.ys
+
+After generating the script, execute it with yosys:
+
+	.. code-block:: text
+
+		yosys -ql mutate.log mutate.ys
+
 The Yosys ``mutate`` command
 ----------------------------
 
-``mcy``s mutation capability is backed by the Yosys ``mutate`` command. This command has two functions: generating a list of mutations for a design, and applying a mutation to a design. For most users, it is not necessary to touch these internals, but understanding the inner workings of ``mcy`` may be relevant in advanced use cases.
+``mcy``\ s mutation capability is backed by the Yosys ``mutate`` command. This command has two functions: generating a list of mutations for a design, and applying a mutation to a design. For most users, it is not necessary to touch these internals, but understanding the inner workings of ``mcy`` may be relevant in advanced use cases.
 
 .. _mutgen:
 
