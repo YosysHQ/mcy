@@ -77,7 +77,7 @@ design. Add a bash preamble, then call the script ``create_mutated.sh``:
 
 	bash $SCRIPTS/create_mutated.sh
 
-When ``mcy`` runs, the tests will be executed in a temporary directory ``tests/<uuid>``, so
+When ``mcy`` runs, the tests will be executed in a temporary directory ``tasks/<uuid>``, so
 the paths should be relative to this location.
 
 The script ``create_mutated.sh`` reads the mutation description files prepared in the temporary task directory by ``mcy`` and (if called with no additional arguments) writes a file ``mutated.v`` containing the mutated module.
@@ -125,7 +125,11 @@ You can test that this portion works correctly as follows:
 	yosys script.ys
 	cd tasks/test
 	echo "1 mutate -mode none" > input.txt
-	bash ../../test_sim.sh
+	SCRIPTS=/usr/local/share/mcy/scripts bash ../../test_sim.sh
+
+..
+
+	(Adjust the path for SCRIPTS to match the mcy install location if necessary.)
 
 - verify that the file ``output.txt`` was created and contains ``1 PASS``.
 
