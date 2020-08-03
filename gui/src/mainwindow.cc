@@ -130,6 +130,7 @@ void MainWindow::find()
             if (!findDialog)
                 findDialog = new FindDialog(this, code);
             findDialog->show();
+            findDialog->raise();
             findDialog->activateWindow();
         }
     }
