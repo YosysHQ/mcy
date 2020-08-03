@@ -31,6 +31,7 @@ Q_DECLARE_METATYPE(std::string)
 
 class CodeView;
 class BrowserWidget;
+class FindDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -58,6 +59,7 @@ class MainWindow : public QMainWindow
     QStatusBar *statusBar;
     DbManager database;
     QString sourceDir;
+    FindDialog *findDialog;
 };
 
 #endif // MAINWINDOW_H

@@ -30,7 +30,7 @@
 static void initBasenameResource() { Q_INIT_RESOURCE(base); }
 
 MainWindow::MainWindow(QString dbFile, QString sourceDir, QWidget *parent)
-        : QMainWindow(parent), database(dbFile), sourceDir(sourceDir)
+        : QMainWindow(parent), database(dbFile), sourceDir(sourceDir), findDialog(nullptr)
 {
     initBasenameResource();
     qRegisterMetaType<std::string>();
@@ -122,8 +122,16 @@ void MainWindow::find()
     if (current != nullptr) {
         if (std::string(current->metaObject()->className()) == "CodeView") {
             CodeView *code = (CodeView *)current;
-            FindDialog *dialog = new FindDialog(this, code);
-            dialog->show();
+            if (findDialog && !findDialog->isForCodeView(code)) {
+                findDialog->close();
+                delete findDialog;
+                findDialog = nullptr;
+            }
+            if (!findDialog)
+                findDialog = new FindDialog(this, code);
+            findDialog->show();
+            findDialog->raise();
+            findDialog->activateWindow();
         }
     }
 }

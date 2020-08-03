@@ -32,6 +32,7 @@ class FindDialog : public QDialog
 
   public:
     FindDialog(QWidget *parent, CodeView *code);
+    bool isForCodeView(CodeView *check);
 
   public Q_SLOTS:
     void findClicked(bool forward);
