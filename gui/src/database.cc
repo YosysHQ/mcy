@@ -59,7 +59,7 @@ QStringList DbManager::getSourcesLines(QString filename)
     QStringList sources;
     QSqlQuery query("SELECT SUBSTR(srctag,INSTR(srctag,':')+1) FROM sources WHERE "
                     "SUBSTR(srctag,0,INSTR(srctag,':')) = \"" +
-                    filename + "\" ORDER BY SUBSTR(srctag,INSTR(srctag,':')+1)");
+                    filename + "\" ORDER BY CAST(SUBSTR(srctag,INSTR(srctag,':')+1) AS INTEGER)");
     while (query.next()) {
         sources << query.value(0).toString();
     }
