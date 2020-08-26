@@ -190,6 +190,16 @@ void CodeView::find(QString text, bool forward)
         setSel(found.first, found.second);
         return;
     } else {
-        QMessageBox::warning(this, "Not found", "Text not found.");
+        // try wrapping
+        start_pos = int(forward ? 0 : length());
+        end_pos = forward ? length() : 0;
+        found = findText(0, text.toUtf8().constData(), start_pos, end_pos);
+        if (found.first >= 0) {
+            ensureVisible(lineFromPosition(found.first));
+            setSel(found.first, found.second);
+            return;
+        } else {
+            QMessageBox::warning(this, "Not found", "Text not found.");
+        }
     }
 }

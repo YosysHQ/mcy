@@ -27,6 +27,7 @@
 #include <QTimer>
 #include <QToolBar>
 #include <QTreeWidgetItem>
+#include <QFileInfo>
 
 BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(parent), database(database)
 {
@@ -36,7 +37,9 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     sourceList->setHeaderHidden(true);
     for (QString name : database->getSources()) {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(sourceList);
-        treeItem->setText(0, name);
+        QFileInfo fi = QFileInfo(name);
+        treeItem->setText(0, fi.completeBaseName() + "." + fi.completeSuffix());
+        treeItem->setData(0, Qt::UserRole, name);
         for (QString line : database->getSourcesLines(name)) {
             QTreeWidgetItem *lineItem = new QTreeWidgetItem(treeItem);
             lineItem->setText(0, "Line " + line);
@@ -62,7 +65,9 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         treeItem->setData(0, Qt::UserRole, QString::number(mutation));
         for (QString name : database->getSourcesForMutation(mutation)) {
             QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
-            subItem->setText(0, name);
+            QFileInfo fi = QFileInfo(name);
+            subItem->setText(0, fi.completeBaseName() + "." + fi.completeSuffix());
+            subItem->setData(0, Qt::UserRole, name);
             treeItem->addChild(subItem);
         }
         mutationsList->addTopLevelItem(treeItem);
@@ -341,7 +346,7 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     if (item->parent() == nullptr) {
         mutationId = item->data(0, Qt::UserRole).toInt();
     } else {
-        source = item->text(0);
+        source = item->data(0, Qt::UserRole).toString();
         mutationId = item->parent()->data(0, Qt::UserRole).toInt();
     }
 
@@ -404,7 +409,7 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
     if (item->parent() == nullptr)
         return;
 
-    selectSource(item->text(0));
+    selectSource(item->data(0, Qt::UserRole).toString());
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
