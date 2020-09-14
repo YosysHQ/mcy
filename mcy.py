@@ -15,7 +15,10 @@ def root_path():
     root_path = os.path.abspath(os.path.dirname(fn))
     return root_path
 
-def sqlite3_connect():
+def sqlite3_connect(chkexist=False):
+    if chkexist and not os.path.exists("database/db.sqlite3"):
+        print("Project database not found. Run 'mcy init' to initialize the project.")
+        exit(1)
     db = sqlite3.connect("database/db.sqlite3")
     if dbtrace:
         db.set_trace_callback(print)
@@ -502,7 +505,7 @@ if sys.argv[1] == "init":
 
 
 if sys.argv[1] in ("reset", "status"):
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
     reset_status(db, sys.argv[1] == "reset")
     print_report(db)
     exit(0)
@@ -528,7 +531,7 @@ if sys.argv[1] == "list":
         if o == "--details":
             opt_details = True
 
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
     whitelist = None
 
     if len(args):
@@ -683,7 +686,7 @@ if sys.argv[1] == "run":
         elif o == "--reset":
             opt_reset = True
 
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
     whitelist = "1"
 
     if len(args):
@@ -730,7 +733,7 @@ if sys.argv[1] == "task":
     if len(args) < 2:
         usage()
 
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
 
     tst = args[0]
     mut_list = list()
@@ -771,7 +774,7 @@ if sys.argv[1] == "source":
     if len(args) not in [1, 2]:
         usage()
 
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
 
     if len(args) == 1:
         filename = args[0]
@@ -849,7 +852,7 @@ if sys.argv[1] == "lcov":
     if len(args) not in [1]:
         usage()
 
-    db = sqlite3_connect()
+    db = sqlite3_connect(chkexist=True)
 
     if len(args) == 1:
         filename = args[0]
