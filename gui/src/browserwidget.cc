@@ -324,9 +324,11 @@ QtProperty *BrowserWidget::addSubGroup(QtProperty *topItem, const QString &name)
 void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = sourceList->currentItem();
-    if (selected.size() == 0 || item == nullptr || item->parent() == nullptr)
+    if (selected.size() == 0 || item == nullptr || item->parent() == nullptr) {
+        Q_EMIT showMessage("",0);
         clearProperties();
         return;
+    }
 
     QString source = item->data(0, Qt::UserRole).toString();
     int mutationId = -1;
@@ -343,6 +345,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     addProperty(topItem, QVariant::String, "Name", source);
 
     if (mutationId != -1) {
+        setMutationMessage(mutationId);
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
@@ -356,6 +359,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
     } else {
+        Q_EMIT showMessage("",0);
         QStringList param = source.split(':');
         Q_EMIT selectLine(param.at(0), param.at(1));
     }
@@ -370,6 +374,7 @@ void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected
     QString source = "";
     int mutationId = -1;
     if (item->parent() == nullptr) {
+        Q_EMIT showMessage("",0);
         clearProperties();
         return;
     } else {
@@ -383,8 +388,11 @@ void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected
 void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = mutationsList->currentItem();
-    if (selected.size() == 0 || item == nullptr)
+    if (selected.size() == 0 || item == nullptr) {
+        Q_EMIT showMessage("",0);
+        clearProperties();
         return;
+    }
 
     QString source = "";
     int mutationId = -1;
@@ -399,9 +407,37 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     mutationProperties(source, mutationId);
 }
 
+void BrowserWidget::setMutationMessage(int mutationId)
+{
+    auto options = database->getMutationOption(mutationId);
+    QString mode, module, cell, port, portbit, ctrlbit;
+    for (auto option : options) {
+        if (option.first == "mode") mode = option.second;
+        else if (option.first ==  "module") module = option.second; 
+        else if (option.first == "cell") cell = option.second;
+        else if (option.first == "port") port = option.second;
+        else if (option.first == "portbit") portbit = option.second;
+        else if (option.first == "ctrlbit") ctrlbit = option.second;
+    }
+    QString msg;
+    if (mode=="inv") 
+        msg = QString("In module %1, cell %2: Invert bit %4 of port %3.").arg(module).arg(cell).arg(port).arg(portbit);
+    else if (mode=="const0") 
+        msg = QString("In module %1, cell %2: Drive bit %4 of port %3 to constant 0.").arg(module).arg(cell).arg(port).arg(portbit);
+    else if (mode=="const1") 
+        msg = QString("In module %1, cell %2: Drive bit %4 of port %3 to constant 1.").arg(module).arg(cell).arg(port).arg(portbit);
+    else if (mode=="cnot0") 
+        msg = QString("In module %1, cell %2: If bit %4 of port %3 is 0, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
+    else if (mode=="cnot1") 
+        msg = QString("In module %1, cell %2: If bit %4 of port %3 is 1, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
+    Q_EMIT showMessage(msg,0);
+}
+
 void BrowserWidget::mutationProperties(QString source, int mutationId)
 {
     clearProperties();
+
+    setMutationMessage(mutationId);
 
     if (source == "") {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));

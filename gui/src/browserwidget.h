@@ -52,6 +52,7 @@ class BrowserWidget : public QWidget
     bool eventFilter(QObject *obj, QEvent *ev);
 
     void mutationProperties(QString source, int mutationId);
+    void setMutationMessage(int mutationId);
 
   private Q_SLOTS:
     // source list slots
@@ -74,6 +75,7 @@ class BrowserWidget : public QWidget
 
   Q_SIGNALS:
     void selectLine(QString filename, QString line);
+    void showMessage(const QString &message, int timeout = 0);
 
   private:
     // database
