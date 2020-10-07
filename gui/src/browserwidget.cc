@@ -65,8 +65,10 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
         treeItem->setData(0, Qt::UserRole, QString::number(mutation));
         for (QString name : database->getSourcesForMutation(mutation)) {
             QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
-            QFileInfo fi = QFileInfo(name);
-            subItem->setText(0, fi.completeBaseName() + "." + fi.completeSuffix());
+            QStringList parts = name.split(':');
+            QString realname = parts.at(0);
+            QFileInfo fi = QFileInfo(realname);
+            subItem->setText(0, fi.completeBaseName() + "." + fi.completeSuffix() + ":" + parts.at(1));
             subItem->setData(0, Qt::UserRole, name);
             treeItem->addChild(subItem);
         }
