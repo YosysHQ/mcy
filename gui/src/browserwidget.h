@@ -51,6 +51,8 @@ class BrowserWidget : public QWidget
     void addToHistory(QTreeWidget *tree, QTreeWidgetItem *item);
     bool eventFilter(QObject *obj, QEvent *ev);
 
+    void mutationProperties(QString source, int mutationId);
+
   private Q_SLOTS:
     // source list slots
     void onSourceDoubleClicked(QTreeWidgetItem *item, int column);
@@ -58,6 +60,9 @@ class BrowserWidget : public QWidget
     // mutation list slots
     void onMutationDoubleClicked(QTreeWidgetItem *item, int column);
     void onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    // tag list slots
+    void onTagMutationDoubleClicked(QTreeWidgetItem *item, int column);
+    void onTagMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     // property view slots
     void onPropertyDoubleClicked(QTreeWidgetItem *item, int column);
     // tag filter slots
@@ -78,6 +83,7 @@ class BrowserWidget : public QWidget
     QTabWidget *tabWidget;
     QTreeWidget *sourceList;
     QTreeWidget *mutationsList;
+    QTreeWidget *tagList;
 
     // tag filter
     QComboBox *tagFilter;

@@ -75,8 +75,27 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     mutationsList->setContextMenuPolicy(Qt::CustomContextMenu);
     mutationsList->installEventFilter(this);
 
+    tagList = new QTreeWidget();
+    tagList->setHeaderHidden(true);
+    for (QString name : database->getUniqueTags()) {
+        QTreeWidgetItem *treeItem = new QTreeWidgetItem(tagList);
+        QFileInfo fi = QFileInfo(name);
+        treeItem->setText(0, name);
+        treeItem->setData(0, Qt::UserRole, name);
+        for (int mutation : database->getMutationsForTag(name)) {
+            QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
+            subItem->setText(0, "Mutation " + QString::number(mutation));
+            subItem->setData(0, Qt::UserRole, QString::number(mutation));
+            treeItem->addChild(subItem);
+        }
+        tagList->addTopLevelItem(treeItem);
+    }
+    tagList->setContextMenuPolicy(Qt::CustomContextMenu);
+    tagList->installEventFilter(this);
+
     tabWidget->addTab(sourceList, "Sources");
     tabWidget->addTab(mutationsList, "Mutations");
+    tabWidget->addTab(tagList, "Tags");
     // Add property view
     variantManager = new QtVariantPropertyManager(this);
     readOnlyManager = new QtVariantPropertyManager(this);
@@ -226,6 +245,10 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(mutationsList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &BrowserWidget::onMutationSelectionChanged);
 
+    connect(tagList, &QTreeWidget::itemDoubleClicked, this, &BrowserWidget::onTagMutationDoubleClicked);
+    connect(tagList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            &BrowserWidget::onTagMutationSelectionChanged);
+
     history_index = -1;
     history_ignore = false;
 
@@ -300,6 +323,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 {
     QTreeWidgetItem *item = sourceList->currentItem();
     if (selected.size() == 0 || item == nullptr || item->parent() == nullptr)
+        clearProperties();
         return;
 
     QString source = item->data(0, Qt::UserRole).toString();
@@ -335,6 +359,25 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     }
 }
 
+void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    QTreeWidgetItem *item = tagList->currentItem();
+    if (selected.size() == 0 || item == nullptr)
+        return;
+
+    QString source = "";
+    int mutationId = -1;
+    if (item->parent() == nullptr) {
+        clearProperties();
+        return;
+    } else {
+        mutationId = item->data(0, Qt::UserRole).toInt();
+    }
+
+    addToHistory(tagList, item);
+    mutationProperties(source, mutationId);
+}
+
 void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = mutationsList->currentItem();
@@ -351,7 +394,11 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     }
 
     addToHistory(mutationsList, item);
+    mutationProperties(source, mutationId);
+}
 
+void BrowserWidget::mutationProperties(QString source, int mutationId)
+{
     clearProperties();
 
     if (source == "") {
@@ -410,6 +457,14 @@ void BrowserWidget::onMutationDoubleClicked(QTreeWidgetItem *item, int column)
         return;
 
     selectSource(item->data(0, Qt::UserRole).toString());
+}
+
+void BrowserWidget::onTagMutationDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    if (item->parent() == nullptr)
+        return;
+    QString mut = item->data(0, Qt::UserRole).toString();
+    selectMutation(mut);
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)

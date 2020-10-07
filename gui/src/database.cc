@@ -198,6 +198,8 @@ QStringList DbManager::getUniqueTags()
 
 QList<int> DbManager::getMutationsForTag(QString tag)
 {
+    if (tag == DbManager::ALL_TAGS) return getMutations();
+
     QList<int> retVal;
     QSqlQuery query("SELECT mutation_id FROM tags WHERE tag = '" + tag + "'");
     while (query.next()) {
