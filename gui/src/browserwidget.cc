@@ -345,7 +345,10 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     addProperty(topItem, QVariant::String, "Name", source);
 
     if (mutationId != -1) {
-        setMutationMessage(mutationId);
+        QString msg = getMutationMessage(mutationId);
+        Q_EMIT showMessage(msg,0);
+        QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
+
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
             addProperty(mItem, QVariant::String, option.first, option.second, option.first);
@@ -407,7 +410,7 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     mutationProperties(source, mutationId);
 }
 
-void BrowserWidget::setMutationMessage(int mutationId)
+QString BrowserWidget::getMutationMessage(int mutationId)
 {
     auto options = database->getMutationOption(mutationId);
     QString mode, module, cell, port, portbit, ctrlbit;
@@ -420,24 +423,28 @@ void BrowserWidget::setMutationMessage(int mutationId)
         else if (option.first == "ctrlbit") ctrlbit = option.second;
     }
     QString msg;
-    if (mode=="inv") 
-        msg = QString("In module %1, cell %2: Invert bit %4 of port %3.").arg(module).arg(cell).arg(port).arg(portbit);
+    if (mode=="none") 
+        msg = QString("None");
+    else if (mode=="inv") 
+        msg = QString("In module %1, cell %2:\nInvert bit %4 of port %3.").arg(module).arg(cell).arg(port).arg(portbit);
     else if (mode=="const0") 
-        msg = QString("In module %1, cell %2: Drive bit %4 of port %3 to constant 0.").arg(module).arg(cell).arg(port).arg(portbit);
+        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 0.").arg(module).arg(cell).arg(port).arg(portbit);
     else if (mode=="const1") 
-        msg = QString("In module %1, cell %2: Drive bit %4 of port %3 to constant 1.").arg(module).arg(cell).arg(port).arg(portbit);
+        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 1.").arg(module).arg(cell).arg(port).arg(portbit);
     else if (mode=="cnot0") 
-        msg = QString("In module %1, cell %2: If bit %4 of port %3 is 0, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
+        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 0, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
     else if (mode=="cnot1") 
-        msg = QString("In module %1, cell %2: If bit %4 of port %3 is 1, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
-    Q_EMIT showMessage(msg,0);
+        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 1, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
+    return msg;
 }
 
 void BrowserWidget::mutationProperties(QString source, int mutationId)
 {
     clearProperties();
 
-    setMutationMessage(mutationId);
+    QString msg = getMutationMessage(mutationId);
+    Q_EMIT showMessage(msg,0);
+    QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
 
     if (source == "") {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));

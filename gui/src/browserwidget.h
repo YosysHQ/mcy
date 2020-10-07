@@ -52,7 +52,7 @@ class BrowserWidget : public QWidget
     bool eventFilter(QObject *obj, QEvent *ev);
 
     void mutationProperties(QString source, int mutationId);
-    void setMutationMessage(int mutationId);
+    QString getMutationMessage(int mutationId);
 
   private Q_SLOTS:
     // source list slots
