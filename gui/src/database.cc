@@ -22,6 +22,7 @@
 #include <QVariant>
 
 const QString DbManager::ALL_TAGS = "All tags";
+const QString DbManager::NO_TAGS = "No tags";
 
 DbManager::DbManager(const QString &path)
 {
@@ -185,20 +186,32 @@ QStringList DbManager::getTagsForMutation(int mutationId)
     return tags;
 }
 
-QStringList DbManager::getUniqueTags()
+QStringList DbManager::getUniqueTags(bool addAllTags)
 {
     QStringList tags;
     QSqlQuery query("SELECT tag FROM tags GROUP BY tag");
-    tags << DbManager::ALL_TAGS;
+    if (addAllTags) 
+        tags << DbManager::ALL_TAGS;
     while (query.next()) {
         tags << query.value(0).toString();
     }
+    tags << DbManager::NO_TAGS;
     return tags;
+}
+
+QList<int> DbManager::getMutationsNoTags()
+{
+    QList<int> retVal;
+    QSqlQuery query("SELECT mutation_id FROM mutations where mutation_id not in (SELECT mutation_id FROM tags)");
+    while (query.next()) {
+        retVal.append(query.value(0).toInt());
+    }
+    return retVal;
 }
 
 QList<int> DbManager::getMutationsForTag(QString tag)
 {
-    if (tag == DbManager::ALL_TAGS) return getMutations();
+    if (tag == DbManager::NO_TAGS) return getMutationsNoTags();
 
     QList<int> retVal;
     QSqlQuery query("SELECT mutation_id FROM tags WHERE tag = '" + tag + "'");

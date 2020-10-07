@@ -79,7 +79,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
 
     tagList = new QTreeWidget();
     tagList->setHeaderHidden(true);
-    for (QString name : database->getUniqueTags()) {
+    for (QString name : database->getUniqueTags(false)) {
         QTreeWidgetItem *treeItem = new QTreeWidgetItem(tagList);
         QFileInfo fi = QFileInfo(name);
         treeItem->setText(0, name);
@@ -112,7 +112,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     propertyEditor->treeWidget()->viewport()->setMouseTracking(true);
 
     tagFilter = new QComboBox();
-    tagFilter->addItems(database->getUniqueTags());
+    tagFilter->addItems(database->getUniqueTags(true));
     connect(tagFilter, &QComboBox::currentTextChanged, this, &BrowserWidget::onTagFilterChange);
 
     actionFirst = new QAction("", this);
