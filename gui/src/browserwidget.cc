@@ -514,7 +514,7 @@ void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
     selectSource(selectedProperty->valueText());
 }
 
-void BrowserWidget::selectSource(QString source)
+QString BrowserWidget::selectSource(QString source)
 {
     QTreeWidgetItemIterator it(sourceList);
     while (*it) {
@@ -525,10 +525,11 @@ void BrowserWidget::selectSource(QString source)
                 tabWidget->setCurrentWidget(sourceList);
             }
             sourceList->setCurrentItem(*it, 0, QItemSelectionModel::ClearAndSelect);
-            break;
+            return val;
         }
         ++it;
     }
+    return source;
 }
 
 void BrowserWidget::selectMutation(QString mutation)

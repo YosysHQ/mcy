@@ -70,7 +70,7 @@ class BrowserWidget : public QWidget
     void onTagFilterChange(const QString &text);
 
   public Q_SLOTS:
-    void selectSource(QString source);
+    QString selectSource(QString source);
     void selectMutation(QString mutation);
 
   Q_SIGNALS:

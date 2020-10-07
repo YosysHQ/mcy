@@ -167,8 +167,9 @@ void MainWindow::openCodeViewTab(QString filename)
         centralTabWidget->setTabToolTip(idx, filename);
         connect(code, &ScintillaEdit::marginClicked, [=](int position, int modifiers, int margin) {
             QString source = filename + ":" + QString::number(code->lineFromPosition(position) + 1);
-            browser->selectSource(source);
-            code->selectLine(QString::number(code->lineFromPosition(position) + 1));
+            source = browser->selectSource(source);
+            QStringList param = source.split(':');
+            selectLine(param.at(0), param.at(1));
         });
     }
     centralTabWidget->setCurrentWidget(views[filename]);
