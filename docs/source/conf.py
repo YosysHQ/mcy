@@ -126,7 +126,14 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "extra_nav_links" : { 
+        'Documentation Index' : 'https://sedasuite.readthedocs.io' ,
+        'Symbiotic Website' : 'https://www.symbioticeda.com',
+        },
+    "logo" : 'symbiotic_logo.png',
+    "fixed_sidebar" : True,
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -143,7 +150,6 @@ html_theme = 'alabaster'
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #
-# html_logo = None
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
