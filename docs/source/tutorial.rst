@@ -4,6 +4,10 @@ Tutorial
 
 This guide will explain how to set up a project from scratch using the bit-counter project in ``examples/bitcnt`` as an example. A shorter overview of the project is also available in `this youtube video`_.
 
+.. raw:: html
+
+		<iframe width="640" height="360" src="https://www.youtube.com/embed/NKzqRum1ksg" frameborder="0" allowfullscreen="1">&nbsp;</iframe>
+
 .. _this youtube video: https://youtu.be/NKzqRum1ksg
 
 You should start out with the following files:
