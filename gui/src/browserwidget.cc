@@ -341,12 +341,13 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 
     clearProperties();
 
-    QtProperty *topItem = addTopLevelProperty("Source");
-    addProperty(topItem, QVariant::String, "Name", source);
-
     if (mutationId != -1) {
         QString msg = getMutationMessage(mutationId);
         QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
+        propertyEditor->setBackgroundColor(propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)), QColor(0, 178, 0, 127));
+
+        QtProperty *topItem = addTopLevelProperty("Source");
+        addProperty(topItem, QVariant::String, "Name", source);
 
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
         for (auto option : database->getMutationOption(mutationId)) {
@@ -361,6 +362,9 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
     } else {
+        QtProperty *topItem = addTopLevelProperty("Source");
+        addProperty(topItem, QVariant::String, "Name", source);
+
         QStringList param = source.split(':');
         Q_EMIT selectLine(param.at(0), param.at(1));
     }
@@ -444,6 +448,7 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
 
     QString msg = getMutationMessage(mutationId);
     QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
+    propertyEditor->setBackgroundColor(propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)), QColor(0, 178, 0, 127));
 
     if (source == "") {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
