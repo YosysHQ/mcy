@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
 
   protected Q_SLOTS:
     void selectLine(QString filename, QString line);
+    void unselectLine();
     void about();
     void find();
 

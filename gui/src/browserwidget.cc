@@ -326,6 +326,7 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     QTreeWidgetItem *item = sourceList->currentItem();
     if (selected.size() == 0 || item == nullptr || item->parent() == nullptr) {
         clearProperties();
+        Q_EMIT unselectLine();
         return;
     }
 
@@ -368,13 +369,16 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeWidgetItem *item = tagList->currentItem();
-    if (selected.size() == 0 || item == nullptr)
+    if (selected.size() == 0 || item == nullptr) {
+        Q_EMIT unselectLine();
         return;
+    }
 
     QString source = "";
     int mutationId = -1;
     if (item->parent() == nullptr) {
         clearProperties();
+        Q_EMIT unselectLine();
         return;
     } else {
         mutationId = item->data(0, Qt::UserRole).toInt();
@@ -389,6 +393,7 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
     QTreeWidgetItem *item = mutationsList->currentItem();
     if (selected.size() == 0 || item == nullptr) {
         clearProperties();
+        Q_EMIT unselectLine();
         return;
     }
 
@@ -453,6 +458,7 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
         for (auto result : database->getMutationResults(mutationId)) {
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
+        Q_EMIT unselectLine();
     } else {
         QtProperty *topItem = addTopLevelProperty("Source");
         addProperty(topItem, QVariant::String, "Name", source);

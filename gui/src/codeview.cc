@@ -140,6 +140,7 @@ static int extractLineNumber(QString line)
 }
 
 void CodeView::selectLine(QString line) { 
+    setCaretLineVisible(true);
     gotoLine(extractLineNumber(line) - 1);
     indicatorClearRange(0,length());
     if (line.contains('-')) {
@@ -156,6 +157,11 @@ void CodeView::selectLine(QString line) {
             indicatorFillRange(start, end-start);
         }
     }
+}
+
+void CodeView::unselectLine() { 
+    setCaretLineVisible(false);
+    indicatorClearRange(0,length());
 }
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)

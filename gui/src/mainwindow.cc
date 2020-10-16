@@ -55,6 +55,7 @@ MainWindow::MainWindow(QString dbFile, QString sourceDir, QWidget *parent)
     browser = new BrowserWidget(&database);
     browser->setMinimumWidth(350);
     connect(browser, &BrowserWidget::selectLine, this, &MainWindow::selectLine);
+    connect(browser, &BrowserWidget::unselectLine, this, &MainWindow::unselectLine);
 
     splitter_h->addWidget(browser);
     splitter_h->setCollapsible(0, false);
@@ -194,6 +195,17 @@ void MainWindow::selectLine(QString filename, QString line)
         if (std::string(current->metaObject()->className()) == "CodeView") {
             CodeView *code = (CodeView *)current;
             code->selectLine(line);
+        }
+    }
+}
+
+void MainWindow::unselectLine()
+{
+    QWidget *current = centralTabWidget->currentWidget();
+    if (current != nullptr) {
+        if (std::string(current->metaObject()->className()) == "CodeView") {
+            CodeView *code = (CodeView *)current;
+            code->unselectLine();
         }
     }
 }
