@@ -72,7 +72,6 @@ MainWindow::MainWindow(QString dbFile, QString sourceDir, QWidget *parent)
     for (auto filename : database.getFileList()) {
         openCodeViewTab(filename);
     }
-    connect(browser, &BrowserWidget::showMessage, statusBar, &QStatusBar::showMessage);
 }
 
 MainWindow::~MainWindow() {}

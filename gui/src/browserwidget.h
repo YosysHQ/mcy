@@ -75,7 +75,6 @@ class BrowserWidget : public QWidget
 
   Q_SIGNALS:
     void selectLine(QString filename, QString line);
-    void showMessage(const QString &message, int timeout = 0);
 
   private:
     // database

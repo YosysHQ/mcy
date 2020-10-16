@@ -325,7 +325,6 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 {
     QTreeWidgetItem *item = sourceList->currentItem();
     if (selected.size() == 0 || item == nullptr || item->parent() == nullptr) {
-        Q_EMIT showMessage("",0);
         clearProperties();
         return;
     }
@@ -346,7 +345,6 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
 
     if (mutationId != -1) {
         QString msg = getMutationMessage(mutationId);
-        Q_EMIT showMessage(msg,0);
         QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
 
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
@@ -362,7 +360,6 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
             addProperty(resItem, QVariant::String, result.first, result.second);
         }
     } else {
-        Q_EMIT showMessage("",0);
         QStringList param = source.split(':');
         Q_EMIT selectLine(param.at(0), param.at(1));
     }
@@ -377,7 +374,6 @@ void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected
     QString source = "";
     int mutationId = -1;
     if (item->parent() == nullptr) {
-        Q_EMIT showMessage("",0);
         clearProperties();
         return;
     } else {
@@ -392,7 +388,6 @@ void BrowserWidget::onMutationSelectionChanged(const QItemSelection &selected, c
 {
     QTreeWidgetItem *item = mutationsList->currentItem();
     if (selected.size() == 0 || item == nullptr) {
-        Q_EMIT showMessage("",0);
         clearProperties();
         return;
     }
@@ -443,7 +438,6 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
     clearProperties();
 
     QString msg = getMutationMessage(mutationId);
-    Q_EMIT showMessage(msg,0);
     QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
 
     if (source == "") {
