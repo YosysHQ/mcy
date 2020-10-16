@@ -581,6 +581,18 @@ bool BrowserWidget::eventFilter(QObject *obj, QEvent *event)
         } else {
             return false;
         }
+    } else if (obj == tagList) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *key = static_cast<QKeyEvent *>(event);
+            if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return)) {
+                onTagMutationDoubleClicked(tagList->currentItem(), 0);
+            } else {
+                return QObject::eventFilter(obj, event);
+            }
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return QObject::eventFilter(obj, event);
     }
@@ -608,6 +620,17 @@ void BrowserWidget::onTagFilterChange(const QString &text)
             dataItem->setHidden(false);
         else {
             dataItem->setHidden(mutations.contains(dataItem->data(0, Qt::UserRole).toInt()) == 0);
+        }
+    }
+    for (int i = 0; i < tagList->topLevelItemCount(); i++) {
+        QTreeWidgetItem *item = tagList->topLevelItem(i);
+        for (int j = 0; j < item->childCount(); j++) {
+            QTreeWidgetItem *dataItem = item->child(j);
+            if (text == DbManager::ALL_TAGS)
+                dataItem->setHidden(false);
+            else {
+                dataItem->setHidden(mutations.contains(dataItem->data(0, Qt::UserRole).toInt()) == 0);
+            }
         }
     }
 }
