@@ -88,6 +88,15 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
             QTreeWidgetItem *subItem = new QTreeWidgetItem(treeItem);
             subItem->setText(0, "Mutation " + QString::number(mutation));
             subItem->setData(0, Qt::UserRole, QString::number(mutation));
+            for (QString name : database->getSourcesForMutation(mutation)) {
+                QTreeWidgetItem *lineItem = new QTreeWidgetItem(subItem);
+                QStringList parts = name.split(':');
+                QString realname = parts.at(0);
+                QFileInfo fi = QFileInfo(realname);
+                lineItem->setText(0, fi.completeBaseName() + "." + fi.completeSuffix() + ":" + parts.at(1));
+                lineItem->setData(0, Qt::UserRole, name);
+                subItem->addChild(lineItem);
+            }
             treeItem->addChild(subItem);
         }
         tagList->addTopLevelItem(treeItem);
@@ -251,6 +260,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     connect(tagList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &BrowserWidget::onTagMutationSelectionChanged);
 
+    connect(tabWidget, &QTabWidget::currentChanged, this, &BrowserWidget::onCurrentTabChanged);
+
     history_index = -1;
     history_ignore = false;
 
@@ -386,6 +397,10 @@ void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected
         return;
     } else {
         mutationId = item->data(0, Qt::UserRole).toInt();
+        if (item->parent()->parent() != nullptr) {
+            source = item->data(0, Qt::UserRole).toString();
+            mutationId =  item->parent()->data(0, Qt::UserRole).toInt();
+        }
     }
 
     addToHistory(tagList, item);
@@ -488,16 +503,8 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
 
 void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 {
-    if (item->parent() == nullptr)
-        return;
-
-    bool ok;
-    QString source = item->data(0, Qt::UserRole).toString();
-    QString mut = "";
     if (item->parent()->parent() != nullptr) {
-        source = item->parent()->data(0, Qt::UserRole).toString();
-        mut = item->data(0, Qt::UserRole).toString();
-        selectMutation(mut);
+        selectMutation(item->data(0, Qt::UserRole).toString());
     }
 }
 
@@ -513,8 +520,11 @@ void BrowserWidget::onTagMutationDoubleClicked(QTreeWidgetItem *item, int column
 {
     if (item->parent() == nullptr)
         return;
-    QString mut = item->data(0, Qt::UserRole).toString();
-    selectMutation(mut);
+    if (item->parent() == nullptr) {
+        selectMutation(item->data(0, Qt::UserRole).toString());
+    } else {
+        selectSource(item->data(0, Qt::UserRole).toString());
+    }
 }
 
 void BrowserWidget::onPropertyDoubleClicked(QTreeWidgetItem *item, int column)
@@ -637,5 +647,23 @@ void BrowserWidget::onTagFilterChange(const QString &text)
                 dataItem->setHidden(mutations.contains(dataItem->data(0, Qt::UserRole).toInt()) == 0);
             }
         }
+    }
+}
+
+void BrowserWidget::onCurrentTabChanged(int index)
+{
+    switch (index)
+    {
+        case 0:
+            onSourceSelectionChanged(sourceList->selectionModel()->selection(), QItemSelection());
+            break;
+        case 1:
+            onMutationSelectionChanged(mutationsList->selectionModel()->selection(), QItemSelection());
+            break;
+        case 2:
+            onTagMutationSelectionChanged(tagList->selectionModel()->selection(), QItemSelection());
+            break;
+        default:
+            break;
     }
 }

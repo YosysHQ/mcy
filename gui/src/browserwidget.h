@@ -69,6 +69,8 @@ class BrowserWidget : public QWidget
     // tag filter slots
     void onTagFilterChange(const QString &text);
 
+    void onCurrentTabChanged(int index);
+
   public Q_SLOTS:
     QString selectSource(QString source);
     void selectMutation(QString mutation);
