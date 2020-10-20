@@ -42,10 +42,12 @@ class DbManager
     QList<QPair<QString, QString>> getMutationOption(int mutationId);
     QList<QPair<QString, QString>> getMutationResults(int mutationId);
     QStringList getTagsForMutation(int mutationId);
-    QStringList getUniqueTags();
+    QStringList getUniqueTags(bool addAllTags);
     QList<int> getMutationsForTag(QString tag);
+    QList<int> getMutationsNoTags();
 
     static const QString ALL_TAGS;
+    static const QString NO_TAGS;
 
   private:
     QSqlDatabase db;

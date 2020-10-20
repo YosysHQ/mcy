@@ -160,7 +160,8 @@ void QtPropertyEditorView::drawRow(QPainter *painter, const QStyleOptionViewItem
             hasValue = property->hasValue();
     }
     if (!hasValue && m_editorPrivate->markPropertiesWithoutValue()) {
-        const QColor c = option.palette.color(QPalette::Dark);
+        QColor c = m_editorPrivate->calculatedBackgroundColor(m_editorPrivate->indexToBrowserItem(index));
+        if (!c.isValid()) c = option.palette.color(QPalette::Dark);
         painter->fillRect(option.rect, c);
         opt.palette.setColor(QPalette::AlternateBase, c);
     } else {
@@ -379,7 +380,8 @@ void QtPropertyEditorDelegate::paint(QPainter *painter, const QStyleOptionViewIt
     }
     QColor c;
     if (!hasValue && m_editorPrivate->markPropertiesWithoutValue()) {
-        c = opt.palette.color(QPalette::Dark);
+        c = m_editorPrivate->calculatedBackgroundColor(m_editorPrivate->indexToBrowserItem(index));
+        if (!c.isValid()) c = opt.palette.color(QPalette::Dark);
         opt.palette.setColor(QPalette::Text, opt.palette.color(QPalette::BrightText));
     } else {
         c = m_editorPrivate->calculatedBackgroundColor(m_editorPrivate->indexToBrowserItem(index));

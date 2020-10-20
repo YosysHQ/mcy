@@ -126,6 +126,9 @@ void CodeView::loadContent(const char *content)
     setMarginSensitiveN(0, true);
     setMarginSensitiveN(1, true);
     setMarginSensitiveN(2, true);
+
+    indicSetStyle(0, INDIC_FULLBOX);
+    setIndicatorCurrent(0);
 }
 
 static int extractLineNumber(QString line)
@@ -136,7 +139,30 @@ static int extractLineNumber(QString line)
     return line.toInt();
 }
 
-void CodeView::selectLine(QString line) { gotoLine(extractLineNumber(line) - 1); }
+void CodeView::selectLine(QString line) { 
+    setCaretLineVisible(true);
+    gotoLine(extractLineNumber(line) - 1);
+    indicatorClearRange(0,length());
+    if (line.contains('-')) {
+        QStringList parts = line.split('-');
+        if (parts.at(0).contains('.') && parts.at(1).contains('.')) {
+            QString part = parts.at(0);
+            int ln = part.left(part.indexOf('.')).toInt()-1;
+            int pos = part.mid(part.indexOf('.')+1).toInt();
+            sptr_t start = positionFromLine(ln) + pos - 1;
+            part = parts.at(1);
+            ln = part.left(part.indexOf('.')).toInt()-1;
+            pos = part.mid(part.indexOf('.')+1).toInt();
+            sptr_t end = positionFromLine(ln) + pos -1;
+            indicatorFillRange(start, end-start);
+        }
+    }
+}
+
+void CodeView::unselectLine() { 
+    setCaretLineVisible(false);
+    indicatorClearRange(0,length());
+}
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)
 {

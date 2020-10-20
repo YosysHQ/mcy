@@ -35,6 +35,7 @@ class CodeView : public ScintillaEdit
     void setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover);
     QString &getFilename() { return filename; }
     void selectLine(QString line);
+    void unselectLine();
     void find(QString text, bool forward);
 
   private:
