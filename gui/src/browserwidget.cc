@@ -20,6 +20,7 @@
 #include "browserwidget.h"
 #include <QAction>
 #include <QApplication>
+#include <QClipboard>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QMenu>
@@ -119,6 +120,7 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     propertyEditor->treeWidget()->setContextMenuPolicy(Qt::CustomContextMenu);
     propertyEditor->treeWidget()->setSelectionMode(QAbstractItemView::ExtendedSelection);
     propertyEditor->treeWidget()->viewport()->setMouseTracking(true);
+    connect(propertyEditor->treeWidget(), &QTreeWidget::customContextMenuRequested, this, &BrowserWidget::prepareContextMenu);
 
     tagFilter = new QComboBox();
     tagFilter->addItems(database->getUniqueTags(true));
@@ -666,4 +668,18 @@ void BrowserWidget::onCurrentTabChanged(int index)
         default:
             break;
     }
+}
+
+void BrowserWidget::prepareContextMenu(const QPoint & pos)
+{
+    QAction *copyAction = new QAction("&Copy", this);
+    connect(copyAction, &QAction::triggered, [=] {
+        QTreeWidgetItem *item = propertyEditor->treeWidget()->itemAt(pos);
+        QClipboard* clipboard = QApplication::clipboard();
+        clipboard->setText(item->text(item->columnCount()-1));
+    });
+    QPoint pt(pos);
+    QMenu menu(this);
+    menu.addAction(copyAction);
+    menu.exec(propertyEditor->treeWidget()->viewport()->mapToGlobal(pos));
 }

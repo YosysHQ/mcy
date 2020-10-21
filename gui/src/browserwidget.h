@@ -70,6 +70,7 @@ class BrowserWidget : public QWidget
     void onTagFilterChange(const QString &text);
 
     void onCurrentTabChanged(int index);
+    void prepareContextMenu(const QPoint & pos);
 
   public Q_SLOTS:
     QString selectSource(QString source);
