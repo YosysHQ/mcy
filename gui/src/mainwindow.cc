@@ -38,7 +38,7 @@ MainWindow::MainWindow(QString dbFile, QString sourceDir, QWidget *parent)
     setObjectName(QStringLiteral("MainWindow"));
     resize(1024, 768);
 
-    setWindowIcon(QIcon(":/icons/resources/symbiotic.png"));
+    setWindowIcon(QIcon(":/icons/resources/yosyshq.png"));
 
     // Create and deploy widgets on main screen
     QWidget *centralWidget = new QWidget(this);
@@ -114,7 +114,7 @@ void MainWindow::about()
 {
     QMessageBox::about(this, tr("MCY-GUI"),
                        tr("The <b>Mutation Cover with Yosys GUI</b> is part of "
-                          "<br/><b>SymbioticEDA</b> solution for formal verification."));
+                          "<br/><b>YosysHQ</b> solution for formal verification."));
 }
 
 void MainWindow::find()
