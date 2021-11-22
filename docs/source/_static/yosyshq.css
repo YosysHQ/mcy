@@ -1,3 +1,17 @@
-h1 {
+h1, p.topic-title {
   color: #d6368f;
+}
+
+h2 {
+  color: #4b72b8;
+}
+
+a {
+  color: #8857a3;
+  text-decoration: underline;
+}
+
+a.external {
+  color: #d6368f;
+  text-decoration: underline;
 }
