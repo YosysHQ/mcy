@@ -16,8 +16,9 @@ pygments_style = 'colorful'
 highlight_language = 'systemverilog'
 
 html_theme_options = {
-    'external_links' : { 
-        'YosysHQ Docs' : 'https://yosyshq.readthedocs.io' ,
-        'YosysHQ Website' : 'https://www.yosyshq.com',
-    },
+    'external_links' : [
+        ('YosysHQ Docs', 'https://yosyshq.readthedocs.io'),
+        ('Blog', 'https://blog.yosyshq.com'),
+        ('Website', 'https://www.yosyshq.com'),
+    ],
 }
