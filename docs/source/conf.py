@@ -3,12 +3,10 @@ project = 'YosysHQ MCY'
 author = 'YosysHQ GmbH'
 copyright ='2021 YosysHQ GmbH'
 
-def setup(app):
-        app.add_css_file('yosyshq.css')
-
 # select HTML theme
 html_theme = 'press'
 html_logo = '../images/logo.png'
+html_css_files = ['yosyshq.css']
 html_sidebars = {'**': ['util/searchbox.html', 'util/sidetoc.html']}
 
 # These folders are copied to the documentation's HTML output
