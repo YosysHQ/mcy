@@ -15,3 +15,12 @@ a.external {
   color: #d6368f;
   text-decoration: underline;
 }
+
+.vp-sidebar a {
+  text-decoration: none;
+  color: #000000;
+}
+
+.vp-sidebar a.current {
+  color: #d6368f;
+}
