@@ -5,6 +5,8 @@ copyright ='2021 YosysHQ GmbH'
 
 # select HTML theme
 html_theme = 'press'
+html_logo = '../images/logo.png'
+html_sidebars = {'**': ['util/searchbox.html', 'util/sidetoc.html']}
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ['_static', "../images"]
@@ -14,10 +16,8 @@ pygments_style = 'colorful'
 highlight_language = 'systemverilog'
 
 html_theme_options = {
-    'extra_nav_links' : { 
+    'external_links' : { 
         'YosysHQ Docs' : 'https://yosyshq.readthedocs.io' ,
         'YosysHQ Website' : 'https://www.yosyshq.com',
     },
-    'logo' : 'logo.png',
-    'fixed_sidebar' : True,
 }
