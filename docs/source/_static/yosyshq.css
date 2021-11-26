@@ -1,9 +1,10 @@
-h1, h3, p.topic-title,
-a.current, a:hover, dt {
+h1, h3, p.topic-title, a.current, a:hover,
+.content li.toctree-l1 > a {
   color: #d6368f !important;
 }
 
-h2, p.admonition-title {
+h2, p.admonition-title, dt,
+.content li.toctree-l2 > a {
   color: #4b72b8;
 }
 
