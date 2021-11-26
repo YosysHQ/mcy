@@ -1,8 +1,9 @@
-h1, h3, p.topic-title, a.current, a:hover, dt, .admonition-title {
+h1, h3, p.topic-title,
+a.current, a:hover, dt {
     color: #d6368f !important;
 }
 
-h2 {
+h2, p.admonition-title {
   color: #4b72b8;
 }
 
@@ -13,6 +14,10 @@ a {
 a.external {
   color: #d6368f;
   text-decoration: underline;
+}
+
+.vp-sidebar a {
+  color: #d6368f;
 }
 
 .vp-sidebar .toctree-l1.current a {
