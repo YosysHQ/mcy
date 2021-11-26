@@ -6,6 +6,7 @@ copyright ='2021 YosysHQ GmbH'
 # select HTML theme
 html_theme = 'press'
 html_logo = '../images/logo.png'
+html_favicon = '../images/favico.png'
 html_css_files = ['yosyshq.css']
 html_sidebars = {'**': ['util/searchbox.html', 'util/sidetoc.html']}
 
