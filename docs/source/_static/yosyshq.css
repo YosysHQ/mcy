@@ -1,6 +1,6 @@
 h1, h3, p.topic-title,
 a.current, a:hover, dt {
-    color: #d6368f !important;
+  color: #d6368f !important;
 }
 
 h2, p.admonition-title {
@@ -21,9 +21,14 @@ a.external {
 }
 
 .vp-sidebar .toctree-l1.current a {
-    border-left: 0.5rem solid #6ecbd7;
+  border-left: 0.5rem solid #6ecbd7;
 }
 
 .vp-sidebar .toctree-l1 a.current {
-    border-left: 0.5rem solid #8857a3;
+  border-left: 0.5rem solid #8857a3;
+}
+
+.injected .rst-current-version,
+.injected dt {
+  color: #6ecbd7 !important;  
 }
