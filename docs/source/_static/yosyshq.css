@@ -1,4 +1,4 @@
-h1, h3, p.topic-title, a.current, a:hover {
+h1, h3, p.topic-title, a.current, a:hover, dt, .admonition-title {
     color: #d6368f !important;
 }
 
@@ -13,11 +13,6 @@ a {
 a.external {
   color: #d6368f;
   text-decoration: underline;
-}
-
-.vp-sidebar a {
-  text-decoration: none;
-  color: #000000;
 }
 
 .vp-sidebar .toctree-l1.current a {
