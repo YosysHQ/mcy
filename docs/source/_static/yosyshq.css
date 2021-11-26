@@ -1,5 +1,5 @@
-h1, p.topic-title {
-  color: #d6368f;
+h1, h3, p.topic-title, a.current, a:hover {
+    color: #d6368f !important;
 }
 
 h2 {
@@ -20,20 +20,10 @@ a.external {
   color: #000000;
 }
 
-.vp-sidebar a.current {
-  color: #d6368f;
-}
-
 .vp-sidebar .toctree-l1.current a {
     border-left: 0.5rem solid #6ecbd7;
 }
 
 .vp-sidebar .toctree-l1 a.current {
-    border-left-color: #8857a3;
-}
-.vp-sidebar .toctree-l1.current a {
-    border-left: 0.5rem solid #6ecbd7;
-}
-.vp-sidebar .toctree-l1 a.current, .vp-sidebar .toctree-l2 a.current {
-    color: #8857a3;
+    border-left: 0.5rem solid #8857a3;
 }
