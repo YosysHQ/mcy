@@ -20,7 +20,20 @@ All mutated designs are run against the testbench to check that the testbench wi
 
 **For more information please contact matt@yosyshq.com**
 
-## Quickstart
+## Getting Started
+### Installing Tabby CAD Suite or OSS CAD Suite
+
+`mcy` is part of the [Tabby CAD Suite](https://www.yosyshq.com/tabby-cad-datasheet) and the [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build)! The easiest way to use `mcy` is to install the binary software suite, which contains all required dependencies.
+
+* [Contact YosysHQ](https://www.yosyshq.com/contact) for a [Tabby CAD Suite](https://www.yosyshq.com/tabby-cad-datasheet) Evaluation License and download link
+* OR go to https://github.com/YosysHQ/oss-cad-suite-build/releases to download the free OSS CAD Suite
+* Follow the [Install Instructions on GitHub](https://github.com/YosysHQ/oss-cad-suite-build#installation)
+
+Make sure to get a Tabby CAD Suite Evaluation License if you need features such as industry-grade SystemVerilog and VHDL parsers!
+
+For more information about the difference between Tabby CAD Suite and the OSS CAD Suite, please visit https://www.yosyshq.com/tabby-cad-datasheet.
+
+### Installing from Source
 
 Install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
 
