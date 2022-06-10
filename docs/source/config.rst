@@ -18,7 +18,7 @@ This section contains various configuration options for the mutation generation 
 	Optional. Random number generator seed, can be set for reproducible mutation lists. (If you wish to know the randomly chosen seed of an existing set of mutations, it can be found in ``database/mutations.ys``.)
 
 ``select <selection>``
-	Optional. Selection of a subset of the design to restrict mutations to. See `yosys -h select <http://www.clifford.at/yosys/cmd_select.html>`_ for a description for the selection pattern format.
+	Optional. Selection of a subset of the design to restrict mutations to. See `yosys -h select <http://www.yosyshq.net/yosys/cmd_select.html>`_ for a description for the selection pattern format.
 
 	.. note:: The ``select`` keyword here is not the Yosys ``select`` command. The argument ``<selection>`` is used as the optional selection argument to the Yosys ``mutate`` command. While the selection pattern format is identical, you cannot use select subcommands such as ``-module``.
 
@@ -50,7 +50,7 @@ Execution of this script can be skipped with ``mcy init --nosetup``.
 ------------
 
 This section contains the Yosys script to be used to prepare the design to be mutated.
-Read in the necessary files with calls to ``read`` (one line per file), then call ``prep -top <top_module>`` to elaborate the design. (See `yosys -h read <http://www.clifford.at/yosys/cmd_read.html>`_ for the options to the ``read`` command.)
+Read in the necessary files with calls to ``read`` (one line per file), then call ``prep -top <top_module>`` to elaborate the design. (See `yosys -h read <http://www.yosyshq.net/yosys/cmd_read.html>`_ for the options to the ``read`` command.)
 
 ``[files]``
 -----------

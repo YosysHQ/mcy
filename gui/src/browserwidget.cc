@@ -1,7 +1,7 @@
 /*
  *  mcy-gui -- Mutation Cover with Yosys GUI
  *
- *  Copyright (C) 2019  Miodrag Milanovic <miodrag@symbioticeda.com>
+ *  Copyright (C) 2019  Miodrag Milanovic <micko@yosyshq.com>
  *
  *  Permission to use, copy, modify, and/or distribute this software for any
  *  purpose with or without fee is hereby granted, provided that the above
@@ -437,24 +437,24 @@ QString BrowserWidget::getMutationMessage(int mutationId)
     QString mode, module, cell, port, portbit, ctrlbit;
     for (auto option : options) {
         if (option.first == "mode") mode = option.second;
-        else if (option.first ==  "module") module = option.second; 
+        else if (option.first ==  "module") module = option.second;
         else if (option.first == "cell") cell = option.second;
         else if (option.first == "port") port = option.second;
         else if (option.first == "portbit") portbit = option.second;
         else if (option.first == "ctrlbit") ctrlbit = option.second;
     }
     QString msg;
-    if (mode=="none") 
+    if (mode=="none")
         msg = QString("None");
-    else if (mode=="inv") 
+    else if (mode=="inv")
         msg = QString("In module %1, cell %2:\nInvert bit %4 of port %3.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="const0") 
+    else if (mode=="const0")
         msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 0.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="const1") 
+    else if (mode=="const1")
         msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 1.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="cnot0") 
+    else if (mode=="cnot0")
         msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 0, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
-    else if (mode=="cnot1") 
+    else if (mode=="cnot1")
         msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 1, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
     return msg;
 }
