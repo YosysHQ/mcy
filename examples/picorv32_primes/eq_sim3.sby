@@ -1,3 +1,6 @@
+[tasks]
+\d+
+
 [options]
 mode bmc
 depth 50
