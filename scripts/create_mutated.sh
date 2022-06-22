@@ -63,8 +63,10 @@ script_file=${script_file:-mutate.ys}
 design_file=${design_file:-../../database/design.il}
 ctrl_width=${ctrl_width:-8}
 
-if [[ ( "$output_file" == *.v ) || ( "$output_file" == *.sv ) ]]; then
+if [[ ( "$output_file" == *.v ) ]]; then
 	write_cmd="write_verilog -norename $output_file"
+elif [[ ( "$output_file" == *.sv ) ]]; then
+	write_cmd="write_verilog -norename -sv $output_file"
 elif [[ ( "$output_file" == *.il ) ]]; then
 	write_cmd="write_ilang $output_file"
 else
