@@ -314,19 +314,19 @@ def reset_status(db, cfg, do_reset=False):
 
     log_step("Getting database statistics.")
     cnt, = db.execute("SELECT COUNT(*) FROM results").fetchone()
-    print("Database contains %d cached results." % cnt)
+    print(f"Database contains {cnt} cached results.")
 
     for tst, res, cnt in db.execute("SELECT test, result, COUNT(*) FROM results GROUP BY test, result"):
-        print("Database contains %d cached \"%s\" results for \"%s\"." % (cnt, res, tst))
+        print(f"Database contains {cnt} cached \"{res}\" results for \"{tst}\".")
 
     for tag, cnt in db.execute("SELECT tag, COUNT(*) FROM tags GROUP BY tag"):
-        print("Tagged %d mutations as \"%s\"." % (cnt, tag))
+        print(f"Tagged {cnt} mutations as \"{tag}\".")
 
     for tst, cnt, rn in db.execute("SELECT test, COUNT(*), SUM(running) FROM queue GROUP BY test"):
         if rn > 0:
-            print("Queued %d \"%s\" tests, %d running." % (cnt, tst, rn))
+            print(f"Queued {cnt} \"{tst}\" tests, {rn} running.")
         else:
-            print("Queued %d \"%s\" tests." % (cnt, tst))
+            print(f"Queued {cnt} \"{tst}\" tests.")
 
 def print_report(db, cfg):
     """Print report"""
@@ -629,24 +629,24 @@ def list_command(filter, output, details, trace):
     for mid, mut in db.execute("SELECT mutation_id, mutation FROM mutations"):
         if len(whitelist) > 0 and mid not in whitelist:
             continue
-        print("%d:" % mid, end="", file=output)
+        print(f"{mid}:", end="", file=output)
         found_tags = False
         for tag, in db.execute("SELECT tag FROM tags WHERE mutation_id = ?", [mid]):
-            print(" %s" % tag, end="", file=output)
+            print(f" {tag}", end="", file=output)
             found_tags = True
         if not found_tags:
             print(" no-tags", end="", file=output)
         for tst, rn in db.execute("SELECT test, running FROM queue WHERE mutation_id = ?", [mid]):
             if rn:
-                print(" [%s]" % tst, end="", file=output)
+                print(f" [{tst}]", end="", file=output)
             else:
-                print(" (%s)" % tst, end="", file=output)
+                print(f" ({tst})", end="", file=output)
         print(file=output)
 
         if details:
-            print("  %s" % mut, file=output)
+            print(f"  {mut}" % mut, file=output)
             for tst, res in db.execute("SELECT test, result FROM results WHERE mutation_id = ?", [mid]):
-                print("  result from \"%s\": %s" % (tst, res), file=output)
+                print(f"  result from \"{tst}\": {res}", file=output)
             print(file=output)
 
     exit_mcy(0)
@@ -698,7 +698,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
                 log_error(f"Mutation number '{mut}' not found in database.")
             infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
             print(f" {(idx+1)} {mut} {mut_str}")
-            print("%d %s" % (idx+1, mut_str), file=f)
+            print(f"{(idx+1)} {mut_str}", file=f)
 
     def callback():
         log_sub_step(f"Task {task_id} ({tst}) finished.")
@@ -742,12 +742,13 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
     logfilename = None
     if not verbose:
         with open("tasks/%s/logfile.txt" % task_id, "w") as f:
-            for msg in infomsgs: print(msg, file=f)
+            for msg in infomsgs:
+                print(msg, file=f)
         command += "; exec >>logfile.txt"
         logfilename = "tasks/%s/logfile.txt" % task_id
     if (t not in cfg.tests):
         log_error(f"Test '{t}' not found.")
-    command += "; %s %s" % (cfg.tests[t].run, tst_args)
+    command += f"; {cfg.tests[t].run} {tst_args}"
     task = Task(command, callback, silent=(not verbose), logfilename=logfilename)
     return True
 
@@ -777,10 +778,10 @@ def run_command(filter, nproc, reset, trace):
             if whitelist != "(":
                 whitelist += " OR "
             if re.match("^[0-9]+$", arg):
-                whitelist += "mutation_id = %d" % int(arg)
+                whitelist += f"mutation_id = {int(arg)}"
             else:
                 for mut, in db.execute("SELECT mutation_id FROM tags WHERE tag = ?", [arg]):
-                    whitelist += "mutation_id = %d" % mut
+                    whitelist += f"mutation_id = {mut}"
         whitelist += ")"
 
     if reset:
@@ -889,7 +890,7 @@ def source_command(filename, filepath, output, encoding, trace):
 
     log_step("Display source file with info.")
     for linenr, line in enumerate(filedata.rstrip("\n").split("\n")):
-        src = "%d" % (linenr+1)
+        src = f"{linenr+1}"
 
         if src in covercache:
             if covercache[src].used:
@@ -954,21 +955,21 @@ def lcov_command(filename, output, encoding, trace):
     lines_covered = 0
     log_step("Write coverage info.")
     print("TN:", file=output)
-    print("SF:%s" % filename, file=output)
+    print(f"SF:{filename}", file=output)
     for linenr, _ in enumerate(filedata.rstrip("\n").split("\n")):
-        src = "%s:%d" % (filename, linenr+1)
+        src = f"{filename}:{linenr+1}"
 
         if src in covercache:
             lines_total += 1
             if covercache[src].uncovered:
-                print("DA:%d,%d" % (linenr+1, 0), file=output)
+                print(f"DA:{linenr+1},0" % (linenr+1, 0), file=output)
             else:
-                print("DA:%d,%d" % (linenr+1, covercache[src].covered), file=output)
+                print(f"DA:{linenr+1},{covercache[src].covered}", file=output)
                 if (covercache[src].covered !=0):
                     lines_covered += 1
 
-    print("LF:%d" % lines_total, file=output)
-    print("LH:%d" % lines_covered, file=output)
+    print(f"LF:{lines_total}", file=output)
+    print(f"LH:{lines_covered}", file=output)
     print("end_of_record", file=output)
     exit_mcy(0)
 
