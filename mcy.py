@@ -597,9 +597,10 @@ def purge_command():
 
 @cli.command(name='list', short_help='List mutations')
 @click.argument('filter', nargs=-1)
+@click.option('-o', '--output', type=click.File('w'), default='-')
 @click.option('--details', help='Show details.', is_flag=True)
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def list_command(filter, details, trace):
+def list_command(filter, output, details, trace):
     """List mutations\b
 
        List all mutations or add FILTER by listing mutations or tag names"""
@@ -621,31 +622,32 @@ def list_command(filter, details, trace):
                 for mut, in db.execute("SELECT mutation_id FROM tags WHERE tag = ?", [arg]):
                     whitelist.add(mut)
 
+    log_step("Write mutation list")
     if details:
-        print()
+        print(file=output)
 
     for mid, mut in db.execute("SELECT mutation_id, mutation FROM mutations"):
         if len(whitelist) > 0 and mid not in whitelist:
             continue
-        print("%d:" % mid, end="")
+        print("%d:" % mid, end="", file=output)
         found_tags = False
         for tag, in db.execute("SELECT tag FROM tags WHERE mutation_id = ?", [mid]):
-            print(" %s" % tag, end="")
+            print(" %s" % tag, end="", file=output)
             found_tags = True
         if not found_tags:
-            print(" no-tags", end="")
+            print(" no-tags", end="", file=output)
         for tst, rn in db.execute("SELECT test, running FROM queue WHERE mutation_id = ?", [mid]):
             if rn:
-                print(" [%s]" % tst, end="")
+                print(" [%s]" % tst, end="", file=output)
             else:
-                print(" (%s)" % tst, end="")
-        print()
+                print(" (%s)" % tst, end="", file=output)
+        print(file=output)
 
         if details:
-            print("  %s" % mut)
+            print("  %s" % mut, file=output)
             for tst, res in db.execute("SELECT test, result FROM results WHERE mutation_id = ?", [mid]):
-                print("  result from \"%s\": %s" % (tst, res))
-            print()
+                print("  result from \"%s\": %s" % (tst, res), file=output)
+            print(file=output)
 
     exit_mcy(0)
 
