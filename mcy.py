@@ -832,11 +832,11 @@ def task_command(test, args, verbose, keepdir, trace):
 @cli.command(name='source', short_help='Retrieve source info')
 @click.argument('filename', nargs=1)
 @click.argument('filepath', nargs=1, required = False)
+@click.option('-o', '--output', type=click.File('w'), default='-')
 @click.option('-e', '--encoding', default="utf8", show_default=True, help='Source code encoding.')
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def source_command(filename, filepath, encoding, trace):
-    """Retrieve source info\b
-
+def source_command(filename, filepath, output, encoding, trace):
+    """Retrieve source info
 
        Retrieves source information for FILENAME from database.
        Optionaly load file from local FILEPATH if provided."""
@@ -892,23 +892,24 @@ def source_command(filename, filepath, encoding, trace):
         if src in covercache:
             if covercache[src].used:
                 if covercache[src].uncovered:
-                    print("!%4d|\t" % -covercache[src].uncovered, end="")
+                    print("!%4d|\t" % -covercache[src].uncovered, end="", file=output)
                 else:
-                    print("%5d|\t" % covercache[src].covered, end="")
+                    print("%5d|\t" % covercache[src].covered, end="", file=output)
             else:
-                print("    ?|\t", end="")
+                print("    ?|\t", end="", file=output)
         else:
-            print("     |\t", end="")
+            print("     |\t", end="", file=output)
 
-        print(line)
+        print(line, file=output)
 
     exit_mcy(0)
 
 @cli.command(name='lcov', short_help='Retrieve coverage info')
 @click.argument('filename', nargs=1)
+@click.option('-o', '--output', type=click.File('w'), default='-')
 @click.option('-e', '--encoding', default="utf8", show_default=True, help='Source code encoding.')
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def lcov_command(filename, encoding, trace):
+def lcov_command(filename, output, encoding, trace):
     """Retrieve coverage info
 
        Displays coverage info for FILENAME in lcov file format"""
@@ -930,7 +931,7 @@ def lcov_command(filename, encoding, trace):
     filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
 
     covercache = dict()
-
+    log_step("Extract coverage info.")
     for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
         covercache[src] = types.SimpleNamespace(covered=0, uncovered=0)
 
@@ -949,23 +950,24 @@ def lcov_command(filename, encoding, trace):
 
     lines_total = 0
     lines_covered = 0
-    print("TN:")
-    print("SF:%s" % filename)
+    log_step("Write coverage info.")
+    print("TN:", file=output)
+    print("SF:%s" % filename, file=output)
     for linenr, _ in enumerate(filedata.rstrip("\n").split("\n")):
         src = "%s:%d" % (filename, linenr+1)
 
         if src in covercache:
             lines_total += 1
             if covercache[src].uncovered:
-                print("DA:%d,%d" % (linenr+1, 0))
+                print("DA:%d,%d" % (linenr+1, 0), file=output)
             else:
-                print("DA:%d,%d" % (linenr+1, covercache[src].covered))
+                print("DA:%d,%d" % (linenr+1, covercache[src].covered), file=output)
                 if (covercache[src].covered !=0):
                     lines_covered += 1
 
-    print("LF:%d" % lines_total)
-    print("LH:%d" % lines_covered)
-    print("end_of_record")
+    print("LF:%d" % lines_total, file=output)
+    print("LH:%d" % lines_covered, file=output)
+    print("end_of_record", file=output)
     exit_mcy(0)
 
 @cli.command(name='dash', context_settings={"ignore_unknown_options": True})
