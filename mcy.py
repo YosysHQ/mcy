@@ -11,17 +11,58 @@ RUNNING = set()
 DBTRACE = False
 SILENT_SIGPIPE = False
 
+def log_warning(msg):
+    """Log warning"""
+    click.secho("==> WARNING : ", fg="yellow", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+
+def log_error(msg):
+    """Log error"""
+    click.secho("==> ERROR : ", fg="red", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+    exit_mcy(1)
+
+def log_error_additional(msg, msg2):
+    """Log error"""
+    click.secho("==> ERROR : ", fg="red", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+    click.secho(msg2, fg="white", bold=True, err=True)
+    exit_mcy(1)
+
+def log_info(msg):
+    """Log info"""
+    click.secho("==> ", fg="green", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+
+def log_step(msg):
+    """Log step"""
+    click.secho("  -> ", fg="blue", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+
+def log_sub_info(msg):
+    """Log sub info"""
+    click.secho("  ==> ", fg="green", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+
+def log_sub_step(msg):
+    """Log sub step"""
+    click.secho("    -> ", fg="blue", nl=False, bold=True, err=True)
+    click.secho(msg, fg="white", bold=True, err=True)
+
 def root_path():
     """Return root path"""
     return os.path.abspath(os.path.dirname(getattr(sys.modules['__main__'], '__file__')))
 
-def sqlite3_connect(chkexist=False):
+def sqlite3_connect(log=True, chkexist=False):
     """Connect to sqlite3 database"""
     if chkexist and not os.path.exists("database/db.sqlite3"):
-        print("Project database not found. Run 'mcy init' to initialize the project.")
-        exit_mcy(1)
+        log_error_additional("Project database not found.", "Run 'mcy init' to initialize the project.")
+    if log:
+        log_step("Connecting to database.")
     database = sqlite3.connect("database/db.sqlite3")
     if DBTRACE:
+        if log:
+            log_step("Enable database tracing.")
         database.set_trace_callback(print)
     return database
 
@@ -30,7 +71,8 @@ def exit_mcy(return_code):
     for task in list(TASKDB.values()):
         task.term()
     if len(RUNNING)>0:
-        database = sqlite3_connect()
+        database = sqlite3_connect(log=False)
+        log_step("Remove 'RUNNING' status for tasks from queue.")
         for mut, tst in RUNNING:
             database.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
         database.commit()
@@ -51,9 +93,10 @@ def xorshift32(x):
 
 def read_cfg():
     """Read configuration file"""
+    log_step("Reading configuration file.")
+
     if not os.path.exists("config.mcy"):
-        click.secho("config.mcy not found", fg="red", nl=True, bold=True)
-        exit_mcy(1)
+        log_error("config.mcy not found")
 
     mutate_cfgs = set("""
     weight_pq_w weight_pq_b weight_pq_c weight_pq_s
@@ -99,8 +142,7 @@ def read_cfg():
                         cfg.tests[sectionarg].expect = None
                         cfg.tests[sectionarg].run = None
                     continue
-                click.secho(f"Syntax error in line {linenr} of config.mcy",fg="red", nl=True, bold=True)
-                exit_mcy(1)
+                log_error(f"Syntax error in line {linenr} of config.mcy")
 
             if section == "options":
                 entries = line.split()
@@ -167,8 +209,7 @@ def read_cfg():
                     cfg.files[entries[0]] = entries[1]
                     continue
 
-            click.secho(f"Syntax error in line {linenr} of config.mcy",fg="red", nl=True, bold=True)
-            exit_mcy(1)
+            log_error(f"Syntax error in line {linenr} of config.mcy")
 
     if cfg.opt_seed is None:
         cfg.opt_seed = int(100 * time.time())
@@ -201,14 +242,14 @@ def update_mutation(db, cfg, mid):
         for res, in db.execute("SELECT (result) FROM results WHERE mutation_id = ? AND test = ?", [mid, tst]):
             if cfg.tests[t].expect is not None:
                 if not res in cfg.tests[t].expect:
-                    raise Exception('Executing %s resulted with %s expecting value(s): %s' % (tst, res, ', '.join(cfg.tests[t].expect)))
+                    log_error(f"Executing {tst} resulted with {res} expecting value(s): {', '.join(cfg.tests[t].expect)}")
             return res
         raise ResultNotReadyException(tst)
 
     def env_tag(tag):
         if cfg.opt_tags is not None:
             if not tag in cfg.opt_tags:
-                raise Exception('Provided tag %s not on of expected: %s' % (tag, ', '.join(cfg.opt_tags)))
+                log_error(f"Provided tag {tag} not one of expected: {', '.join(cfg.opt_tags)}")
         db.execute("INSERT INTO tags (mutation_id, tag) VALUES (?, ?)", [mid, tag])
 
     def env_rng(n):
@@ -234,15 +275,18 @@ def reset_status(db, cfg, do_reset=False):
     if do_reset:
         nmutations, = db.execute("SELECT COUNT(*) FROM mutations").fetchone()
         if nmutations < cfg.opt_size:
-            print("Adding %d mutations to database." % (cfg.opt_size - nmutations))
+            log_step(f"Adding {(cfg.opt_size - nmutations)} mutations to database.")
 
+            log_step("Creating additional mutations script file.")
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
                 print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
+            log_step("Creating additionalmutations.")
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
             task.wait()
 
+            log_step("Inserting additional mutations in database.")
             with open("database/mutations2.txt", "r") as f_in:
                 with open("database/mutations.txt", "a") as f_out:
                     for line in f_in:
@@ -261,11 +305,14 @@ def reset_status(db, cfg, do_reset=False):
                             if nmutations == cfg.opt_size:
                                 break
 
+        log_step("Remove 'tasks' subdirectory.")
         shutil.rmtree("tasks", ignore_errors=True)
 
+        log_step("Update mutations.")
         for mid, in db.execute("SELECT mutation_id FROM mutations"):
             update_mutation(db, cfg, mid)
 
+    log_step("Getting database statistics.")
     cnt, = db.execute("SELECT COUNT(*) FROM results").fetchone()
     print("Database contains %d cached results." % cnt)
 
@@ -299,6 +346,7 @@ def print_report(db, cfg):
             return env_tags() - cnt
         return cnt
 
+    log_step("Print report")
     gdict = globals().copy()
     gdict["tags"] = env_tags
 
@@ -345,10 +393,9 @@ class Task:
         if self.taskidx in TASKDB:
             del TASKDB[self.taskidx]
         if return_code != 0:
-            print("Command '%s' returned non-zero return code %d." % (self.command, return_code))
-            if self.logfilename is not None:
-                print("See '%s' for details." % self.logfilename)
-            exit_mcy(1)
+            log_error_additional(f"Command '{self.command}' returned non-zero return code {return_code}.",
+                f"See '{self.logfilename}' for details." if self.logfilename is not None else ""
+            )
         if self.callback is not None:
             self.callback()
             self.callback = None
@@ -391,23 +438,25 @@ def init_command(force, nosetup, trace):
     """Initialize database"""
     global DBTRACE
     DBTRACE = trace
+    log_info("Initialize database")
+
     cfg = read_cfg()
 
+    log_step("Checking database existance.")
     if os.path.exists("database"):
         if not force:
-            print("found existing database/ directory.")
-            exit_mcy(1)
+            log_error("Found existing database directory.")
         else:
             try:
                 os.remove("database/db.sqlite3")
             except FileNotFoundError:
                 pass
     else:
-        print("creating database directory")
+        log_step("Creating database directory.")
         os.mkdir("database")
 
     if not nosetup and cfg.setup:
-        print("running setup")
+        log_step("Running setup.")
         if not os.path.exists("database/setup"):
             os.mkdir("database/setup")
         with open("database/setup.sh", "w") as f:
@@ -416,22 +465,26 @@ def init_command(force, nosetup, trace):
         task = Task("bash database/setup.sh")
         task.wait()
 
+    log_step("Creating design script file.")
     with open("database/design.ys", "w") as f:
         for line in cfg.script:
             print(line, file=f)
         print("write_ilang database/design.il", file=f)
 
+    log_step("Creating design RTL.")
     task = Task("yosys -ql database/design.log database/design.ys")
     task.wait()
 
+    log_step("Creating mutations script file.")
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
         print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' ' + ' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
+    log_step("Creating mutations.")
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
 
-    print("initializing database")
+    log_step("Initializing database.")
 
     db = sqlite3_connect()
     db.executescript("""
@@ -473,6 +526,7 @@ def init_command(force, nosetup, trace):
         );
     """)
 
+    log_step("Importing mutations.")
     with open("database/mutations.txt", "r") as f:
         for line in f:
             mid = db.execute("INSERT INTO mutations (mutation) VALUES (?)", [line.rstrip()]).lastrowid
@@ -485,6 +539,7 @@ def init_command(force, nosetup, trace):
                     db.execute("INSERT INTO options (mutation_id, opt_type, opt_value) VALUES (?, ?, ?)", [mid, optarray[i][1:], optarray[i+1]])
                     skip_next = True
 
+    log_step("Importing design sources.")
     with open("database/sources.txt", "r") as f:
         for line in f:
             db.execute("INSERT INTO sources (srctag) VALUES (?)", [line.strip()])
@@ -495,6 +550,7 @@ def init_command(force, nosetup, trace):
 
     db.commit()
 
+    log_step("Reseting database statistics.")
     reset_status(db, cfg, True)
 
     exit_mcy(0)
@@ -505,6 +561,7 @@ def reset_command(trace):
     """Reset database"""
     global DBTRACE
     DBTRACE = trace
+    log_info("Reset database")
 
     cfg = read_cfg()
     db = sqlite3_connect(chkexist=True)
@@ -518,6 +575,7 @@ def status_command(trace):
     """Database status"""
     global DBTRACE
     DBTRACE = trace
+    log_info("Database status")
 
     cfg = read_cfg()
     db = sqlite3_connect(chkexist=True)
@@ -528,8 +586,12 @@ def status_command(trace):
 @cli.command(name='purge')
 def purge_command():
     """Purge database"""
+    log_info("Purge database")
+
     read_cfg()
+    log_step("Remove 'tasks' subdirectory.")
     shutil.rmtree("tasks", ignore_errors=True)
+    log_step("Remove 'database' subdirectory.")
     shutil.rmtree("database", ignore_errors=True)
     exit_mcy(0)
 
@@ -544,6 +606,7 @@ def list_command(filter, details, trace):
     global SILENT_SIGPIPE, DBTRACE
     SILENT_SIGPIPE = True
     DBTRACE = trace
+    log_info("List mutations")
 
     read_cfg()
 
@@ -609,55 +672,61 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
         tst_args = tst.lstrip()[len(t)+1:]
 
     # Mark tests running in DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
+    task_id = str(uuid.uuid4())
+    log_sub_info(f"Run tasks {task_id}")
+
+    log_sub_step("Set status to 'RUNNING' for task.")
     for mut in mut_list:
         db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
         RUNNING.add((mut, tst))
     db.commit()
 
-    task_id = str(uuid.uuid4())
+    log_sub_step(f"Make 'tasks/{task_id}' subdirectory.")
     os.makedirs("tasks/%s" % task_id)
 
     infomsgs = list()
     infomsgs.append("task %s (%s)" % (task_id, tst))
-    print("task %s (%s)" % (task_id, tst))
+    log_sub_step(f"Task {task_id} ({tst}) started.")
 
     with open("tasks/%s/input.txt" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
             try:
                 mut_str, = db.execute("SELECT mutation FROM mutations WHERE mutation_id = ?", [mut]).fetchone()
-            except:
-                print("Mutation number %s' not found in database." % mut)
-                exit_mcy(1)
+            except Exception:
+                log_error(f"Mutation number '{mut}' not found in database.")
             infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
-            print("  %d %d %s" % (idx+1, mut, mut_str))
+            print(f" {(idx+1)} {mut} {mut_str}")
             print("%d %s" % (idx+1, mut_str), file=f)
 
     def callback():
-        print("task %s (%s) finished." % (task_id, tst))
+        log_sub_step(f"Task {task_id} ({tst}) finished.")
         checklist = set(mut_list)
+        log_sub_step(f"Results:")
         with open("tasks/%s/output.txt" % task_id, "r") as f:
             for line in f:
                 line = line.split()
-                if (len(line) != 2):
-                    raise Exception('Invalid line format in file tasks/%s/output.txt' % task_id)
+                if (len(line) != 2):                   
+                    log_error(f"Invalid line format in file tasks/{task_id}/output.txt")
+
                 idx = int(line[0])-1
                 mut = mut_list[idx]
                 if not mut in checklist:
-                    raise Exception('Unknown mutation %s in file tasks/%s/output.txt' % (mut, task_id))
+                    log_error(f"Unknown mutation {mut} in file tasks/{task_id}/output.txt")
                 res = line[1]
                 if cfg.tests[t].expect is not None:
                     if not res in cfg.tests[t].expect:
-                        raise Exception('Executing %s resulted with %s expecting value(s): %s' % (tst, res, ', '.join(cfg.tests[t].expect)))
+                        log_error(f"Executing {tst} resulted with {res} expecting value(s): {', '.join(cfg.tests[t].expect)}")
                 db.execute("DELETE FROM results WHERE mutation_id = ? AND test = ?", [mut, tst])
                 db.execute("INSERT INTO results (mutation_id, test, result) VALUES (?, ?, ?)", [mut, tst, res])
                 update_mutation(db, cfg, mut)
                 RUNNING.remove((mut, tst))
                 checklist.remove(mut)
-                print("  %d %d %s %s" % (idx+1, mut, res, mut_str))
+                print(f"  {idx+1} {mut} {res} {mut_str}")
 
         if len(checklist) != 0:
-            raise Exception('Empty mutation checklist')
+            log_error("Empty mutation checklist.")
         if not keepdir:
+            log_sub_step(f"Remove 'tasks/{task_id}' subdirectory.")
             shutil.rmtree("tasks/%s" % task_id)
             try:
                 os.rmdir("tasks/")
@@ -675,11 +744,9 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
         command += "; exec >>logfile.txt"
         logfilename = "tasks/%s/logfile.txt" % task_id
     if (t not in cfg.tests):
-        print("Test '%s' not found." % t)
-        exit_mcy(1)
+        log_error(f"Test '{t}' not found.")
     command += "; %s %s" % (cfg.tests[t].run, tst_args)
     task = Task(command, callback, silent=(not verbose), logfilename=logfilename)
-    task.wait()
     return True
 
 
@@ -696,6 +763,7 @@ def run_command(filter, nproc, reset, trace):
        Optionally FILTER by list of mutations or tag names can be provided."""
     global DBTRACE
     DBTRACE = trace
+    log_info("Run all tasks from queue")
 
     cfg = read_cfg()
     db = sqlite3_connect(chkexist=True)
@@ -720,6 +788,7 @@ def run_command(filter, nproc, reset, trace):
         wait_tasks(nproc)
 
     wait_tasks(1)
+    log_step("Finished running all tasks.")
     reset_status(db, cfg)
     print_report(db, cfg)
     exit_mcy(0)
@@ -738,6 +807,7 @@ def task_command(test, args, verbose, keepdir, trace):
 
     global DBTRACE
     DBTRACE = trace
+    log_info("Run tasks from queue")
 
     cfg = read_cfg()
     db = sqlite3_connect(chkexist=True)
@@ -752,9 +822,11 @@ def task_command(test, args, verbose, keepdir, trace):
                     mut_list.append(mut)
 
     if len(mut_list) == 0:
-        raise Exception('Task not found')
+        log_error("Task not found.")
+
     run_task(db, cfg, "1", test, mut_list, verbose = verbose, keepdir = keepdir)
     wait_tasks(1)
+    log_step("Finished running task.")
     exit_mcy(0)
 
 @cli.command(name='source', short_help='Retrieve source info')
@@ -770,6 +842,7 @@ def source_command(filename, filepath, encoding, trace):
        Optionaly load file from local FILEPATH if provided."""
     global DBTRACE
     DBTRACE = trace
+    log_info("Retrieving source info")
 
     read_cfg()
     db = sqlite3_connect(chkexist=True)
@@ -777,8 +850,7 @@ def source_command(filename, filepath, encoding, trace):
     if filepath is None:
         filedata = db.execute("SELECT data FROM files WHERE filename = ?", [filename]).fetchone()
         if filedata is None:
-            print("File data for '%s' not found in database." % filename)
-            exit_mcy(1)
+            log_error(f"File data for '{filename}' not found in database.")
         filedata = str(filedata[0], encoding)
     else:
         with open(filepath, "rb") as f:
@@ -787,6 +859,7 @@ def source_command(filename, filepath, encoding, trace):
     # Fix DOS-style and old Macintosh-style line endings
     filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
 
+    log_step("Extract coverage info.")
     covercache = dict()
 
     for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
@@ -812,6 +885,7 @@ def source_command(filename, filepath, encoding, trace):
         covercache[src].uncovered += uncovered
         covercache[src].used = 1
 
+    log_step("Display source file with info.")
     for linenr, line in enumerate(filedata.rstrip("\n").split("\n")):
         src = "%d" % (linenr+1)
 
@@ -837,10 +911,11 @@ def source_command(filename, filepath, encoding, trace):
 def lcov_command(filename, encoding, trace):
     """Retrieve coverage info
 
-       Displays coverage info for FILENAME"""
+       Displays coverage info for FILENAME in lcov file format"""
     global SILENT_SIGPIPE, DBTRACE
     SILENT_SIGPIPE = True
     DBTRACE = trace
+    log_info("Retrieving coverage info")
 
     read_cfg()
 
@@ -848,8 +923,7 @@ def lcov_command(filename, encoding, trace):
 
     filedata = db.execute("SELECT data FROM files WHERE filename = ?", [filename]).fetchone()
     if filedata is None:
-        print("File data for '%s' not found in database." % filename)
-        exit_mcy(1)
+        log_error(f"File data for '{filename}' not found in database.")
     filedata = str(filedata[0], encoding)
 
     # Fix DOS-style and old Macintosh-style line endings
@@ -901,8 +975,7 @@ def dash_command(args):
     try:
         os.execvp("mcy-dash", ["mcy-dash"] + list(args))
     except Exception:
-        click.secho("Error starting mcy-dash", fg="red", nl=True, bold=True)
-        exit_mcy(1)
+        log_error("Error starting mcy-dash")
 
 @cli.command(name='gui', context_settings={"ignore_unknown_options": True})
 @click.argument('args', nargs=-1)
@@ -911,8 +984,7 @@ def gui_command(args):
     try:
         os.execvp("mcy-gui", ["mcy-gui"] + list(args))
     except Exception:
-        click.secho("Error starting mcy-gui", fg="red", nl=True, bold=True)
-        exit_mcy(1)
+        log_error("Error starting mcy-gui")
 
 if __name__ == '__main__':
     if os.name == "posix":
