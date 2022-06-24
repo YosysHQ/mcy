@@ -25,7 +25,7 @@ def sqlite3_connect(chkexist=False):
         database.set_trace_callback(print)
     return database
 
-def exit_mcy(rc):
+def exit_mcy(return_code):
     """Exit MCY and cleanup"""
     for task in list(TASKDB.values()):
         task.term()
@@ -34,7 +34,7 @@ def exit_mcy(rc):
         for mut, tst in RUNNING:
             database.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
         database.commit()
-    sys.exit(rc)
+    sys.exit(return_code)
 
 def force_shutdown(signum, frame):
     """Forced shutdown"""
@@ -304,7 +304,6 @@ def print_report(db, cfg):
 
     code = "def __report__():\n  " + "\n  ".join(cfg.report) + "\n__report__()\n"
     exec(code, gdict)
-
 
 ######################################################
 
@@ -775,7 +774,7 @@ def source_command(filename, filepath, encoding, trace):
     read_cfg()
     db = sqlite3_connect(chkexist=True)
 
-    if len(filepath) == 0:
+    if filepath is None:
         filedata = db.execute("SELECT data FROM files WHERE filename = ?", [filename]).fetchone()
         if filedata is None:
             print("File data for '%s' not found in database." % filename)
@@ -829,7 +828,7 @@ def source_command(filename, filepath, encoding, trace):
 
         print(line)
 
-    exit_mcy(1)
+    exit_mcy(0)
 
 @cli.command(name='lcov', short_help='Retrieve coverage info')
 @click.argument('filename', nargs=1)
@@ -893,7 +892,7 @@ def lcov_command(filename, encoding, trace):
     print("LF:%d" % lines_total)
     print("LH:%d" % lines_covered)
     print("end_of_record")
-    exit_mcy(1)
+    exit_mcy(0)
 
 @cli.command(name='dash', context_settings={"ignore_unknown_options": True})
 @click.argument('args', nargs=-1)
