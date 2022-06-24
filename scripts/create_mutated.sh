@@ -64,7 +64,7 @@ design_file=${design_file:-../../database/design.il}
 ctrl_width=${ctrl_width:-8}
 
 if [[ ( "$output_file" == *.v ) || ( "$output_file" == *.sv ) ]]; then
-	write_cmd="write_verilog $output_file"
+	write_cmd="write_verilog -norename $output_file"
 elif [[ ( "$output_file" == *.il ) ]]; then
 	write_cmd="write_ilang $output_file"
 else

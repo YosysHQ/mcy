@@ -83,6 +83,7 @@ cfg = types.SimpleNamespace()
 cfg.opt_size = 20
 cfg.opt_tags = None
 cfg.opt_seed = None
+cfg.opt_mode = None
 cfg.mutopts = dict()
 cfg.setup = list()
 cfg.script = list()
@@ -98,6 +99,9 @@ with open("config.mcy", "r") as f:
     linenr = 0
     for line in f:
         linenr += 1
+
+        if line.strip().startswith("#"):
+            continue
 
         match = re.match(r"^\[(.*)\]\s*$", line)
         if match:
@@ -120,6 +124,9 @@ with open("config.mcy", "r") as f:
                 continue
             if len(entries) == 2 and entries[0] == "size":
                 cfg.opt_size = int(entries[1])
+                continue
+            if len(entries) == 2 and entries[0] == "mode":
+                cfg.opt_mode = entries[1]
                 continue
             if len(entries) == 2 and entries[0] in mutate_cfgs:
                 cfg.mutopts[entries[0]] = int(entries[1])
@@ -250,8 +257,7 @@ def reset_status(db, do_reset=False):
 
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
-                print("mutate -list %d -seed %d -none%s -o database/mutations2.txt%s" % (cfg.opt_size, cfg.opt_seed, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
-                        " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
+                print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
             task.wait()
@@ -429,8 +435,7 @@ if sys.argv[1] == "init":
 
     with open("database/mutations.ys", "w") as f:
         print("read_ilang database/design.il", file=f)
-        print("mutate -list %d -seed %d -none%s -o database/mutations.txt -s database/sources.txt%s" % (cfg.opt_size, cfg.opt_seed, "".join(" -cfg %s %d" % (k, v) for k, v, in sorted(cfg.mutopts.items())),
-                " " + " ".join(cfg.select) if len(cfg.select) else ""), file=f)
+        print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' ' + ' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
     task = Task("yosys -ql database/mutations.log database/mutations.ys")
     task.wait()
