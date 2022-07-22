@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import getopt, sys, os, re, time, signal
+import sys, os, re, time, signal
 import subprocess, sqlite3, uuid, shutil
-import types, time
+import types
 import click
 
 TASKIDX = 0
