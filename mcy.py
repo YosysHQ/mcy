@@ -832,19 +832,34 @@ def task_command(test, filter, verbose, keepdir, trace):
     log_step("Finished running task.")
     exit_mcy(0)
 
+def filename_help(ctx, filename):
+    """Display additional help and list files"""
+    if filename is None:
+        click.echo(ctx.get_help()+'\n')
+        if os.path.exists("database/db.sqlite3"):
+            db = sqlite3_connect(log=False, chkexist=True)
+            click.echo('Filenames in database:')
+            for src, in db.execute("SELECT DISTINCT filename FROM files ORDER BY filename"):
+                click.echo(f'  {src }')
+            click.echo('')
+        click.echo("Error: Missing argument 'FILENAME'.")
+        exit_mcy(1)
+
 @cli.command(name='source', short_help='Retrieve source info')
-@click.argument('filename', nargs=1)
+@click.argument('filename', nargs=1, metavar='FILENAME', required = False)
 @click.argument('filepath', nargs=1, required = False)
 @click.option('-o', '--output', type=click.File('w'), default='-')
 @click.option('-e', '--encoding', default="utf8", show_default=True, help='Source code encoding.')
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def source_command(filename, filepath, output, encoding, trace):
+@click.pass_context
+def source_command(ctx, filename, filepath, output, encoding, trace):
     """Retrieve source info
 
        Retrieves source information for FILENAME from database.
        Optionaly load file from local FILEPATH if provided."""
     global DBTRACE
     DBTRACE = trace
+    filename_help(ctx, filename)
     log_info("Retrieving source info")
 
     read_cfg()
@@ -908,17 +923,19 @@ def source_command(filename, filepath, output, encoding, trace):
     exit_mcy(0)
 
 @cli.command(name='lcov', short_help='Retrieve coverage info')
-@click.argument('filename', nargs=1)
+@click.argument('filename', nargs=1, metavar='FILENAME', required = False)
 @click.option('-o', '--output', type=click.File('w'), default='-')
 @click.option('-e', '--encoding', default="utf8", show_default=True, help='Source code encoding.')
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def lcov_command(filename, output, encoding, trace):
+@click.pass_context
+def lcov_command(ctx, filename, output, encoding, trace):
     """Retrieve coverage info
 
        Displays coverage info for FILENAME in lcov file format"""
     global SILENT_SIGPIPE, DBTRACE
     SILENT_SIGPIPE = True
     DBTRACE = trace
+    filename_help(ctx, filename)
     log_info("Retrieving coverage info")
 
     read_cfg()
