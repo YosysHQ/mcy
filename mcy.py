@@ -798,11 +798,11 @@ def run_command(filter, nproc, reset, trace):
 
 @cli.command(name='task', short_help='Run task')
 @click.argument('test', nargs=1)
-@click.argument('args', nargs=-1)
+@click.argument('filter', nargs=-1)
 @click.option('-v', '--verbose', help='Verbose output.', is_flag=True)
 @click.option('-k', '--keepdir', help='Keep output directory.', is_flag=True)
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def task_command(test, args, verbose, keepdir, trace):
+def task_command(test, filter, verbose, keepdir, trace):
     """Run task\b
 
        Run all tasks on queue with specific TEST.
@@ -815,7 +815,7 @@ def task_command(test, args, verbose, keepdir, trace):
     cfg = read_cfg()
     db = sqlite3_connect(chkexist=True)
     mut_list = list()
-    for arg in args:
+    for arg in filter:
         if re.match("^[0-9]+$", arg):
             if int(arg) not in mut_list:
                 mut_list.append(int(arg))
