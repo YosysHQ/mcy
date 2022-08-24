@@ -651,7 +651,7 @@ def list_command(filter, output, details, trace):
 
     exit_mcy(0)
 
-def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir=False):
+def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, details=False, keepdir=False):
     """Run task"""
     if tst is None or mut_list is None:
         assert tst is None
@@ -675,20 +675,23 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
 
     # Mark tests running in DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
     task_id = str(uuid.uuid4())
-    log_sub_info(f"Run tasks {task_id}")
+    log_sub_info(f"Running task {task_id}")
 
-    log_sub_step("Set status to 'RUNNING' for task.")
+    if verbose:
+        log_sub_step("Set status to 'RUNNING' for task.")
     for mut in mut_list:
         db.execute("UPDATE queue SET running = 1 WHERE mutation_id = ? AND test = ?", [mut, tst])
         RUNNING.add((mut, tst))
     db.commit()
 
-    log_sub_step(f"Make 'tasks/{task_id}' subdirectory.")
+    if verbose:
+        log_sub_step(f"Make 'tasks/{task_id}' subdirectory.")
     os.makedirs("tasks/%s" % task_id)
 
     infomsgs = list()
     infomsgs.append("task %s (%s)" % (task_id, tst))
-    log_sub_step(f"Task {task_id} ({tst}) started.")
+    if verbose:
+        log_sub_step(f"Task {task_id} ({tst}) started.")
 
     with open("tasks/%s/input.txt" % task_id, "w") as f:
         for idx, mut in enumerate(mut_list):
@@ -697,13 +700,16 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
             except Exception:
                 log_error(f"Mutation number '{mut}' not found in database.")
             infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
-            print(f" {(idx+1)} {mut} {mut_str}")
+            if verbose:
+                print(f" {(idx+1)} {mut} {mut_str}")
             print(f"{(idx+1)} {mut_str}", file=f)
 
     def callback():
-        log_sub_step(f"Task {task_id} ({tst}) finished.")
+        if verbose:
+            log_sub_step(f"Task {task_id} ({tst}) finished.")
         checklist = set(mut_list)
-        log_sub_step(f"Results:")
+        if verbose:
+            log_sub_step(f"Results:")
         with open("tasks/%s/output.txt" % task_id, "r") as f:
             for line in f:
                 line = line.split()
@@ -723,12 +729,14 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
                 update_mutation(db, cfg, mut)
                 RUNNING.remove((mut, tst))
                 checklist.remove(mut)
-                print(f"  {idx+1} {mut} {res} {mut_str}")
+                if verbose:
+                    print(f"  {idx+1} {mut} {res} {mut_str}")
 
         if len(checklist) != 0:
             log_error("Empty mutation checklist.")
         if not keepdir:
-            log_sub_step(f"Remove 'tasks/{task_id}' subdirectory.")
+            if verbose:
+                log_sub_step(f"Remove 'tasks/{task_id}' subdirectory.")
             shutil.rmtree("tasks/%s" % task_id)
             try:
                 os.rmdir("tasks/")
@@ -740,7 +748,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
     command = "export TASK=%s PRJDIR=\"$PWD\" KEEPDIR=%d MUTATIONS=\"%s\" SCRIPTS=\"%s\"; cd tasks/$TASK; export TASKDIR=\"$PWD\"" % \
             (task_id, 1 if keepdir else 0, " ".join(["%d" % mut for mut in mut_list]), script_path)
     logfilename = None
-    if not verbose:
+    if not details:
         with open("tasks/%s/logfile.txt" % task_id, "w") as f:
             for msg in infomsgs:
                 print(msg, file=f)
@@ -749,7 +757,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
     if (t not in cfg.tests):
         log_error(f"Test '{t}' not found.")
     command += f"; {cfg.tests[t].run} {tst_args}"
-    task = Task(command, callback, silent=(not verbose), logfilename=logfilename)
+    task = Task(command, callback, silent=(not details), logfilename=logfilename)
     return True
 
 
@@ -757,9 +765,10 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, keepdir
 @cli.command(name='run', short_help='Run all tasks')
 @click.argument('filter', nargs=-1)
 @click.option('-j', '--nproc', default=os.cpu_count(), show_default=True, help='Number of build process.')
+@click.option('-v', '--verbose', help='Verbose output.', is_flag=True)
 @click.option('--reset', help='Reset database before run.', is_flag=True)
 @click.option('--trace', help='Trace database operations.', is_flag=True)
-def run_command(filter, nproc, reset, trace):
+def run_command(filter, nproc, verbose, reset, trace):
     """Run all tasks\b
 
        Run all tasks from queue.
@@ -787,7 +796,7 @@ def run_command(filter, nproc, reset, trace):
     if reset:
         reset_status(db, True)
 
-    while run_task(db, cfg, whitelist) or len(TASKDB):
+    while run_task(db, cfg, whitelist, verbose = verbose) or len(TASKDB):
         wait_tasks(nproc)
 
     wait_tasks(1)
@@ -827,7 +836,7 @@ def task_command(test, filter, verbose, keepdir, trace):
     if len(mut_list) == 0:
         log_error("Task not found.")
 
-    run_task(db, cfg, "1", test, mut_list, verbose = verbose, keepdir = keepdir)
+    run_task(db, cfg, "1", test, mut_list, details = verbose, keepdir = keepdir)
     wait_tasks(1)
     log_step("Finished running task.")
     exit_mcy(0)
