@@ -50,13 +50,13 @@ mcy lcov <filename>
 	This command prints coverage information in the format used by ``lcov`` and similar code coverage visualisation tools.
 
 mcy dash
-	This command launches the dashboard server. Navigate to the address shown to access the dashboard where you can monitor the ``mcy`` status and download the mcy database for viewing with ``mcy-gui``. This is intended to be used when running ``mcy`` on a remote server or as part of CI.
+	This command launches the dashboard server. Navigate to the address shown to access the dashboard where you can monitor the MCY status and download the mcy database for viewing with ``mcy-gui``. This is intended to be used when running MCY on a remote server or as part of CI.
 
 mcy gui
 	Launch the graphical explorer. The mcy gui allows navigating the list of mutations by source location, mutation id, or tag, and is the easiest way to access associated information.
 	If you have downloaded a database from the mcy dashboard, invoke it directly as ``mcy-gui <db_filename>``, as the mcy wrapper script will abort if ``config.mcy`` is not present.
 
 mcy purge
-	This command removes all files produced by ``mcy``, i.e. it deletes the ``database`` and ``tasks`` directories. Run this command before running ``mcy init``.
+	This command removes all files produced by MCY, i.e. it deletes the ``database`` and ``tasks`` directories. Run this command before running ``mcy init``.
 
 The optional ``--trace`` argument to ``mcy`` is used for debugging and prints all queries performed on the database during execution to stdout.

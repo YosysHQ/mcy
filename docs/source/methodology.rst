@@ -1,21 +1,21 @@
 Methodology
 ===========
 
-This section describes the principles underlying ``mcy`` which should be kept in mind during project setup.
+This section describes the principles underlying MCY which should be kept in mind during project setup.
 
-The idea behind ``mcy`` is to test how good your test suite is at detecting errors in your design, by deliberately introducing modifications (small "mutations" that change the value of a single bit in the design) and checking if they are caught. However, it is not guaranteed that a mutation will break the design: if e.g. the value of the bit only changes on cycles where an associated ``valid`` signal is low, the design still functions as intended and the test suite would be correct in passing it.
+The idea behind MCY is to test how good your test suite is at detecting errors in your design, by deliberately introducing modifications (small "mutations" that change the value of a single bit in the design) and checking if they are caught. However, it is not guaranteed that a mutation will break the design: if e.g. the value of the bit only changes on cycles where an associated ``valid`` signal is low, the design still functions as intended and the test suite would be correct in passing it.
 
 .. topic:: Prerequisite: your test suite is passing on the original design
 
 	It is not possible to measure mutation coverage for a failing design. If your original design is already broken, breaking it further by introducing a mutation cannot make a detectable change to the test status.
 
-Many coverage tools would simply make you pick an arbitrary "target coverage rate" lower than 100% based on your intuition or experience, to account for those cases where the mutation does not make a relevant difference. With ``mcy``, you will set up a formal equivalence check that serves as the "truth" about whether a mutation affects the functioning of your design. If the equivalence check can find a valid combination of inputs for which the output of the mutated design differs from the original, but the test suite passes the design anyway, then the test suite is not set up to catch this type of incorrect behavior. The goal then becomes to reach 100% coverage.
+Many coverage tools would simply make you pick an arbitrary "target coverage rate" lower than 100% based on your intuition or experience, to account for those cases where the mutation does not make a relevant difference. With MCY, you will set up a formal equivalence check that serves as the "truth" about whether a mutation affects the functioning of your design. If the equivalence check can find a valid combination of inputs for which the output of the mutated design differs from the original, but the test suite passes the design anyway, then the test suite is not set up to catch this type of incorrect behavior. The goal then becomes to reach 100% coverage.
 
 .. topic:: Equivalence check
 
 	Setting up the formal equivalence check requires a little upfront effort, as you will need to specify which variations in input and output signals are a functional difference according to your design specification, but this is generally not too hard if your interfaces are well specified. In contrast to full formal verification, it is much easier to say that, for example, if the mutated design outputs ``5`` where the original returns ``3``, at least one of the values must be wrong, than it is to write formal properties that calculate that the result *should* be ``42`` based on inputs that might have been entered over several previous cycles.
 
-However, for the core ``mcy`` engine there is no difference in how to run this test compared to the other tests in your test suite, so there is no special handling baked into the configuration file format to guide you in setting your project up correctly. If a single author is writing both the test suite and the equivalence test, the distinction between the two may become blurred. When setting up the equivalence test and especially when writing the ``[logic]`` section of the configuration, it is crucial that you keep this core idea at the forefront of your mind:
+However, for the core MCY engine there is no difference in how to run this test compared to the other tests in your test suite, so there is no special handling baked into the configuration file format to guide you in setting your project up correctly. If a single author is writing both the test suite and the equivalence test, the distinction between the two may become blurred. When setting up the equivalence test and especially when writing the ``[logic]`` section of the configuration, it is crucial that you keep this core idea at the forefront of your mind:
 
 .. topic:: Fundamental Principle
 
@@ -28,7 +28,7 @@ However, for the core ``mcy`` engine there is no difference in how to run this t
 
 	What this serves to determine is whether **your testbench is capable of detecting the kind of changes in behavior** that the mutation introduced.
 
-When starting an ``mcy`` project, it is recommended to start by using this "naive" logic directly, and keeping the number of mutations small. As you gain confidence that the setup is working, you can progressively add optimizations that let you run larger numbers of mutations.
+When starting an MCY project, it is recommended to start by using this "naive" logic directly, and keeping the number of mutations small. As you gain confidence that the setup is working, you can progressively add optimizations that let you run larger numbers of mutations.
 
 The ``bitcnt`` example shows an implementation of the naive logic:
 
@@ -95,4 +95,4 @@ In general, to get the best performance, always run the shortest test first. If 
 
 		tag("UNCOVERED")
 
-	As you can see, the underlying reasoning is no longer obvious from this code. Always keep the fundamental principle and the two assumptions in mind while working with ``mcy``!
+	As you can see, the underlying reasoning is no longer obvious from this code. Always keep the fundamental principle and the two assumptions in mind while working with MCY!

@@ -1,7 +1,7 @@
 Configuration File Format
 =========================
 
-``mcy`` relies on a configuration file named ``config.mcy``. There are several sections in an mcy configuration file:
+MCY relies on a configuration file named ``config.mcy``. There are several sections in an mcy configuration file:
 
 ``[options]``
 -------------
@@ -22,7 +22,7 @@ This section contains various configuration options for the mutation generation 
 
 	.. note:: The ``select`` keyword here is not the Yosys ``select`` command. The argument ``<selection>`` is used as the optional selection argument to the Yosys ``mutate`` command. While the selection pattern format is identical, you cannot use select subcommands such as ``-module``.
 
-Mutation generation options: ``mcy`` attempts to distribute mutations into all parts of the design. The documentation section :ref:`mutgen` describes the mutation generation algorithm, and how these values affect it.
+Mutation generation options: MCY attempts to distribute mutations into all parts of the design. The documentation section :ref:`mutgen` describes the mutation generation algorithm, and how these values affect it.
 
 ``weight_cover``
 	Optional. Weight for source location coverage. See :ref:`mutgen` for details. Default: 500
@@ -110,7 +110,7 @@ This section defines a test. Details about how to set up tests can be found in :
 	The expected return values of the test in question. (By convention, usually includes ``PASS`` and ``FAIL``, although this is not mandatory). A return value not included in this list will cause the mcy run to be aborted immediately.
 
 ``run <command>``
-	How to run the test. ``<command>`` is executed in a temporary subdirectory created for the task, ``tasks/<uuid>/``. ``mcy`` creates a file ``input.txt`` with a numbered list of mutations to be tested, and expects the results of the test to be written to ``output.txt`` after execution of ``<command>`` with the same number identifying the mutation.
+	How to run the test. ``<command>`` is executed in a temporary subdirectory created for the task, ``tasks/<uuid>/``. MCY creates a file ``input.txt`` with a numbered list of mutations to be tested, and expects the results of the test to be written to ``output.txt`` after execution of ``<command>`` with the same number identifying the mutation.
 
 ``maxbatchsize <X>``
-	How many mutations to include in a single task. Default is 1. Increasing this number will cause ``mcy`` to add up to ``<X>`` lines to ``input.txt`` for each task.
+	How many mutations to include in a single task. Default is 1. Increasing this number will cause MCY to add up to ``<X>`` lines to ``input.txt`` for each task.

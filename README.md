@@ -1,12 +1,12 @@
 # Mutation Cover with Yosys
 
-`mcy` is a new tool to help digital designers and project managers understand and improve testbench coverage.
+MCY is a new tool to help digital designers and project managers understand and improve testbench coverage.
 
 *If you have a testbench, and it fails, you know you have a problem. But if it passes, you know nothing if you don’t know what your testbench is actually testing for.*
 
 ![MCY Overview Diagram](https://github.com/YosysHQ/mcy/raw/master/docs/images/mcy.png)
 
-Given a self checking testbench, `mcy` generates 1000s of mutations by modifying individual signals in a post synthesis netlist. These mutations are then filtered using Formal Verification techniques, keeping only those that can cause an important change in the design’s output.
+Given a self checking testbench, MCY generates 1000s of mutations by modifying individual signals in a post synthesis netlist. These mutations are then filtered using Formal Verification techniques, keeping only those that can cause an important change in the design’s output.
 
 All mutated designs are run against the testbench to check that the testbench will detect and fail for a relevant mutation. The testbench can then be improved to get 100% complete coverage.
 
@@ -18,12 +18,12 @@ All mutated designs are run against the testbench to check that the testbench wi
 
 ![MCY Dash Screenshot](https://github.com/YosysHQ/mcy/raw/master/docs/images/mcy-dash.png)
 
-**For more information please contact matt@yosyshq.com**
+**For more information please contact contact@yosyshq.com**
 
 ## Getting Started
 ### Installing Tabby CAD Suite or OSS CAD Suite
 
-`mcy` is part of the [Tabby CAD Suite](https://www.yosyshq.com/tabby-cad-datasheet) and the [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build)! The easiest way to use `mcy` is to install the binary software suite, which contains all required dependencies.
+MCY is part of the [Tabby CAD Suite](https://www.yosyshq.com/tabby-cad-datasheet) and the [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build)! The easiest way to use MCY is to install the binary software suite, which contains all required dependencies.
 
 * [Contact YosysHQ](https://www.yosyshq.com/contact) for a [Tabby CAD Suite](https://www.yosyshq.com/tabby-cad-datasheet) Evaluation License and download link
 * OR go to https://github.com/YosysHQ/oss-cad-suite-build/releases to download the free OSS CAD Suite
@@ -35,9 +35,9 @@ For more information about the difference between Tabby CAD Suite and the OSS CA
 
 ### Installing from Source
 
-Install [SymbiYosys](http://symbiyosys.readthedocs.io/) and its dependencies first.
+Install [SBY](http://symbiyosys.readthedocs.io/) and its dependencies first.
 
-Install `mcy`:
+Install MCY:
 
 ```
 sudo make install
@@ -53,7 +53,13 @@ mcy run -j8
 
 The examples additionally require Icarus Verilog (https://github.com/steveicarus/iverilog) to run the testbench under test.
 
-## Tutorial
+## Documentation
+
+The full MCY documentation can be found at https://mcy.readthedocs.io/.
+
+See also [YosysHQ AppNote 400: Introduction to Mutation Coverage with Yosys (MCY)](https://yosyshq.readthedocs.io/projects/ap400/en/latest/)
+
+## Short Tutorial
 
 Create a new directory with a `config.mcy` file. For example:
 
@@ -150,7 +156,7 @@ Finally, `mcy purge` removes the `database/` and `tasks/` directories.
 
 ### Logic
 
-The `[logic]` section contains python code that defines how `mcy` should
+The `[logic]` section contains python code that defines how MCY should
 run the individual tests. The following special functions are available:
 
 `tag(tagname)`: Mark the current mutation with the specified tag
@@ -177,7 +183,7 @@ assigned, but not the `FOO` tag.
 
 Each test has its own configuration file section, `[test testname]`.
 
-If `maxbatchsize` is set to a value > 1 then `mcy` will automatically create
+If `maxbatchsize` is set to a value > 1 then MCY will automatically create
 batches of up to the specified number of mutations, and then pass them all
 to a single invocation of the test. (The default `maxbatchsize` value is `1`.)
 

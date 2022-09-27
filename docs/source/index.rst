@@ -18,7 +18,6 @@ All mutated designs are run against the testbench to check that the testbench wi
    :maxdepth: 3
 
    quickstart.rst
-   tutorial.rst
    methodology.rst
    cmds.rst
    config.rst

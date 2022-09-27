@@ -4,14 +4,14 @@ Getting Started
 Dependencies
 ------------
 
-``mcy`` requires ``python`` >= 3.5(?).
+MCY requires ``python`` >= 3.5(?).
 
 The example projects in the ``examples`` directory additionally require
 `Icarus Verilog`_ and
-SymbiYosys_.
+SBY_.
 
 .. _Icarus Verilog: http://iverilog.icarus.com/
-.. _SymbiYosys: http://symbiyosys.readthedocs.io/
+.. _SBY: http://symbiyosys.readthedocs.io/
 
 Installation
 ------------
