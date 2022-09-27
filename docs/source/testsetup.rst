@@ -3,8 +3,8 @@
 Writing a test script
 =====================
 
-For each testbench in your test suite, you need to write a test script that ``mcy`` can call to run that testbench on a mutated design.
-``mcy`` will create a temporary directory, place a file named ``input.txt`` with a numbered list of mutations in it, run your test script, and expect to find the return status of the testbench for each mutation in a correspondingly numbered list in a file named ``output.txt``. (By default, the list will only contain a single entry, as this is the most straightforward to use. The parameter ``maxbatchsize`` can be set in the ``[test]`` section of ``config.mcy`` to increase the number of mutations included.)
+For each testbench in your test suite, you need to write a test script that MCY can call to run that testbench on a mutated design.
+MCY will create a temporary directory, place a file named ``input.txt`` with a numbered list of mutations in it, run your test script, and expect to find the return status of the testbench for each mutation in a correspondingly numbered list in a file named ``output.txt``. (By default, the list will only contain a single entry, as this is the most straightforward to use. The parameter ``maxbatchsize`` can be set in the ``[test]`` section of ``config.mcy`` to increase the number of mutations included.)
 
 .. A common optimization is that if your testbench is compiled, you can save compilation time by compiling multiple mutations into a single unit under test, but it requires modifying the testbench so that the mutation can be selected at execution time by passing an argument.
 
@@ -13,7 +13,7 @@ The test script will usually consist of three steps: exporting the mutated sourc
 Exporting the Mutated Source
 ----------------------------
 
-The first step is to obtain the modified source that includes the mutation(s) listed in ``input.txt``. The script ``create_mutated.sh`` makes this painless as long as your testbench can accept verilog or rtlil sources for the mutated module. When executing the test, ``mcy`` sets the variable ``$SCRIPTS`` to the path of the directory where you can find this script.
+The first step is to obtain the modified source that includes the mutation(s) listed in ``input.txt``. The script ``create_mutated.sh`` makes this painless as long as your testbench can accept verilog or rtlil sources for the mutated module. When executing the test, MCY sets the variable ``$SCRIPTS`` to the path of the directory where you can find this script.
 
 If you want to substitute a mutated verilog module with identical interface to the original, simply call it with no arguments:
 

@@ -3,7 +3,7 @@ size 1000
 tags COVERED UNCOVERED NOCHANGE EQGAP FMONLY
 
 [script]
-read_verilog bitcnt.v
+read -sv bitcnt.v
 prep -top bitcnt
 
 [files]

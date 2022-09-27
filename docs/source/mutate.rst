@@ -13,14 +13,14 @@ There are three configurations that are commonly used:
 
 3. Multiple selectable mutations. Multiple mutate commands are applied to a module simultaneously. The resulting module will have an additional ``mutsel`` input and can exhibit a different mutation for each value of ``mutsel``. This is useful if the testbench being evaluated has large setup costs, e.g. for compilation. However, it requires modifying the testbench to drive the ``mutsel`` input from an argument passed at execution time.
 
-By default, each task in ``mcy`` will only test a single mutation. To enable multiple mutations to be tested in a single task, set the ``maxbatchsize`` parameter in the corresponding ``[test]`` section in ``config.mcy`` to a value larger than 1 and small enough to be representable with the number of bits of the ``mutsel`` signal (set in the ``mutate -ctrl <width> <value>`` option).
+By default, each task in MCY will only test a single mutation. To enable multiple mutations to be tested in a single task, set the ``maxbatchsize`` parameter in the corresponding ``[test]`` section in ``config.mcy`` to a value larger than 1 and small enough to be representable with the number of bits of the ``mutsel`` signal (set in the ``mutate -ctrl <width> <value>`` option).
 
 The ``create_mutated.sh`` script
 --------------------------------
 
 If your test falls within the common use cases, you can use the script ``create_mutated.sh`` to export the modified module. This is generally more convenient than writing your own script.
 
-The script is made to work with the files set up by mcy in the temporary task execution directory. ``mcy`` also sets up the environment variable ``SCRIPTS`` pointing to the directory where the scripts are installed. Call it in your test script as follows:
+The script is made to work with the files set up by mcy in the temporary task execution directory. MCY also sets up the environment variable ``SCRIPTS`` pointing to the directory where the scripts are installed. Call it in your test script as follows:
 
 .. code-block:: text
 
@@ -31,7 +31,7 @@ By default it will produce a ``mutated.v`` with permanently enabled mutation (ca
 The task mutation list ``input.txt``
 ------------------------------------
 
-For each test, ``mcy`` will create a file named ``input.txt`` that contains lines of the format:
+For each test, MCY will create a file named ``input.txt`` that contains lines of the format:
 
 .. code-block:: text
 
@@ -104,7 +104,7 @@ After generating the script, execute it with yosys:
 The Yosys ``mutate`` command
 ----------------------------
 
-``mcy``\ s mutation capability is backed by the Yosys ``mutate`` command. This command has two functions: generating a list of mutations for a design, and applying a mutation to a design. For most users, it is not necessary to touch these internals, but understanding the inner workings of ``mcy`` may be relevant in advanced use cases.
+MCY's mutation capability is backed by the Yosys ``mutate`` command. This command has two functions: generating a list of mutations for a design, and applying a mutation to a design. For most users, it is not necessary to touch these internals, but understanding the inner workings of MCY may be relevant in advanced use cases.
 
 .. _mutgen:
 
@@ -133,12 +133,12 @@ Alternatively, mutations can be associated with wires, wire bits, cells, and sou
 
 One of these lists is chosen to sample a mutation from with weights ``weight_pq_w``, ``weight_pq_b``, ``weight_pq_c``, ``weight_pq_s``, ``weight_pq_mw``, ``weight_pq_mb``, ``weight_pq_mc``, ``weight_pq_ms`` respectively. Once a list is chosen, there is a ``pick_cover_prcnt`` chance that source location coverage score is used to influence which mutation is sampled, otherwise all mutations in the list are considered equally.
 
-The output of ``mutate -list`` is a list of ``mutate`` commands that can be used to apply the generated mutations to the design. ``mcy`` generates these and stores them in the database when ``mcy init`` is run, and provides one (or several, if the ``maxbatchsize`` parameter is set for this test) in the file ``input.txt`` in the temporary folder when executing a task (via ``mcy run`` or ``mcy task``).
+The output of ``mutate -list`` is a list of ``mutate`` commands that can be used to apply the generated mutations to the design. MCY generates these and stores them in the database when ``mcy init`` is run, and provides one (or several, if the ``maxbatchsize`` parameter is set for this test) in the file ``input.txt`` in the temporary folder when executing a task (via ``mcy run`` or ``mcy task``).
 
 Applying a mutation
 ~~~~~~~~~~~~~~~~~~~
 
-If the ``-mode <mode>`` argument is given, ``mutate`` will apply a mutation to the current design. Most of the other parameters (``-module, -cell, -port, -portbit, -ctrlbit, -wire, -wirebit, -src``) serve to identify the element of the design to be modified and simply need to be copied from the file ``input.txt`` provided by ``mcy``.
+If the ``-mode <mode>`` argument is given, ``mutate`` will apply a mutation to the current design. Most of the other parameters (``-module, -cell, -port, -portbit, -ctrlbit, -wire, -wirebit, -src``) serve to identify the element of the design to be modified and simply need to be copied from the file ``input.txt`` provided by MCY.
 
 There is one optional parameter of interest, and that is ``-ctrl <name> <width> <value>``. By default (without ``-ctrl``), the ``mutate`` command will replace the element to be mutated with the modified version. The resulting module is identical to the original except for this modified element.
 If ``-ctrl`` is specified, the ``mutate`` command will instead add a control circuit to enable the mutation at will. It creates an additional input port to the modules, with the name ``<name>`` given in the command, and of width ``<width>``. If this input signal is set to the value ``<value>`` specified, the mutation is enabled, otherwise it is disabled. The value chosen must be non-zero, as 0 is reserved for the unmodified behaviour of the design. Multiple mutations can be added to the same design by running several ``mutate`` commands with the same ``-ctrl <name> <width>`` arguments and a different ``<value>``. This results in a design whose behaviour can be switched between different mutations by changing the value of this input signal.

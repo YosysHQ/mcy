@@ -123,12 +123,12 @@ Call the ``create_mutated.sh`` script with -c to obtain a module where you can t
 
 	bash $SCRIPTS/create_mutated.sh -c
 
-In general, using this way of exporting the original and mutated simultaneously makes it easier to implement the miter circuit as you do not have to worry about conflicting module names. When using SymbiYosys, it additionally offers the advantage that you can use the ``fmcombine`` optimization pass that analyzes the module and combines any logic that is not in the fanout cone of the mutation, and hence identical between the two module instances.
+In general, using this way of exporting the original and mutated simultaneously makes it easier to implement the miter circuit as you do not have to worry about conflicting module names. When using SBY, it additionally offers the advantage that you can use the ``fmcombine`` optimization pass that analyzes the module and combines any logic that is not in the fanout cone of the mutation, and hence identical between the two module instances.
 
 Running the equivalence check
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set up a script that verifies these assertions using a formal tool. For example, with SymbiYosys, you would first create a project file ``test_eq.sby``:
+Set up a script that verifies these assertions using a formal tool. For example, with SBY, you would first create a project file ``test_eq.sby``:
 
 .. code-block:: text
 
@@ -154,7 +154,7 @@ Set up a script that verifies these assertions using a formal tool. For example,
 
 If using BMC, make sure to set the depth sufficiently high to fully explore any pipelines or state machines in the module. Also note the use of ``fmcombine`` which optimizes the model to remove redundant logic between the two modules.
 
-Then you can use this to run the equivalence check with SymbiYosys:
+Then you can use this to run the equivalence check with SBY:
 
 .. code-block:: text
 
