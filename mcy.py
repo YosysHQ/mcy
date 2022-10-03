@@ -257,7 +257,7 @@ def reset_status(db, do_reset=False):
 
             with open("database/mutations2.ys", "w") as f:
                 print("read_ilang database/design.il", file=f)
-                print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
+                print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations2.txt -s database/sources.txt{' ' + ' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
             task = Task("yosys -ql database/mutations2.log database/mutations2.ys")
             task.wait()
