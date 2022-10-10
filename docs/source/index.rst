@@ -24,3 +24,4 @@ All mutated designs are run against the testbench to check that the testbench wi
    testsetup.rst
    eqsetup.rst
    mutate.rst
+   Tutorial <https://yosyshq.readthedocs.io/projects/ap400/en/latest/>
