@@ -675,7 +675,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, details
 
     # Mark tests running in DB (if we are killed after this, "mcy reset" is needed to re-create the queue entries)
     task_id = str(uuid.uuid4())
-    log_sub_info(f"Running task {task_id}")
+    log_sub_info(f"Running task {task_id} ({tst})")
 
     if verbose:
         log_sub_step("Set status to 'RUNNING' for task.")
@@ -700,13 +700,11 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, details
             except Exception:
                 log_error(f"Mutation number '{mut}' not found in database.")
             infomsgs.append("  %d %d %s" % (idx+1, mut, mut_str))
-            if verbose:
-                print(f" {(idx+1)} {mut} {mut_str}")
+            print(f" {(idx+1)} {mut} {mut_str}")
             print(f"{(idx+1)} {mut_str}", file=f)
 
     def callback():
-        if verbose:
-            log_sub_step(f"Task {task_id} ({tst}) finished.")
+        log_sub_info(f"Finishing task {task_id} ({tst})")
         checklist = set(mut_list)
         if verbose:
             log_sub_step(f"Results:")
@@ -729,8 +727,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, details
                 update_mutation(db, cfg, mut)
                 RUNNING.remove((mut, tst))
                 checklist.remove(mut)
-                if verbose:
-                    print(f"  {idx+1} {mut} {res} {mut_str}")
+                print(f"  {idx+1} {mut} {res} {mut_str}")
 
         if len(checklist) != 0:
             log_error("Empty mutation checklist.")
