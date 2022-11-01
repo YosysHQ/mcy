@@ -73,9 +73,13 @@ def exit_mcy(return_code):
     if len(RUNNING)>0:
         database = sqlite3_connect(log=False)
         log_step("Remove 'RUNNING' status for tasks from queue.")
-        for mut, tst in RUNNING:
-            database.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
-        database.commit()
+        try:
+            for mut, tst in RUNNING:
+                database.execute("UPDATE queue SET running = 0 WHERE mutation_id = ? AND test = ?", [mut, tst])
+            database.commit()
+        except Exception:
+            click.secho("==> ERROR : ", fg="red", nl=False, bold=True, err=True)
+            click.secho("Error doing MCY cleanup.", fg="white", bold=True, err=True)
     sys.exit(return_code)
 
 def force_shutdown(signum, frame):
