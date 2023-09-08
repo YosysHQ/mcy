@@ -43,6 +43,12 @@ Install MCY:
 sudo make install
 ```
 
+Install requirements:
+
+```
+pip install click flask
+```
+
 Run an example project (may run for a while):
 
 ```
