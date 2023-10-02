@@ -161,8 +161,8 @@ Then you can use this to run the equivalence check with SBY:
 	ln -s ../../test_eq.sv ../../test_eq.sby .
 	sby -f test_eq.sby
 
-Reporting the result
-~~~~~~~~~~~~~~~~~~~~
+Reporting equivalence
+~~~~~~~~~~~~~~~~~~~~~
 
 Finally, write the result of the equivalence check to the file ``output.txt``, preceded by ``1``:
 
