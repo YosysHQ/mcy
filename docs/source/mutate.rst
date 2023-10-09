@@ -97,9 +97,9 @@ The yosys script (``mutate.ys`` in this example) that you need to generate shoul
 
 After generating the script, execute it with yosys:
 
-  .. code-block:: text
+.. code-block:: text
 
-    yosys -ql mutate.log mutate.ys
+  yosys -ql mutate.log mutate.ys
 
 The Yosys ``mutate`` command
 ----------------------------
