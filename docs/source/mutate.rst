@@ -55,51 +55,51 @@ The yosys script (``mutate.ys`` in this example) that you need to generate shoul
 
 - Read the intermediary file containing the elaborated design:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		echo "read_verilog ../../database/design.il" > mutate.ys
+    echo "read_verilog ../../database/design.il" > mutate.ys
 
 - Apply the mutate command(s) found in ``input.txt``.
 
-	If there is only one mutation, and you do not wish to create a ``mutsel`` input, enter the command as-is, just remove the leading ``1``, e.g. like this:
+  If there is only one mutation, and you do not wish to create a ``mutsel`` input, enter the command as-is, just remove the leading ``1``, e.g. like this:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		cut -f2- -d' ' input.txt >> mutate.ys
+    cut -f2- -d' ' input.txt >> mutate.ys
 
-	If you do wish to add a ``mutsel`` input to the design, you need to add the ``-ctrl`` parameter to the ``mutate`` command's arguments:
+  If you do wish to add a ``mutsel`` input to the design, you need to add the ``-ctrl`` parameter to the ``mutate`` command's arguments:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		while read -r idx mut; do
-			echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }" >> mutate.ys
-		done < input.txt
+    while read -r idx mut; do
+      echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }" >> mutate.ys
+    done < input.txt
 
-	This code snippet works for one or many mutations in ``input.txt`` thanks to the ``while`` loop. If there are multiple mutations to be applied, it will add all the mutate commands to the script. Always make sure to add the control input when there are multiple mutations!
+  This code snippet works for one or many mutations in ``input.txt`` thanks to the ``while`` loop. If there are multiple mutations to be applied, it will add all the mutate commands to the script. Always make sure to add the control input when there are multiple mutations!
 
 - Optionally, add any other yosys commands you wish to use to transform the design to work with your testbench. For example, if you want to run the design on hardware, you may synthesize it here:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		echo "synth_ice40 -top top_module" >> mutate.ys
+    echo "synth_ice40 -top top_module" >> mutate.ys
 
-	You can also change the name of the module if needed:
+  You can also change the name of the module if needed:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		echo "rename top_module mutated" >> mutate.ys
+    echo "rename top_module mutated" >> mutate.ys
 
 - Finally, export the design to a format that can be used by your testbench. In the example of the hardware test, this might be json:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		echo "write_json mutated.json" >> mutate.ys
+    echo "write_json mutated.json" >> mutate.ys
 
 After generating the script, execute it with yosys:
 
-	.. code-block:: text
+  .. code-block:: text
 
-		yosys -ql mutate.log mutate.ys
+    yosys -ql mutate.log mutate.ys
 
 The Yosys ``mutate`` command
 ----------------------------
