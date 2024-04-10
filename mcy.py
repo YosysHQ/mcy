@@ -648,7 +648,7 @@ def list_command(filter, output, details, trace):
         print(file=output)
 
         if details:
-            print(f"  {mut}" % mut, file=output)
+            print(f"  {mut}", file=output)
             for tst, res in db.execute("SELECT test, result FROM results WHERE mutation_id = ?", [mid]):
                 print(f"  result from \"{tst}\": {res}", file=output)
             print(file=output)
