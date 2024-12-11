@@ -283,7 +283,7 @@ def reset_status(db, cfg, do_reset=False):
 
             log_step("Creating additional mutations script file.")
             with open("database/mutations2.ys", "w") as f:
-                print("read_ilang database/design.il", file=f)
+                print("read_rtlil database/design.il", file=f)
                 print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations2.txt -s database/sources.txt{' ' + ' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
             log_step("Creating additional mutations.")
@@ -473,7 +473,7 @@ def init_command(force, nosetup, trace):
     with open("database/design.ys", "w") as f:
         for line in cfg.script:
             print(line, file=f)
-        print("write_ilang database/design.il", file=f)
+        print("write_rtlil database/design.il", file=f)
 
     log_step("Creating design RTL.")
     task = Task("yosys -ql database/design.log database/design.ys")
@@ -481,7 +481,7 @@ def init_command(force, nosetup, trace):
 
     log_step("Creating mutations script file.")
     with open("database/mutations.ys", "w") as f:
-        print("read_ilang database/design.il", file=f)
+        print("read_rtlil database/design.il", file=f)
         print(f"mutate -list {cfg.opt_size} -seed {cfg.opt_seed} -none{''.join(' -cfg %s %d' % (k, v) for k, v, in sorted(cfg.mutopts.items()))}{' -mode ' + cfg.opt_mode if cfg.opt_mode else ''} -o database/mutations.txt -s database/sources.txt{' ' + ' '.join(cfg.select) if len(cfg.select) else ''}", file=f)
 
     log_step("Creating mutations.")

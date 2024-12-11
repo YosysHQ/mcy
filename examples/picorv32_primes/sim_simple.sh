@@ -6,7 +6,7 @@ exec 2>&1
 set -ex
 
 {
-	echo "read_ilang ../../database/design.il"
+	echo "read_rtlil ../../database/design.il"
 	while read -r idx mut; do
 		echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 	done < input.txt

@@ -68,7 +68,7 @@ if [[ ( "$output_file" == *.v ) ]]; then
 elif [[ ( "$output_file" == *.sv ) ]]; then
 	write_cmd="write_verilog -norename -sv $output_file"
 elif [[ ( "$output_file" == *.il ) ]]; then
-	write_cmd="write_ilang $output_file"
+	write_cmd="write_rtlil $output_file"
 else
 	echo "Unrecognized file extension: '$output_file' (this script can write .v, .sv and .il files)" 1>&2
 	# usage 1>&2
@@ -76,7 +76,7 @@ else
 fi
 
 {
-	echo "read_ilang $design_file"
+	echo "read_rtlil $design_file"
 	while read -r idx mut; do
 		if [[ "$use_ctrl" -eq 1 ]]; then
 			echo "mutate -ctrl mutsel ${ctrl_width} ${idx} ${mut#* }"

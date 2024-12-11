@@ -4,11 +4,11 @@ exec 2>&1
 set -ex
 
 {
-	echo "read_ilang ../../database/design.il"
+	echo "read_rtlil ../../database/design.il"
 	while read -r idx mut; do
 		echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 	done < input.txt
-	echo "write_ilang mutated.il"
+	echo "write_rtlil mutated.il"
 } > mutate.ys
 
 yosys -ql mutate.log mutate.ys

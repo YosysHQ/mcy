@@ -8,7 +8,7 @@ smtbmc boolector
 
 [script]
 read_verilog -sv test_fm.sv
-read_ilang mutated.il
+read_rtlil mutated.il
 prep -top testbench
 flatten
 opt -fast

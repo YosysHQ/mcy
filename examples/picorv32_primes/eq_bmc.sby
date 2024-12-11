@@ -16,7 +16,7 @@ smtbmc yices
 output("verilog_defines -Dmutidx=%s" % task)
 --pycode-end--
 read_verilog -sv miter.sv
-read_ilang mutated.il
+read_rtlil mutated.il
 prep -top miter
 fmcombine miter ref uut
 flatten

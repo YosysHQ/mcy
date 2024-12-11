@@ -8,7 +8,7 @@ smtbmc yices
 
 [script]
 read_verilog -sv test_eq.sv
-read_ilang mutated.il
+read_rtlil mutated.il
 prep -top miter
 fmcombine miter ref uut
 flatten
