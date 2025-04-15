@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 PROJECT(ScintillaEdit)
 
 FIND_PACKAGE(Qt5Widgets REQUIRED)
@@ -6,7 +6,7 @@ FIND_PACKAGE(Qt5Widgets REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(SCINTILLA_EDIT_SRC 
+set(SCINTILLA_EDIT_SRC
     qt/ScintillaEdit/ScintillaEdit.cpp
     qt/ScintillaEdit/ScintillaDocument.cpp
     qt/ScintillaEdit/ScintillaEdit.h

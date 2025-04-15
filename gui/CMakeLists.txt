@@ -1,5 +1,5 @@
 # TODO: sensible minimum CMake version
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.13)
 project(mcy-gui)
 
 set(CMAKE_CXX_STANDARD 14)
