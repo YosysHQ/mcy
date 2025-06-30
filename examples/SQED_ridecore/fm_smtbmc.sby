@@ -1,0 +1,41 @@
+[options]
+mode bmc
+depth 13
+timeout @TIMEOUT@
+expect pass,fail,timeout
+aigsmt none
+
+
+[engines]
+smtbmc yices
+
+
+[script]
+read_verilog -sv test_fm.sv inst_constraints.v modify_instruction.v properties.v qed_decoder.v qed_i_cache.v qed_instruction_mux.v qed.v 
+#read_ilang mutated.il
+read_rtlil mutated.il
+#clk2fflogic
+async2sync
+chformal -lower
+chformal -assume -early
+prep -top testbench
+hierarchy -check
+proc
+flatten
+memory
+opt -fast
+dffunmap
+sim -clock din_clk -resetn din_rst_n -n 5 -rstlen 5 -zinit -w testbench
+setundef -undriven -expose
+
+
+[files]
+../../test_fm.sv
+../../rtl/qed_files/inst_constraints.v 
+../../rtl/qed_files/modify_instruction.v 
+../../rtl/qed_files/properties.v
+../../rtl/qed_files/qed_decoder.v 
+../../rtl/qed_files/qed_i_cache.v 
+../../rtl/qed_files/qed_instruction_mux.v
+../../rtl/qed_files/qed.v
+mutated.il
