@@ -1545,7 +1545,11 @@ QtCharEdit::QtCharEdit(QWidget *parent)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(m_lineEdit);
+#if QT_VERSION_MAJOR >= 6
+    layout->setContentsMargins(0,0,0,0);
+#else
     layout->setMargin(0);
+#endif
     m_lineEdit->installEventFilter(this);
     m_lineEdit->setReadOnly(true);
     m_lineEdit->setFocusProxy(this);
@@ -1669,7 +1673,13 @@ void QtCharEdit::keyReleaseEvent(QKeyEvent *e)
 void QtCharEdit::paintEvent(QPaintEvent *)
 {
     QStyleOption opt;
+#if QT_VERSION_MAJOR >= 6
+    opt.rect = this->rect();
+    opt.state = isEnabled() ? QStyle::State_Enabled : QStyle::State_None;
+    opt.palette = this->palette();
+#else
     opt.init(this);
+#endif
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
@@ -2207,7 +2217,13 @@ void QtColorEditWidget::buttonClicked()
 {
     bool ok = false;
     QRgb oldRgba = m_color.rgba();
+#if QT_VERSION_MAJOR >= 6
+    QColor color = QColorDialog::getColor(QColor::fromRgba(oldRgba), this);
+    ok = color.isValid();
+    QRgb newRgba = color.rgba();
+#else
     QRgb newRgba = QColorDialog::getRgba(oldRgba, &ok, this);
+#endif
     if (ok && newRgba != oldRgba) {
         setValue(QColor::fromRgba(newRgba));
         emit valueChanged(m_color);
@@ -2241,7 +2257,13 @@ bool QtColorEditWidget::eventFilter(QObject *obj, QEvent *ev)
 void QtColorEditWidget::paintEvent(QPaintEvent *)
 {
     QStyleOption opt;
+#if QT_VERSION_MAJOR >= 6
+    opt.rect = this->rect();
+    opt.state = isEnabled() ? QStyle::State_Enabled : QStyle::State_None;
+    opt.palette = this->palette();
+#else
     opt.init(this);
+#endif
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
@@ -2463,7 +2485,13 @@ bool QtFontEditWidget::eventFilter(QObject *obj, QEvent *ev)
 void QtFontEditWidget::paintEvent(QPaintEvent *)
 {
     QStyleOption opt;
+#if QT_VERSION_MAJOR >= 6
+    opt.rect = this->rect();
+    opt.state = isEnabled() ? QStyle::State_Enabled : QStyle::State_None;
+    opt.palette = this->palette();
+#else
     opt.init(this);
+#endif
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }

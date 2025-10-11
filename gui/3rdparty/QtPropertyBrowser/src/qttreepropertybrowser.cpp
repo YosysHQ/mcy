@@ -385,6 +385,9 @@ void QtPropertyEditorDelegate::paint(QPainter *painter, const QStyleOptionViewIt
         opt.palette.setColor(QPalette::Text, opt.palette.color(QPalette::BrightText));
     } else {
         c = m_editorPrivate->calculatedBackgroundColor(m_editorPrivate->indexToBrowserItem(index));
+#if QT_VERSION_MAJOR >= 6
+        #define QStyleOptionViewItemV2 QStyleOptionViewItem
+#endif
         if (c.isValid() && (opt.features & QStyleOptionViewItemV2::Alternate))
             c = c.lighter(112);
     }
@@ -488,7 +491,11 @@ static QIcon drawIndicatorIcon(const QPalette &palette, QStyle *style)
 void QtTreePropertyBrowserPrivate::init(QWidget *parent)
 {
     QHBoxLayout *layout = new QHBoxLayout(parent);
+#if QT_VERSION_MAJOR >= 6
+    layout->setContentsMargins(0,0,0,0);
+#else
     layout->setMargin(0);
+#endif
     m_treeWidget = new QtPropertyEditorView(parent);
     m_treeWidget->setEditorPrivate(this);
     m_treeWidget->setIconSize(QSize(18, 18));
@@ -611,8 +618,11 @@ void QtTreePropertyBrowserPrivate::propertyInserted(QtBrowserItem *index, QtBrow
     m_indexToItem[index] = newItem;
 
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
+    #if QT_VERSION_MAJOR >= 6
+    m_treeWidget->setExpanded(m_treeWidget->indexFromItem(newItem), true);
+    #else
     m_treeWidget->setItemExpanded(newItem, true);
-
+    #endif
     updateItem(newItem);
 }
 
