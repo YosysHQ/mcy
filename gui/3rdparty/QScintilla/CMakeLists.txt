@@ -222,7 +222,72 @@ set(QSCINTILLA_SRC
     scintilla/src/XPM.cpp
 )
 
-add_library(QScintilla STATIC ${QSCINTILLA_SRC})
+set(QSCINTILLA_HEADERS
+    #src/Qsci/qsciglobal.h
+    src/Qsci/qsciscintilla.h
+    src/Qsci/qsciscintillabase.h
+    src/Qsci/qsciabstractapis.h
+    src/Qsci/qsciapis.h
+    #src/Qsci/qscicommand.h
+    #src/Qsci/qscicommandset.h
+    #src/Qsci/qscidocument.h
+    src/Qsci/qscilexer.h
+    src/Qsci/qscilexerasm.h
+    src/Qsci/qscilexeravs.h
+    src/Qsci/qscilexerbash.h
+    src/Qsci/qscilexerbatch.h
+    src/Qsci/qscilexercmake.h
+    src/Qsci/qscilexercoffeescript.h
+    src/Qsci/qscilexercpp.h
+    src/Qsci/qscilexercsharp.h
+    src/Qsci/qscilexercss.h
+    src/Qsci/qscilexercustom.h
+    src/Qsci/qscilexerd.h
+    src/Qsci/qscilexerdiff.h
+    src/Qsci/qscilexeredifact.h
+    src/Qsci/qscilexerfortran.h
+    src/Qsci/qscilexerfortran77.h
+    src/Qsci/qscilexerhex.h
+    src/Qsci/qscilexerhtml.h
+    src/Qsci/qscilexeridl.h
+    src/Qsci/qscilexerintelhex.h
+    src/Qsci/qscilexerjava.h
+    src/Qsci/qscilexerjavascript.h
+    src/Qsci/qscilexerjson.h
+    src/Qsci/qscilexerlua.h
+    src/Qsci/qscilexermakefile.h
+    src/Qsci/qscilexermarkdown.h
+    src/Qsci/qscilexermasm.h
+    src/Qsci/qscilexermatlab.h
+    src/Qsci/qscilexernasm.h
+    src/Qsci/qscilexeroctave.h
+    src/Qsci/qscilexerpascal.h
+    src/Qsci/qscilexerperl.h
+    src/Qsci/qscilexerpostscript.h
+    src/Qsci/qscilexerpo.h
+    src/Qsci/qscilexerpov.h
+    src/Qsci/qscilexerproperties.h
+    src/Qsci/qscilexerpython.h
+    src/Qsci/qscilexerruby.h
+    src/Qsci/qscilexerspice.h
+    src/Qsci/qscilexersql.h
+    src/Qsci/qscilexersrec.h
+    src/Qsci/qscilexertcl.h
+    src/Qsci/qscilexertekhex.h
+    src/Qsci/qscilexertex.h
+    src/Qsci/qscilexerverilog.h
+    src/Qsci/qscilexervhdl.h
+    src/Qsci/qscilexerxml.h
+    src/Qsci/qscilexeryaml.h
+    src/Qsci/qscimacro.h
+    #src/Qsci/qscistyle.h
+    #src/Qsci/qscistyledtext.h
+    src/SciClasses.h
+    src/ScintillaQt.h
+)
+
+qt6_wrap_cpp(QSCINTILLA_MOC_HEADERS ${QSCINTILLA_HEADERS})
+add_library(QScintilla STATIC ${QSCINTILLA_SRC}  ${QSCINTILLA_MOC_HEADERS})
 target_compile_definitions(QScintilla PRIVATE SCINTILLA_QT=1 SCI_LEXER=1 EXPORT_IMPORT_API=)
 target_compile_options(QScintilla PRIVATE -Wno-strict-overflow -Wno-deprecated-declarations)
 target_include_directories(QScintilla PRIVATE src scintilla/include scintilla/src scintilla/lexlib)

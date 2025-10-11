@@ -20,10 +20,10 @@
 #ifndef CODEVIEW_H
 #define CODEVIEW_H
 
-#include "ScintillaEdit.h"
+#include "Qsci/qsciscintilla.h"
 #include "database.h"
 
-class CodeView : public ScintillaEdit
+class CodeView : public QsciScintilla
 {
     Q_OBJECT
 

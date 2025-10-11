@@ -21,9 +21,10 @@
 #include <QFontDatabase>
 #include <QMessageBox>
 #include "SciLexer.h"
-#include "ScintillaEdit.h"
+#include "Qsci/qsciscintilla.h"
+#include "Qsci/qscilexerverilog.h"
 
-CodeView::CodeView(QString filename, QWidget *parent) : filename(filename), ScintillaEdit(parent) {}
+CodeView::CodeView(QString filename, QWidget *parent) : filename(filename), QsciScintilla(parent) {}
 
 CodeView::~CodeView() {}
 
@@ -71,6 +72,10 @@ static const char *MonospaceFont()
 }
 void CodeView::loadContent(const char *content)
 {
+    QsciLexerVerilog *verilogLexer = new QsciLexerVerilog(this);
+    setLexer(verilogLexer);
+    setText(content);
+/*
     styleSetFont(STYLE_DEFAULT, MonospaceFont());
     setScrollWidth(200);
     setScrollWidthTracking(1);
@@ -129,6 +134,7 @@ void CodeView::loadContent(const char *content)
 
     indicSetStyle(0, INDIC_FULLBOX);
     setIndicatorCurrent(0);
+*/
 }
 
 static int extractLineNumber(QString line)
@@ -140,6 +146,7 @@ static int extractLineNumber(QString line)
 }
 
 void CodeView::selectLine(QString line) { 
+/*
     setCaretLineVisible(true);
     gotoLine(extractLineNumber(line) - 1);
     indicatorClearRange(0,length());
@@ -157,15 +164,17 @@ void CodeView::selectLine(QString line) {
             indicatorFillRange(start, end-start);
         }
     }
+*/
 }
 
 void CodeView::unselectLine() { 
-    setCaretLineVisible(false);
-    indicatorClearRange(0,length());
+    //setCaretLineVisible(false);
+    //indicatorClearRange(0,length());
 }
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)
 {
+/*
     for (int i = 0; i < yetToCover.count(); ++i) {
         int line = extractLineNumber(yetToCover[i]) - 1;
         if (line < 0)
@@ -204,10 +213,12 @@ void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QStrin
         }
         ++it;
     }
+*/
 }
 
 void CodeView::find(QString text, bool forward)
 {
+/*
     int start_pos = int(forward ? selectionEnd() : selectionStart());
     int end_pos = forward ? length() : 0;
     QPair<int, int> found = findText(0, text.toUtf8().constData(), start_pos, end_pos);
@@ -228,4 +239,5 @@ void CodeView::find(QString text, bool forward)
             QMessageBox::warning(this, "Not found", "Text not found.");
         }
     }
+*/
 }
