@@ -1,8 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 PROJECT(QScintilla)
 
-FIND_PACKAGE(Qt6Widgets REQUIRED)
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -286,9 +284,14 @@ set(QSCINTILLA_HEADERS
     src/ScintillaQt.h
 )
 
-qt6_wrap_cpp(QSCINTILLA_MOC_HEADERS ${QSCINTILLA_HEADERS})
+if (Qt6_FOUND)
+    qt6_wrap_cpp(QSCINTILLA_MOC_HEADERS ${QSCINTILLA_HEADERS})
+else()
+    qt5_wrap_cpp(QSCINTILLA_MOC_HEADERS ${QSCINTILLA_HEADERS})
+endif()
+
 add_library(QScintilla STATIC ${QSCINTILLA_SRC}  ${QSCINTILLA_MOC_HEADERS})
 target_compile_definitions(QScintilla PRIVATE SCINTILLA_QT=1 SCI_LEXER=1 EXPORT_IMPORT_API=)
 target_compile_options(QScintilla PRIVATE -Wno-strict-overflow -Wno-deprecated-declarations)
 target_include_directories(QScintilla PRIVATE src scintilla/include scintilla/src scintilla/lexlib)
-target_link_libraries(QScintilla Qt6::Widgets)
+target_link_libraries(QScintilla ${QT_LIBRARIES})

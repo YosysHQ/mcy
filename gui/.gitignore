@@ -7,3 +7,4 @@ Makefile
 /CMakeCache.txt
 install_manifest.txt
 /.vscode
+/.qt
