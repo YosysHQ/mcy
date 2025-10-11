@@ -533,7 +533,7 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
 
 void BrowserWidget::onSourceDoubleClicked(QTreeWidgetItem *item, int column)
 {
-    if (item->parent()->parent() != nullptr) {
+    if (item->parent() !=nullptr && item->parent()->parent() != nullptr) {
         selectMutation(item->data(0, Qt::UserRole).toString());
     }
 }
