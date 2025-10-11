@@ -5864,10 +5864,11 @@ void QtFontPropertyManager::setValue(QtProperty *property, const QFont &val)
     const QFont oldVal = it.value();
 #if QT_VERSION_MAJOR >= 6
     if (oldVal == val && oldVal.resolve(val) == val)
-#else
-    if (oldVal == val && oldVal.resolve() == val)
-#endif
         return;
+#else
+    if (oldVal == val && oldVal.resolve() == val.resolve())
+        return;
+#endif
 
     it.value() = val;
 
