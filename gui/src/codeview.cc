@@ -20,9 +20,9 @@
 #include "codeview.h"
 #include <QFontDatabase>
 #include <QMessageBox>
-#include "SciLexer.h"
-#include "Qsci/qsciscintilla.h"
 #include "Qsci/qscilexerverilog.h"
+#include "Qsci/qsciscintilla.h"
+#include "SciLexer.h"
 
 CodeView::CodeView(QString filename, QWidget *parent) : filename(filename), QsciScintilla(parent) {}
 
@@ -72,69 +72,72 @@ static const char *MonospaceFont()
 }
 void CodeView::loadContent(const char *content)
 {
-    QsciLexerVerilog *verilogLexer = new QsciLexerVerilog(this);
-    setLexer(verilogLexer);
-    setText(content);
-/*
-    styleSetFont(STYLE_DEFAULT, MonospaceFont());
+    QFont monospaceFont("Monospace");
+    monospaceFont.setPointSize(10);
     setScrollWidth(200);
-    setScrollWidthTracking(1);
-    setUndoCollection(false);
+    setScrollWidthTracking(true);
+    SendScintilla(QsciScintilla::SCI_SETUNDOCOLLECTION, 0);
     // Line number
-    setMarginWidthN(0, 40);
+    setMarginWidth(0, 40);
 
-    // Verilog lexer
-    setLexer(SCLEX_VERILOG);
-    setKeyWords(0, verilog_instre1);
-    setKeyWords(1, verilog_instre2);
-    styleSetFore(SCE_V_DEFAULT, 0x000000);
-    styleSetFore(SCE_V_COMMENT, 0x008000);
-    styleSetFore(SCE_V_COMMENTLINE, 0x008000);
-    styleSetFore(SCE_V_COMMENTLINEBANG, 0x008080);
-    styleSetFore(SCE_V_NUMBER, 0xFF8000);
-    styleSetFore(SCE_V_WORD, 0x8000FF);
-    styleSetFore(SCE_V_STRING, 0x808080);
-    styleSetFore(SCE_V_WORD2, 0x8000FF);
-    styleSetFore(SCE_V_WORD3, 0x8000FF);
-    styleSetFore(SCE_V_PREPROCESSOR, 0x804000);
-    styleSetFore(SCE_V_OPERATOR, 0x000080);
-    styleSetFore(SCE_V_IDENTIFIER, 0x000000);
-    styleSetFore(SCE_V_STRINGEOL, 0x808080);
-    styleSetFore(SCE_V_USER, 0x000000);
-    styleSetFore(SCE_V_COMMENT_WORD, 0x008000);
-    styleSetFore(SCE_V_INPUT, 0x000000);
-    styleSetFore(SCE_V_OUTPUT, 0x000000);
-    styleSetFore(SCE_V_INOUT, 0x000000);
-    styleSetFore(SCE_V_PORT_CONNECT, 0x000000);
+    QsciLexerVerilog *verilogLexer = new QsciLexerVerilog(this);
+    verilogLexer->setDefaultFont(monospaceFont);
+    for (int style = 0; style <= verilogLexer->styleBitsNeeded(); ++style)
+        verilogLexer->setFont(monospaceFont, style);
+    setLexer(verilogLexer);
+
+    // Keywords
+    SendScintilla(SCI_SETKEYWORDS, (int)0, (const char *)verilog_instre1);
+    SendScintilla(SCI_SETKEYWORDS, (int)1, (const char *)verilog_instre2);
+
+    // Colors
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::Default);
+    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::Comment);
+    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::CommentLine);
+    verilogLexer->setColor(QColor("#008080"), QsciLexerVerilog::CommentBang);
+    verilogLexer->setColor(QColor("#FF8000"), QsciLexerVerilog::Number);
+    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::Keyword);
+    verilogLexer->setColor(QColor("#808080"), QsciLexerVerilog::String);
+    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::KeywordSet2);
+    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::SystemTask);
+    verilogLexer->setColor(QColor("#804000"), QsciLexerVerilog::Preprocessor);
+    verilogLexer->setColor(QColor("#000080"), QsciLexerVerilog::Operator);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::Identifier);
+    verilogLexer->setColor(QColor("#808080"), QsciLexerVerilog::UnclosedString);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::UserKeywordSet);
+    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::CommentKeyword);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareInputPort);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareOutputPort);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareInputOutputPort);
+    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::PortConnection);
 
     setText(content);
-    gotoLine(0);
+    SendScintilla(QsciScintilla::SCI_GOTOLINE, 0);
     setReadOnly(true);
 
     // Caret
     setCaretLineVisible(true);
-    setCaretLineVisibleAlways(true);
-    setCaretLineBack(0xe0e0e0);
+    SendScintilla(QsciScintilla::SCI_SETCARETLINEVISIBLEALWAYS, 1);
+    setCaretLineBackgroundColor(QColor("#e0e0e0"));
 
     // Icon margin
-    setMarginWidthN(1, 20);
-    setMarginTypeN(1, SC_MARGIN_SYMBOL);
-    markerDefine(0, SC_MARK_CIRCLE);
-    markerSetFore(0, 0x0000ff);
-    markerSetBack(0, 0x0000ff);
-    markerDefine(1, SC_MARK_BACKGROUND);
-    markerSetBack(1, 0x0000e0);
+    setMarginWidth(1, 20);
+    setMarginType(1, MarginType::SymbolMargin);
+    markerDefine(MarkerSymbol::Circle, 0);
+    setMarkerForegroundColor(QColor("#0000ff"), 0);
+    setMarkerBackgroundColor(QColor("#0000ff"), 0);
+    markerDefine(MarkerSymbol::Background, 1);
+    setMarkerBackgroundColor(QColor("#0000e0"), 1);
 
     // Counter margin
-    setMarginWidthN(2, 20);
-    setMarginTypeN(2, SC_MARGIN_RTEXT);
-    setMarginSensitiveN(0, true);
-    setMarginSensitiveN(1, true);
-    setMarginSensitiveN(2, true);
+    setMarginWidth(2, 20);
+    setMarginType(2, MarginType::TextMarginRightJustified);
+    setMarginSensitivity(0, true);
+    setMarginSensitivity(1, true);
+    setMarginSensitivity(2, true);
 
-    indicSetStyle(0, INDIC_FULLBOX);
-    setIndicatorCurrent(0);
-*/
+    indicatorDefine(QsciScintilla::BoxIndicator, 0);
+    SendScintilla(SCI_SETINDICATORCURRENT, 0);
 }
 
 static int extractLineNumber(QString line)
@@ -145,7 +148,8 @@ static int extractLineNumber(QString line)
     return line.toInt();
 }
 
-void CodeView::selectLine(QString line) { 
+void CodeView::selectLine(QString line)
+{
 /*
     setCaretLineVisible(true);
     gotoLine(extractLineNumber(line) - 1);
@@ -167,9 +171,10 @@ void CodeView::selectLine(QString line) {
 */
 }
 
-void CodeView::unselectLine() { 
-    //setCaretLineVisible(false);
-    //indicatorClearRange(0,length());
+void CodeView::unselectLine()
+{
+    // setCaretLineVisible(false);
+    // indicatorClearRange(0,length());
 }
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)

@@ -163,17 +163,14 @@ void MainWindow::openCodeViewTab(QString filename)
         QFileInfo fi = QFileInfo(filename);
         code->setCoverage(database.getCoverage(filename), database.getLinesYetToCover(filename));
         views.insert(filename, code);
-        int idx = centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"), fi.completeBaseName() + "." + fi.completeSuffix());
+        int idx = centralTabWidget->addTab(code, QIcon(":/icons/resources/page_white_text.png"),
+                                           fi.completeBaseName() + "." + fi.completeSuffix());
         centralTabWidget->setTabToolTip(idx, filename);
-        connect(code, &QsciScintilla::marginClicked, [=](int position, int modifiers, int margin) {
-            int line = 0;
-            int index = 0;
-            code->lineIndexFromPosition(position, &line, &index);  // get line and index
+        connect(code, &QsciScintilla::marginClicked, [=](int margin, int line, Qt::KeyboardModifiers state) {
             QString source = filename + ":" + QString::number(line + 1);
             source = browser->selectSource(source);
             QStringList param = source.split(':');
             selectLine(param.at(0), param.at(1));
-            printf("%s %s\n",param.at(0), param.at(1));
         });
     }
     centralTabWidget->setCurrentWidget(views[filename]);
