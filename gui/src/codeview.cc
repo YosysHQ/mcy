@@ -121,13 +121,13 @@ void CodeView::loadContent(const char *content)
     setCaretLineBackgroundColor(QColor("#e0e0e0"));
 
     // Icon margin
-    setMarginWidth(1, 20);
+    setMarginWidth(1, 30);
     setMarginType(1, MarginType::SymbolMargin);
     markerDefine(MarkerSymbol::Circle, 0);
-    setMarkerForegroundColor(QColor("#0000ff"), 0);
-    setMarkerBackgroundColor(QColor("#0000ff"), 0);
+    setMarkerForegroundColor(QColor("#ff0000"), 0);
+    setMarkerBackgroundColor(QColor("#ff0000"), 0);
     markerDefine(MarkerSymbol::Background, 1);
-    setMarkerBackgroundColor(QColor("#0000e0"), 1);
+    setMarkerBackgroundColor(QColor("#e00000"), 1);
 
     // Counter margin
     setMarginWidth(2, 20);
@@ -136,7 +136,7 @@ void CodeView::loadContent(const char *content)
     setMarginSensitivity(1, true);
     setMarginSensitivity(2, true);
 
-    indicatorDefine(QsciScintilla::BoxIndicator, 0);
+    indicatorDefine(QsciScintilla::FullBoxIndicator, 0);
     SendScintilla(SCI_SETINDICATORCURRENT, 0);
 }
 
@@ -150,42 +150,43 @@ static int extractLineNumber(QString line)
 
 void CodeView::selectLine(QString line)
 {
-/*
     setCaretLineVisible(true);
-    gotoLine(extractLineNumber(line) - 1);
-    indicatorClearRange(0,length());
+    int ln = extractLineNumber(line) - 1;
+    setCursorPosition(ln, 0);
+    ensureLineVisible(ln);
+    SendScintilla(SCI_SETINDICATORCURRENT, 0);
+    SendScintilla(SCI_INDICATORCLEARRANGE, 0, length());
     if (line.contains('-')) {
         QStringList parts = line.split('-');
         if (parts.at(0).contains('.') && parts.at(1).contains('.')) {
             QString part = parts.at(0);
             int ln = part.left(part.indexOf('.')).toInt()-1;
             int pos = part.mid(part.indexOf('.')+1).toInt();
-            sptr_t start = positionFromLine(ln) + pos - 1;
+            int start = positionFromLineIndex(ln, pos - 1);
             part = parts.at(1);
             ln = part.left(part.indexOf('.')).toInt()-1;
             pos = part.mid(part.indexOf('.')+1).toInt();
-            sptr_t end = positionFromLine(ln) + pos -1;
-            indicatorFillRange(start, end-start);
+            int end = positionFromLineIndex(ln, pos -1);
+            SendScintilla(SCI_SETINDICATORCURRENT, 0);
+            SendScintilla(SCI_INDICATORFILLRANGE, start, end - start);
         }
     }
-*/
 }
-
 void CodeView::unselectLine()
 {
-    // setCaretLineVisible(false);
-    // indicatorClearRange(0,length());
+    setCaretLineVisible(false);
+    SendScintilla(SCI_SETINDICATORCURRENT, 0);
+    SendScintilla(SCI_INDICATORCLEARRANGE, 0, length());
 }
 
 void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QString> yetToCover)
 {
-/*
     for (int i = 0; i < yetToCover.count(); ++i) {
         int line = extractLineNumber(yetToCover[i]) - 1;
         if (line < 0)
             continue;
-        marginSetText(line, "?");
-        marginSetStyle(line, STYLE_LINENUMBER);
+        SendScintilla(SCI_MARGINSETTEXT, line, "?");
+        SendScintilla(SCI_MARGINSETSTYLE, line, STYLE_LINENUMBER);
     }
 
     QMap<int, QPair<int, int>> cov;
@@ -209,40 +210,34 @@ void CodeView::setCoverage(QMap<QString, QPair<int, int>> coverage, QList<QStrin
             if (val.second > 0) {
                 markerAdd(line, 0);
                 // markerAdd(line,1);
-                marginSetText(line, std::to_string(-val.second).c_str());
-                marginSetStyle(line, STYLE_LINENUMBER);
+                SendScintilla(SCI_MARGINSETTEXT, line, std::to_string(-val.second).c_str());
+                SendScintilla(SCI_MARGINSETSTYLE, line, STYLE_LINENUMBER);
             } else {
-                marginSetText(line, std::to_string(val.first).c_str());
-                marginSetStyle(line, STYLE_LINENUMBER);
+                SendScintilla(SCI_MARGINSETTEXT, line, std::to_string(val.first).c_str());
+                SendScintilla(SCI_MARGINSETSTYLE, line, STYLE_LINENUMBER);
             }
         }
         ++it;
     }
-*/
 }
 
 void CodeView::find(QString text, bool forward)
 {
-/*
-    int start_pos = int(forward ? selectionEnd() : selectionStart());
-    int end_pos = forward ? length() : 0;
-    QPair<int, int> found = findText(0, text.toUtf8().constData(), start_pos, end_pos);
-    if (found.first >= 0) {
-        ensureVisible(lineFromPosition(found.first));
-        setSel(found.first, found.second);
+    if (text.isEmpty())
         return;
-    } else {
-        // try wrapping
-        start_pos = int(forward ? 0 : length());
-        end_pos = forward ? length() : 0;
-        found = findText(0, text.toUtf8().constData(), start_pos, end_pos);
-        if (found.first >= 0) {
-            ensureVisible(lineFromPosition(found.first));
-            setSel(found.first, found.second);
-            return;
-        } else {
-            QMessageBox::warning(this, "Not found", "Text not found.");
-        }
+    bool found = findFirst(
+        text,
+        false,       // regexp
+        false,       // case sensitive
+        false,       // whole words
+        true,        // wrap around
+        forward,     // search forward
+        -1,          // line (current line)
+        -1,          // index (current index)
+        true         // show selection
+    );
+
+    if (!found) {
+        QMessageBox::warning(this, "Not found", "Text not found.");
     }
-*/
 }
