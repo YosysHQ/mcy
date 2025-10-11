@@ -82,8 +82,11 @@ void CodeView::loadContent(const char *content)
 
     QsciLexerVerilog *verilogLexer = new QsciLexerVerilog(this);
     verilogLexer->setDefaultFont(monospaceFont);
-    for (int style = 0; style <= verilogLexer->styleBitsNeeded(); ++style)
+    setFont(monospaceFont);
+    for (int style = 0; style <= verilogLexer->styleBitsNeeded(); ++style) {
         verilogLexer->setFont(monospaceFont, style);
+        verilogLexer->setColor(verilogLexer->defaultColor(style), style);
+    }
     setLexer(verilogLexer);
 
     // Keywords
