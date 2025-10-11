@@ -21,6 +21,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QFileInfo>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QMenu>
@@ -28,7 +29,6 @@
 #include <QTimer>
 #include <QToolBar>
 #include <QTreeWidgetItem>
-#include <QFileInfo>
 
 BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(parent), database(database)
 {
@@ -120,7 +120,8 @@ BrowserWidget::BrowserWidget(DbManager *database, QWidget *parent) : QWidget(par
     propertyEditor->treeWidget()->setContextMenuPolicy(Qt::CustomContextMenu);
     propertyEditor->treeWidget()->setSelectionMode(QAbstractItemView::ExtendedSelection);
     propertyEditor->treeWidget()->viewport()->setMouseTracking(true);
-    connect(propertyEditor->treeWidget(), &QTreeWidget::customContextMenuRequested, this, &BrowserWidget::prepareContextMenu);
+    connect(propertyEditor->treeWidget(), &QTreeWidget::customContextMenuRequested, this,
+            &BrowserWidget::prepareContextMenu);
 
     tagFilter = new QComboBox();
     tagFilter->addItems(database->getUniqueTags(true));
@@ -357,7 +358,9 @@ void BrowserWidget::onSourceSelectionChanged(const QItemSelection &selected, con
     if (mutationId != -1) {
         QString msg = getMutationMessage(mutationId);
         QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
-        propertyEditor->setBackgroundColor(propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)), QColor(0, 178, 0, 127));
+        propertyEditor->setBackgroundColor(
+                propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)),
+                QColor(0, 178, 0, 127));
 
         QtProperty *topItem = addTopLevelProperty("Source");
         addProperty(topItem, QVariant::String, "Name", source);
@@ -401,7 +404,7 @@ void BrowserWidget::onTagMutationSelectionChanged(const QItemSelection &selected
         mutationId = item->data(0, Qt::UserRole).toInt();
         if (item->parent()->parent() != nullptr) {
             source = item->data(0, Qt::UserRole).toString();
-            mutationId =  item->parent()->data(0, Qt::UserRole).toInt();
+            mutationId = item->parent()->data(0, Qt::UserRole).toInt();
         }
     }
 
@@ -436,26 +439,50 @@ QString BrowserWidget::getMutationMessage(int mutationId)
     auto options = database->getMutationOption(mutationId);
     QString mode, module, cell, port, portbit, ctrlbit;
     for (auto option : options) {
-        if (option.first == "mode") mode = option.second;
-        else if (option.first ==  "module") module = option.second;
-        else if (option.first == "cell") cell = option.second;
-        else if (option.first == "port") port = option.second;
-        else if (option.first == "portbit") portbit = option.second;
-        else if (option.first == "ctrlbit") ctrlbit = option.second;
+        if (option.first == "mode")
+            mode = option.second;
+        else if (option.first == "module")
+            module = option.second;
+        else if (option.first == "cell")
+            cell = option.second;
+        else if (option.first == "port")
+            port = option.second;
+        else if (option.first == "portbit")
+            portbit = option.second;
+        else if (option.first == "ctrlbit")
+            ctrlbit = option.second;
     }
     QString msg;
-    if (mode=="none")
+    if (mode == "none")
         msg = QString("None");
-    else if (mode=="inv")
+    else if (mode == "inv")
         msg = QString("In module %1, cell %2:\nInvert bit %4 of port %3.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="const0")
-        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 0.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="const1")
-        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 1.").arg(module).arg(cell).arg(port).arg(portbit);
-    else if (mode=="cnot0")
-        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 0, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
-    else if (mode=="cnot1")
-        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 1, invert bit %5.").arg(module).arg(cell).arg(port).arg(portbit).arg(ctrlbit);
+    else if (mode == "const0")
+        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 0.")
+                      .arg(module)
+                      .arg(cell)
+                      .arg(port)
+                      .arg(portbit);
+    else if (mode == "const1")
+        msg = QString("In module %1, cell %2:\nDrive bit %4 of port %3 to constant 1.")
+                      .arg(module)
+                      .arg(cell)
+                      .arg(port)
+                      .arg(portbit);
+    else if (mode == "cnot0")
+        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 0, invert bit %5.")
+                      .arg(module)
+                      .arg(cell)
+                      .arg(port)
+                      .arg(portbit)
+                      .arg(ctrlbit);
+    else if (mode == "cnot1")
+        msg = QString("In module %1, cell %2:\nIf bit %4 of port %3 is 1, invert bit %5.")
+                      .arg(module)
+                      .arg(cell)
+                      .arg(port)
+                      .arg(portbit)
+                      .arg(ctrlbit);
     return msg;
 }
 
@@ -465,7 +492,8 @@ void BrowserWidget::mutationProperties(QString source, int mutationId)
 
     QString msg = getMutationMessage(mutationId);
     QtProperty *descItem = addTopLevelProperty("Description:\n" + msg);
-    propertyEditor->setBackgroundColor(propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)), QColor(0, 178, 0, 127));
+    propertyEditor->setBackgroundColor(propertyEditor->itemToBrowserItem(propertyEditor->treeWidget()->topLevelItem(0)),
+                                       QColor(0, 178, 0, 127));
 
     if (source == "") {
         QtProperty *mItem = addTopLevelProperty("Mutation " + QString::number(mutationId));
@@ -654,29 +682,28 @@ void BrowserWidget::onTagFilterChange(const QString &text)
 
 void BrowserWidget::onCurrentTabChanged(int index)
 {
-    switch (index)
-    {
-        case 0:
-            onSourceSelectionChanged(sourceList->selectionModel()->selection(), QItemSelection());
-            break;
-        case 1:
-            onMutationSelectionChanged(mutationsList->selectionModel()->selection(), QItemSelection());
-            break;
-        case 2:
-            onTagMutationSelectionChanged(tagList->selectionModel()->selection(), QItemSelection());
-            break;
-        default:
-            break;
+    switch (index) {
+    case 0:
+        onSourceSelectionChanged(sourceList->selectionModel()->selection(), QItemSelection());
+        break;
+    case 1:
+        onMutationSelectionChanged(mutationsList->selectionModel()->selection(), QItemSelection());
+        break;
+    case 2:
+        onTagMutationSelectionChanged(tagList->selectionModel()->selection(), QItemSelection());
+        break;
+    default:
+        break;
     }
 }
 
-void BrowserWidget::prepareContextMenu(const QPoint & pos)
+void BrowserWidget::prepareContextMenu(const QPoint &pos)
 {
     QAction *copyAction = new QAction("&Copy", this);
     connect(copyAction, &QAction::triggered, [=] {
         QTreeWidgetItem *item = propertyEditor->treeWidget()->itemAt(pos);
-        QClipboard* clipboard = QApplication::clipboard();
-        clipboard->setText(item->text(item->columnCount()-1));
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(item->text(item->columnCount() - 1));
     });
     QPoint pt(pos);
     QMenu menu(this);

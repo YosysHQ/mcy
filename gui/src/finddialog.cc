@@ -56,7 +56,4 @@ void FindDialog::findClicked(bool forward)
     }
 }
 
-bool FindDialog::isForCodeView(CodeView *check)
-{
-    return check == code;
-}
+bool FindDialog::isForCodeView(CodeView *check) { return check == code; }
