@@ -28,39 +28,6 @@ CodeView::CodeView(QString filename, QWidget *parent) : filename(filename), Qsci
 
 CodeView::~CodeView() {}
 
-static const char *verilog_instre1 =
-        "always and assign attribute begin buf bufif0 bufif1 case casex casez cmos deassign default defparam disable "
-        "edge else end endattribute endcase endfunction endmodule endprimitive endspecify endtable endtask event for "
-        "force forever fork function highz0 highz1 if ifnone initial inout input integer join medium module large "
-        "localparam macromodule nand negedge nmos nor not notif0 notif1 or output parameter pmos posedge primitive "
-        "pull0 pull1 pulldown pullup rcmos real realtime reg release repeat rnmos rpmos rtran rtranif0 rtranif1 "
-        "scalared signed small specify specparam strength strong0 strong1 supply0 supply1 table task time tran tranif0 "
-        "tranif1 tri tri0 tri1 triand trior trireg unsigned vectored wait wand weak0 weak1 while wire wor xnor xor "
-        "alias always_comb always_ff always_latch assert assume automatic before bind bins binsof break constraint "
-        "context continue cover cross design dist do expect export extends extern final first_match foreach forkjoin "
-        "iff ignore_bins illegal_bins import incdir include inside instance intersect join_any join_none liblist "
-        "library matches modport new noshowcancelled null packed priority protected pulsestyle_onevent "
-        "pulsestyle_ondetect pure rand randc randcase randsequence ref return showcancelled solve tagged this "
-        "throughout timeprecision timeunit unique unique0 use wait_order wildcard with within class clocking config "
-        "generate covergroup interface package program property sequence endclass endclocking endconfig endgenerate "
-        "endgroup endinterface endpackage endprogram endproperty endsequence bit byte cell chandle const coverpoint "
-        "enum genvar int local logic longint shortint shortreal static string struct super type typedef union var "
-        "virtual void";
-static const char *verilog_instre2 =
-        "SYNTHESIS $assertkill $assertoff $asserton $bits $bitstoreal $bitstoshortreal $cast $comment $countdrivers "
-        "$countones $dimensions $display $dist_chi_square $dist_erlang $dist_exponential $dist_normal $dist_poisson "
-        "$dist_t $dist_uniform $dumpall $dumpfile $dumpflush $dumplimit $dumpoff $dumpon $dumpvars $error $exit $fatal "
-        "$fclose $fdisplay $fell $feof $ferror $fflush $fgetc $fgets $finish $fmonitor $fopen $fread $fscanf $fseek "
-        "$fstrobe $ftell $fullskew $fwrite $get_coverage $getpattern $high $history $hold $increment $incsave $info "
-        "$input $isunbounded $isunknown $itor $key $left $list $load_coverage_db $log $low $monitor $monitoroff "
-        "$monitoron $nochange $nokey $nolog $onehot $onehot0 $past $period $printtimescale $q_add $q_exam $q_full "
-        "$q_initialize $q_remove $random $readmemb $readmemh $realtime $realtobits $recovery $recrem $removal $reset "
-        "$reset_count $reset_value $restart $rewind $right $root $rose $rtoi $sampled $save $scale $scope "
-        "$set_coverage_db_name $setup $setuphold $sformat $shortrealtobits $showscopes $showvariables $showvars "
-        "$signed $size $skew $sreadmemb $sreadmemh $sscanf $stable $stime $stop $strobe $swrite $time $timeformat "
-        "$timescale $timeskew $typename $typeof $uandom $ungetc $unit $unpacked_dimensions $unsigned $upscope "
-        "$urandom_range $value$plusargs $var $vcdclose $version $warning $width $write";
-
 static const char *MonospaceFont()
 {
     static char fontNameDefault[200] = "";
@@ -72,7 +39,7 @@ static const char *MonospaceFont()
 }
 void CodeView::loadContent(const char *content)
 {
-    QFont monospaceFont("Monospace");
+    QFont monospaceFont(MonospaceFont());
     monospaceFont.setPointSize(10);
     setScrollWidth(200);
     setScrollWidthTracking(true);
@@ -88,31 +55,6 @@ void CodeView::loadContent(const char *content)
         verilogLexer->setColor(verilogLexer->defaultColor(style), style);
     }
     setLexer(verilogLexer);
-
-    // Keywords
-    SendScintilla(SCI_SETKEYWORDS, (int)0, (const char *)verilog_instre1);
-    SendScintilla(SCI_SETKEYWORDS, (int)1, (const char *)verilog_instre2);
-
-    // Colors
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::Default);
-    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::Comment);
-    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::CommentLine);
-    verilogLexer->setColor(QColor("#008080"), QsciLexerVerilog::CommentBang);
-    verilogLexer->setColor(QColor("#FF8000"), QsciLexerVerilog::Number);
-    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::Keyword);
-    verilogLexer->setColor(QColor("#808080"), QsciLexerVerilog::String);
-    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::KeywordSet2);
-    verilogLexer->setColor(QColor("#8000FF"), QsciLexerVerilog::SystemTask);
-    verilogLexer->setColor(QColor("#804000"), QsciLexerVerilog::Preprocessor);
-    verilogLexer->setColor(QColor("#000080"), QsciLexerVerilog::Operator);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::Identifier);
-    verilogLexer->setColor(QColor("#808080"), QsciLexerVerilog::UnclosedString);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::UserKeywordSet);
-    verilogLexer->setColor(QColor("#008000"), QsciLexerVerilog::CommentKeyword);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareInputPort);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareOutputPort);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::DeclareInputOutputPort);
-    verilogLexer->setColor(QColor("#000000"), QsciLexerVerilog::PortConnection);
 
     setText(content);
     SendScintilla(QsciScintilla::SCI_GOTOLINE, 0);
