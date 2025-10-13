@@ -2215,17 +2215,10 @@ void QtColorEditWidget::setValue(const QColor &c)
 
 void QtColorEditWidget::buttonClicked()
 {
-    bool ok = false;
     QRgb oldRgba = m_color.rgba();
-#if QT_VERSION_MAJOR >= 6
-    QColor color = QColorDialog::getColor(QColor::fromRgba(oldRgba), this);
-    ok = color.isValid();
-    QRgb newRgba = color.rgba();
-#else
-    QRgb newRgba = QColorDialog::getRgba(oldRgba, &ok, this);
-#endif
-    if (ok && newRgba != oldRgba) {
-        setValue(QColor::fromRgba(newRgba));
+    QColor newRgba = QColorDialog::getColor(oldRgba, this).rgba();
+    if (newRgba.isValid() && newRgba.rgba() != oldRgba) {
+        setValue(newRgba);
         emit valueChanged(m_color);
     }
 }

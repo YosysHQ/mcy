@@ -385,10 +385,7 @@ void QtPropertyEditorDelegate::paint(QPainter *painter, const QStyleOptionViewIt
         opt.palette.setColor(QPalette::Text, opt.palette.color(QPalette::BrightText));
     } else {
         c = m_editorPrivate->calculatedBackgroundColor(m_editorPrivate->indexToBrowserItem(index));
-#if QT_VERSION_MAJOR >= 6
-        #define QStyleOptionViewItemV2 QStyleOptionViewItem
-#endif
-        if (c.isValid() && (opt.features & QStyleOptionViewItemV2::Alternate))
+        if (c.isValid() && (opt.features & QStyleOptionViewItem::Alternate))
             c = c.lighter(112);
     }
     if (c.isValid())
@@ -618,11 +615,7 @@ void QtTreePropertyBrowserPrivate::propertyInserted(QtBrowserItem *index, QtBrow
     m_indexToItem[index] = newItem;
 
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
-    #if QT_VERSION_MAJOR >= 6
-    m_treeWidget->setExpanded(m_treeWidget->indexFromItem(newItem), true);
-    #else
-    m_treeWidget->setItemExpanded(newItem, true);
-    #endif
+    newItem->setExpanded(true);
     updateItem(newItem);
 }
 
