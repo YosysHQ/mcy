@@ -145,7 +145,6 @@ static QtProperty *wrappedProperty(QtProperty *property)
 
 class QtVariantPropertyPrivate
 {
-    QtVariantProperty *q_ptr;
 public:
     QtVariantPropertyPrivate(QtVariantPropertyManager *m) : manager(m) {}
 
@@ -576,7 +575,7 @@ void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, con
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QKeySequence &val)
 {
     QVariant v;
-    qVariantSetValue(v, val);
+    v.setValue(val);
     valueChanged(property, v);
 }
 
@@ -663,7 +662,7 @@ void QtVariantPropertyManagerPrivate::slotEnumIconsChanged(QtProperty *property,
 {
     if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0)) {
         QVariant v;
-        qVariantSetValue(v, enumIcons);
+        v.setValue(enumIcons);
         emit q_ptr->attributeChanged(varProp, m_enumIconsAttribute, v);
     }
 }
@@ -987,8 +986,13 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
     QtStringPropertyManager *stringPropertyManager = new QtStringPropertyManager(this);
     d_ptr->m_typeToPropertyManager[QVariant::String] = stringPropertyManager;
     d_ptr->m_typeToValueType[QVariant::String] = QVariant::String;
+#if QT_VERSION_MAJOR >= 6
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::String][d_ptr->m_regExpAttribute] =
+            QMetaType::QRegularExpression; // int value for the type
+#else
     d_ptr->m_typeToAttributeToAttributeType[QVariant::String][d_ptr->m_regExpAttribute] =
             QVariant::RegExp;
+#endif
     connect(stringPropertyManager, SIGNAL(valueChanged(QtProperty *, const QString &)),
                 this, SLOT(slotValueChanged(QtProperty *, const QString &)));
     connect(stringPropertyManager, SIGNAL(regExpChanged(QtProperty *, const QRegExp &)),
@@ -1567,7 +1571,7 @@ QVariant QtVariantPropertyManager::attributeValue(const QtProperty *property, co
             return enumManager->enumNames(internProp);
         if (attribute == d_ptr->m_enumIconsAttribute) {
             QVariant v;
-            qVariantSetValue(v, enumManager->enumIcons(internProp));
+            v.setValue(enumManager->enumIcons(internProp));
             return v;
         }
         return QVariant();

@@ -190,7 +190,7 @@ QStringList DbManager::getUniqueTags(bool addAllTags)
 {
     QStringList tags;
     QSqlQuery query("SELECT tag FROM tags GROUP BY tag");
-    if (addAllTags) 
+    if (addAllTags)
         tags << DbManager::ALL_TAGS;
     while (query.next()) {
         tags << query.value(0).toString();
@@ -211,7 +211,8 @@ QList<int> DbManager::getMutationsNoTags()
 
 QList<int> DbManager::getMutationsForTag(QString tag)
 {
-    if (tag == DbManager::NO_TAGS) return getMutationsNoTags();
+    if (tag == DbManager::NO_TAGS)
+        return getMutationsNoTags();
 
     QList<int> retVal;
     QSqlQuery query("SELECT mutation_id FROM tags WHERE tag = '" + tag + "'");
