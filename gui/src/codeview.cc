@@ -105,13 +105,13 @@ void CodeView::selectLine(QString line)
         QStringList parts = line.split('-');
         if (parts.at(0).contains('.') && parts.at(1).contains('.')) {
             QString part = parts.at(0);
-            int ln = part.left(part.indexOf('.')).toInt()-1;
-            int pos = part.mid(part.indexOf('.')+1).toInt();
+            int ln = part.left(part.indexOf('.')).toInt() - 1;
+            int pos = part.mid(part.indexOf('.') + 1).toInt();
             int start = positionFromLineIndex(ln, pos - 1);
             part = parts.at(1);
-            ln = part.left(part.indexOf('.')).toInt()-1;
-            pos = part.mid(part.indexOf('.')+1).toInt();
-            int end = positionFromLineIndex(ln, pos -1);
+            ln = part.left(part.indexOf('.')).toInt() - 1;
+            pos = part.mid(part.indexOf('.') + 1).toInt();
+            int end = positionFromLineIndex(ln, pos - 1);
             SendScintilla(SCI_SETINDICATORCURRENT, 0);
             SendScintilla(SCI_INDICATORFILLRANGE, start, end - start);
         }
@@ -183,16 +183,15 @@ void CodeView::find(QString text, bool forward)
         }
     }
 
-    bool found = findFirst(
-        text,
-        false,       // regexp
-        false,       // case sensitive
-        false,       // whole words
-        true,        // wrap around
-        forward,     // search forward
-        line,        // line
-        index,       // index
-        true         // show selection
+    bool found = findFirst(text,
+                           false,   // regexp
+                           false,   // case sensitive
+                           false,   // whole words
+                           true,    // wrap around
+                           forward, // search forward
+                           line,    // line
+                           index,   // index
+                           true     // show selection
     );
 
     if (!found) {
