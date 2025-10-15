@@ -170,6 +170,19 @@ void CodeView::find(QString text, bool forward)
 {
     if (text.isEmpty())
         return;
+
+    int line, index;
+    getCursorPosition(&line, &index);
+
+    if (!forward) {
+        if (index > 0)
+            index--;
+        else if (line > 0) {
+            line--;
+            index = this->text(line).length();
+        }
+    }
+
     bool found = findFirst(
         text,
         false,       // regexp
@@ -177,8 +190,8 @@ void CodeView::find(QString text, bool forward)
         false,       // whole words
         true,        // wrap around
         forward,     // search forward
-        -1,          // line (current line)
-        -1,          // index (current index)
+        line,        // line
+        index,       // index
         true         // show selection
     );
 
