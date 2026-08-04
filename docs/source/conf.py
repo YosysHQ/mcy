@@ -15,7 +15,7 @@ html_logo = '../static/logo.png'
 html_favicon = '../static/favico.png'
 html_css_files = ['custom.css']
 
-# code blocks style 
+# code blocks style
 pygments_style = 'colorful'
 highlight_language = 'systemverilog'
 

@@ -54,7 +54,7 @@ def home():
         if (action and action=='initialize'):
             subprocess.call(["mcy" ,'init'])
             return redirect('index.html')
-        if (action and action=='run'):            
+        if (action and action=='run'):
             subprocess.Popen(["mcy" ,'run','-j2'], close_fds=True)
             cnt_queue = 0
             while cnt_queue == 0:
@@ -62,7 +62,7 @@ def home():
                     time.sleep(2)
                     db = sqlite3_connect()
                     cnt_queue = db.execute('SELECT COUNT(*) FROM queue WHERE running=1').fetchone()[0]
-                    db.close()                                        
+                    db.close()
                 except:
                     print("Problem accessing database...")
             return redirect('index.html')
@@ -82,8 +82,8 @@ def home():
             errorCode = 1
         else:
             errorCode = 2
-    return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue, 
-                           cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags, 
+    return render_template('index.html', selected='index', cnt_mutations=cnt_mutations, cnt_queue=cnt_queue,
+                           cnt_results=cnt_results, cnt_sources=cnt_sources, results=results, tags=tags,
                            running=running, queue=queue, errorCode=errorCode)
 
 @app.route("/mutations.html")
@@ -122,7 +122,7 @@ def source():
         files = db.execute('SELECT DISTINCT SUBSTR(srctag,0,INSTR(srctag,\':\')) FROM sources ORDER BY SUBSTR(srctag,0,INSTR(srctag,\':\'))').fetchall()
         if filename=="":
             filename = files[0][0]
-        sql = 'SELECT data FROM files WHERE filename = "%s"' % filename        
+        sql = 'SELECT data FROM files WHERE filename = "%s"' % filename
         fd = db.execute(sql).fetchall()
         if (len(fd)==0):
             if (len(sys.argv) > 1):
@@ -130,7 +130,7 @@ def source():
                     with open(os.path.join(sys.argv[1],filename) , 'r') as myfile:
                         filedata = myfile.read()
                 except:
-                    filedata = ""                        
+                    filedata = ""
                     errorCode = 3
             else:
                 filedata = ""
@@ -138,8 +138,8 @@ def source():
             filedata = fd[0][0].decode('unicode_escape')
         # Fix DOS-style and old Macintosh-style line endings
         filedata = filedata.replace("\r\n", "\n").replace("\r", "\n")
-        num = len(filedata.split('\n'))        
-       
+        num = len(filedata.split('\n'))
+
         for src, in db.execute("SELECT DISTINCT srctag FROM sources WHERE srctag LIKE ?", [filename + ":%"]):
             src = src.replace(filename + ":","")
             if ("." in src):

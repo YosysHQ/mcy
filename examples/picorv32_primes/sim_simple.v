@@ -66,7 +66,7 @@ module testbench;
 	reg [7:0] mutsel;
 
 	initial begin
-		if (!$value$plusargs("mut=%d", mutsel)) begin 
+		if (!$value$plusargs("mut=%d", mutsel)) begin
 			mutsel = 0;
 		end
 	end

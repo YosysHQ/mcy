@@ -55,7 +55,7 @@ module bitcnt (
 		cnt = 0;
 		for (i = 0; i < 64; i = i+1)
 			cnt = cnt + (tmp[i] && (i < 32 || !mode32));
-	end 
+	end
 
 	assign dout_data = cnt;
 endmodule

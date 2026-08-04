@@ -715,7 +715,7 @@ def run_task(db, cfg, whitelist, tst=None, mut_list=None, verbose=False, details
         with open("tasks/%s/output.txt" % task_id, "r") as f:
             for line in f:
                 line = line.split()
-                if (len(line) != 2):                   
+                if (len(line) != 2):
                     log_error(f"Invalid line format in file tasks/{task_id}/output.txt")
 
                 idx = int(line[0])-1
