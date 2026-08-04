@@ -20,23 +20,14 @@ repos:
   rev: v6.0.0
   hooks:
   - id: check-case-conflict
-  - id: check-merge-conflict
+  - id: check-executables-have-shebangs
   - id: check-yaml
     args: [--allow-multiple-documents]
-  - id: debug-statements
   - id: end-of-file-fixer
   - id: fix-byte-order-marker
   - id: mixed-line-ending
     args: [--fix,lf]
   - id: trailing-whitespace
-
-# Python linting and formatting with Ruff.
-#- repo: https://github.com/astral-sh/ruff-pre-commit
-#  rev: v0.16.1
-#  hooks:
-#    - id: ruff-check
-#      args: [ --fix ]
-#    - id: ruff-format
 
 # clang-format
 - repo: https://github.com/pre-commit/mirrors-clang-format
