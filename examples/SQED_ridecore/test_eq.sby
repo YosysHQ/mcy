@@ -1,0 +1,40 @@
+[options]
+mode bmc
+depth 12
+timeout 7200
+expect pass,fail,timeout
+
+
+[engines]
+btor pono
+
+
+[script]
+read_verilog -sv test_eq.sv inst_constraints.v modify_instruction.v qed_decoder.v qed_i_cache.v qed_instruction_mux.v qed.v
+#read_ilang mutated.il
+read_rtlil mutated.il
+#clk2fflogic
+async2sync
+chformal -lower
+chformal -assume -early
+prep -top miter
+hierarchy -check 
+proc
+flatten
+memory 
+opt -fast
+#fmcombine miter ref uut
+dffunmap
+sim -clock din_clk -resetn din_rst_n -n 5 -rstlen 5 -zinit -w miter
+setundef -undriven -expose
+
+
+[files]
+../../test_eq.sv 
+../../rtl/qed_files/inst_constraints.v 
+../../rtl/qed_files/modify_instruction.v 
+../../rtl/qed_files/qed_decoder.v 
+../../rtl/qed_files/qed_i_cache.v 
+../../rtl/qed_files/qed_instruction_mux.v
+../../rtl/qed_files/qed.v 
+mutated.il

@@ -1,0 +1,158 @@
+[options]
+size 400
+weight_cover 500
+weight_pq_s 500
+weight_pq_ms 500
+pick_cover_prcnt 90
+tags COVERED UNCOVERED NOCHANGE EQGAP 
+
+
+[script]
+read_verilog -sv rtl/design/define.v \
+rtl/design/top_ridecore.v \
+rtl/design/alloc_issue_ino.v \
+rtl/design/search_be.v \
+rtl/design/srcsel.v  \
+rtl/design/alu_ops.vh \
+rtl/design/arf.v \
+rtl/design/ram_sync.v \
+rtl/design/ram_sync_nolatch.v  \
+rtl/design/brimm_gen.v \
+rtl/design/constants.vh \
+rtl/design/decoder.v \
+rtl/design/dmem.v \
+rtl/design/exunit_alu.v \
+rtl/design/exunit_branch.v \
+rtl/design/exunit_ldst.v \
+rtl/design/exunit_mul.v \
+rtl/design/imem.v \
+rtl/design/imm_gen.v \
+rtl/design/pipeline_if.v \
+rtl/design/gshare.v \
+rtl/design/pipeline.v \
+rtl/design/oldest_finder.v \
+rtl/design/btb.v \
+rtl/design/prioenc.v \
+rtl/design/mpft.v \
+rtl/design/reorderbuf.v \
+rtl/design/rrf_freelistmanager.v \
+rtl/design/rrf.v \
+rtl/design/rs_alu.v \
+rtl/design/rs_branch.v \
+rtl/design/rs_ldst.v \
+rtl/design/rs_mul.v \
+rtl/design/rs_reqgen.v \
+rtl/design/rv32_opcodes.vh \
+rtl/design/src_manager.v \
+rtl/design/srcopr_manager.v \
+rtl/design/storebuf.v \
+rtl/design/tag_generator.v \
+rtl/design/dualport_ram.v \
+rtl/design/alu.v \
+rtl/design/multiplier.v ;
+
+# prep does a conservative elaboration of the top module provided
+prep -top top_ridecore;
+
+# this command just does a sanity check of the hierarchy
+hierarchy -check; 
+
+# translate processes to netlists
+proc;
+
+# flatten the design hierarchy
+flatten;
+
+# this processes memories
+# nomap means it will keep them as arrays
+memory;
+
+# This turns all undriven signals into inputs
+setundef -undriven -expose;
+
+
+[files]
+rtl/design/define.v 
+rtl/design/top_ridecore.v 
+rtl/design/alloc_issue_ino.v 
+rtl/design/search_be.v 
+rtl/design/srcsel.v  
+rtl/design/alu_ops.vh 
+rtl/design/arf.v 
+rtl/design/ram_sync.v 
+rtl/design/ram_sync_nolatch.v  
+rtl/design/brimm_gen.v 
+rtl/design/constants.vh 
+rtl/design/decoder.v 
+rtl/design/dmem.v 
+rtl/design/exunit_alu.v 
+rtl/design/exunit_branch.v 
+rtl/design/exunit_ldst.v 
+rtl/design/exunit_mul.v 
+rtl/design/imem.v 
+rtl/design/imm_gen.v 
+rtl/design/pipeline_if.v 
+rtl/design/gshare.v 
+rtl/design/pipeline.v 
+rtl/design/oldest_finder.v 
+rtl/design/btb.v 
+rtl/design/prioenc.v 
+rtl/design/mpft.v 
+rtl/design/reorderbuf.v 
+rtl/design/rrf_freelistmanager.v 
+rtl/design/rrf.v 
+rtl/design/rs_alu.v 
+rtl/design/rs_branch.v 
+rtl/design/rs_ldst.v 
+rtl/design/rs_mul.v 
+rtl/design/rs_reqgen.v 
+rtl/design/rv32_opcodes.vh 
+rtl/design/src_manager.v 
+rtl/design/srcopr_manager.v 
+rtl/design/storebuf.v 
+rtl/design/tag_generator.v 
+rtl/design/dualport_ram.v 
+rtl/design/alu.v 
+rtl/design/multiplier.v 
+
+
+[logic]
+use_formal = True
+
+eq_okay = ((result("test_eq") == "PASS") or (result("test_eq") == "TIMEOUT"))
+tb_fail = ((result("fm_btor") == "FAIL") or (result("fm_smtbmc 7200") == "FAIL"))
+
+if not tb_fail and not eq_okay:
+    tag("UNCOVERED")
+elif tb_fail and not eq_okay:
+    tag("COVERED")
+elif not tb_fail and eq_okay:
+    tag("NOCHANGE")
+elif tb_fail and eq_okay:
+    tag("EQGAP")
+else:
+    assert 0
+    
+
+[report]
+if tags("EQGAP"):
+    print("Found %d mutations exposing a formal gap!" % tags("EQGAP"))
+if tags("COVERED")+tags("UNCOVERED"):
+    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
+if tags():
+    print("Nochange mutation percentage: %.2f%%" % (100.0*tags("NOCHANGE")/(tags())))
+
+
+[test test_eq]
+expect PASS FAIL TIMEOUT
+run bash $PRJDIR/test_eq.sh
+
+
+[test fm_btor]
+expect PASS FAIL TIMEOUT
+run bash $PRJDIR/fm_btor.sh
+
+
+[test fm_smtbmc]
+expect PASS FAIL TIMEOUT
+run bash $PRJDIR/fm_smtbmc.sh
